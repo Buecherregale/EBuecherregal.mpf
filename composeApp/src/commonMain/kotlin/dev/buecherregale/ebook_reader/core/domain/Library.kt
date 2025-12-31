@@ -11,27 +11,14 @@ class Library {
     val name: String
     var image: FileRef? = null
 
-    val bookIds: MutableList<Uuid>
-
-    constructor(
-        name: String,
-        image: FileRef?,
-        bookIds: Array<Uuid>
-    ) {
-        this.name = name
-        this.image = image
-        this.bookIds = ArrayList()
-        this.bookIds.addAll(bookIds)
-    }
+    val bookIds: MutableList<Uuid> = ArrayList()
 
     constructor(name: String) {
         this.name = name
-        this.bookIds = ArrayList()
     }
 
     constructor(name: String, image: FileRef?) {
         this.name = name
         this.image = image
-        this.bookIds = ArrayList()
     }
 }

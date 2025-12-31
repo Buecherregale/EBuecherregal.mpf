@@ -6,6 +6,7 @@ import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.util.JsonUtil
+import kotlinx.io.readByteArray
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -90,5 +91,16 @@ class LibraryService(
         }
         Logger.i("loaded ${libraries.size} libraries")
         return libraries
+    }
+
+    /**
+     * Obtains the bytes of the library image.
+     * This opens the file and reads the bytes from the source
+     *
+     * @param library the library
+     * @return the bytes of the image file or null if image is not set
+     */
+    fun imageBytes(library: Library): ByteArray? {
+        return library.image?.let { fileService.open(it).readByteArray() }
     }
 }
