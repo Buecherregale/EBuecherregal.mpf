@@ -168,7 +168,7 @@ class BookService(private val fileService: FileService,
      * @return the target where the book has been copied to
      */
     private fun copyBook(bookId: Uuid, bookFiles: FileRef): FileRef {
-        val bookTarget: FileRef = getBookFile(bookId)
+        val bookTarget = getBookFile(bookId)
         fileService.open(bookFiles).use { input ->
             fileService.copy(input, bookTarget)
             return bookTarget
@@ -186,7 +186,7 @@ class BookService(private val fileService: FileService,
      * @param coverBytes the bytes of the cover image to write
      */
     private fun saveCover(bookId: Uuid, coverBytes: ByteArray) {
-        val coverTarget: FileRef = getCoverFile(bookId)
+        val coverTarget = getCoverFile(bookId)
         fileService.write(coverTarget, coverBytes)
     }
 }

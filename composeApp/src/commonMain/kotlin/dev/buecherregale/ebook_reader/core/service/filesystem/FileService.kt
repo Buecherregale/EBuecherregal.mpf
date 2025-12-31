@@ -5,9 +5,7 @@ import kotlinx.io.Source
 /**
  * A generic interface with different methods for handling files. <br></br>
  * E.g. desktop filesystems or android content management. <br></br>
- * Works in tandem with the right [filesystem.FileRef] implementation.
- *
- * @apiNote Implementations should refrain from returning `null`, opting to throw `IOExceptions` instead.
+ * Works in tandem with the right [FileRef] implementation.
  */
 interface FileService {
     /**
@@ -111,13 +109,19 @@ interface FileService {
     /**
      * Serialize a reference to a string.
      *
-     * @param ref the reference
+     * @param fileRef the reference
      * @return the serialization
-     * @implNote default refers to [FileRef.toString]
+     * @implNote default refers to [FileRef.path]
      */
-    fun serializeRef(ref: FileRef): String {
-        return ref.toString()
+    fun serializeRef(fileRef: FileRef): String {
+        return fileRef.path
     }
 
+    /**
+     * Removes gz compression on the given byte array.
+     *
+     * @param bytes of a gz-compressed file
+     * @return the decompressed bytes
+     */
     fun ungzip(bytes: ByteArray): ByteArray
 }

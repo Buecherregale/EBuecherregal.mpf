@@ -2,9 +2,9 @@ package dev.buecherregale.ebook_reader.core.config
 
 import co.touchlab.kermit.Logger
 import dev.buecherregale.ebook_reader.core.service.DictionaryService
-import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
+import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.util.JsonUtil
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid

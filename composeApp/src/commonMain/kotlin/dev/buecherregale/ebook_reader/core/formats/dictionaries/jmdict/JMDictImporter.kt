@@ -7,8 +7,8 @@ import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.xml.JMDic
 import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.xml.JMEntry
 import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.xml.KanjiElement
 import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.xml.ReadingElement
-import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
+import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.util.ImportUtil
 import io.ktor.http.Url
 import kotlinx.serialization.decodeFromString

@@ -147,7 +147,7 @@ class DictionaryService constructor(
     }
 
     private fun save(toSave: Dictionary) {
-        val targetFile: FileRef = getDictionaryFile(toSave.id)
+        val targetFile = getDictionaryFile(toSave.id)
         Logger.i("saving dictionary '${toSave.name}' to '$targetFile'")
         fileService.write(targetFile, jsonUtil.serialize(toSave))
     }

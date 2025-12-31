@@ -1,34 +1,34 @@
 package dev.buecherregale.ebook_reader.core.service.filesystem
 
+import kotlinx.serialization.Serializable
+
 /**
- * A generic reference to a file to be utilized with different methods of handling files. <br></br>
- * E.g. desktop filesystems or android content management.
+ * A simple value based FileRef implemented as a String.
+ *
+ * Other platforms should implement extension functions to use this class
+ * with their [FileService] implementation.
  */
-interface FileRef {
+@Serializable
+data class FileRef(val path: String) {
     /**
-     * Writes the FileRef as a string (might be used for serialization).
+     * Quick way to merge two file refs by appending the other. <br>
+     * Similar functionality to [java.nio.file.Path.resolve]. <br>
      *
-     * @return the string representation
+     * Merges paths via `/`. Users need to be sure this is supported on their platform.
+     *
+     * @param other the string to add to the path.
+     * @return the new ref
      */
-    override fun toString(): String
+    fun resolve(other: String): FileRef = FileRef("$path/$other")
 
     /**
-     * Gives the file ref created by "appending" the other ref to this one. <br></br>
-     * Similar functionality to [java.nio.file.Path.resolve].
+     * Quick way to merge two file refs by appending the other. <br>
+     * Similar functionality to [java.nio.file.Path.resolve]. <br>
      *
-     * @param other the other ref
-     * @return the resulting ref
-     */
-    fun resolve(other: FileRef): FileRef
-
-    /**
-     * Gives the file ref created by "appending" the string to this one. <br></br>
-     * The string represents a file name, thus this method should resolve to a file
-     * by the name in a directory represented by this ref. <br></br>
-     * Similar functionality to [java.nio.file.Path.resolve].
+     * Merges paths via `/`. Users need to be sure this is supported on their platform.
      *
-     * @param other a file name as string
-     * @return the resulting ref
+     * @param other the string to add to the path.
+     * @return the new ref
      */
-    fun resolve(other: String): FileRef
+    fun resolve(other: FileRef): FileRef = FileRef("$path/$other")
 }

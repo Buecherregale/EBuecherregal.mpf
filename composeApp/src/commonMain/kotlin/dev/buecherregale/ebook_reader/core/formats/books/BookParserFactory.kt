@@ -1,8 +1,8 @@
 package dev.buecherregale.ebook_reader.core.formats.books
 
 import co.touchlab.kermit.Logger
-import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
+import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 
 /**
  * Creates [BookParser] instances.

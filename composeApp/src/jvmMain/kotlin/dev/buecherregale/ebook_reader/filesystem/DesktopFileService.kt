@@ -1,63 +1,80 @@
 package dev.buecherregale.ebook_reader.filesystem
 
-import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileMetadata
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
+import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.service.filesystem.ZipFileRef
+import dev.buecherregale.ebook_reader.toPath
 import kotlinx.io.Source
 import kotlinx.io.asInputStream
 import kotlinx.io.asSource
 import kotlinx.io.buffered
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.UncheckedIOException
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
+import java.nio.file.StandardOpenOption
 import java.util.zip.GZIPInputStream
 
 class DesktopFileService(appName: String) : FileService {
+
     private val configDir: Path =
         Path.of(System.getenv("XDG_CONFIG_HOME"), appName)
     private val stateDir: Path = Path.of(System.getenv("XDG_STATE_HOME"), appName)
     private val dataDir: Path = Path.of(System.getenv("XDG_DATA_HOME"), appName)
 
     override fun read(file: FileRef): String {
-        val path = toPath(file)
-        return Files.readString(path, java.nio.charset.StandardCharsets.UTF_8)
+        return Files.readString(file.toPath())
     }
 
-    override fun read(directory: AppDirectory, relativeRef: FileRef): String {
-        return read(getAppDirectory(directory).resolve(relativeRef))
+    override fun read(
+        directory: AppDirectory,
+        relativeRef: FileRef
+    ): String {
+        return Files.readString(getAppDirectory(directory).resolve(relativeRef).toPath())
     }
 
     override fun open(file: FileRef): Source {
-        return Files.newInputStream(toPath(file), java.nio.file.StandardOpenOption.READ)
+        return Files.newInputStream(file.toPath(),StandardOpenOption.READ)
             .asSource()
             .buffered()
     }
 
     override fun readZip(file: FileRef): ZipFileRef {
-        return DesktopZipFileRef(java.util.zip.ZipFile(toPath(file).toFile()))
+        return DesktopZipFileRef(java.util.zip.ZipFile(file.toPath().toFile()))
     }
 
-    override fun write(file: FileRef, content: String) {
-        write(file, content.toByteArray(java.nio.charset.StandardCharsets.UTF_8))
+    override fun write(
+        file: FileRef,
+        content: String
+    ) {
+        write(file, content.toByteArray(StandardCharsets.UTF_8))
     }
 
-    override fun write(file: FileRef, content: ByteArray) {
-        val path = toPath(file)
+    override fun write(
+        file: FileRef,
+        content: ByteArray
+    ) {
+        val path = file.toPath()
         Files.createDirectories(path.parent)
         Files.write(
             path,
             content,
-            java.nio.file.StandardOpenOption.CREATE,
-            java.nio.file.StandardOpenOption.TRUNCATE_EXISTING
+            StandardOpenOption.CREATE,
+            StandardOpenOption.TRUNCATE_EXISTING
         )
     }
 
-    override fun copy(input: Source, target: FileRef) {
-        val path = toPath(target)
+    override fun copy(
+        input: Source,
+        target: FileRef
+    ) {
+        val path = target.toPath()
         Files.createDirectories(path.parent)
         input.use {
             Files.copy(input.asInputStream(), path, StandardCopyOption.REPLACE_EXISTING)
@@ -65,12 +82,11 @@ class DesktopFileService(appName: String) : FileService {
     }
 
     override fun exists(file: FileRef): Boolean {
-        val path = toPath(file)
-        return Files.exists(path)
+        return Files.exists(file.toPath())
     }
 
     override fun getMetadata(file: FileRef): FileMetadata {
-        val path = toPath(file)
+        val path = file.toPath()
         if (!Files.exists(path)) {
             throw java.io.FileNotFoundException("file $file does not exist")
         }
@@ -100,40 +116,33 @@ class DesktopFileService(appName: String) : FileService {
         }
         try {
             Files.createDirectories(dir)
-        } catch (e: java.io.IOException) {
-            throw java.io.UncheckedIOException(e)
+        } catch (e: IOException) {
+            throw UncheckedIOException(e)
         }
-        return DesktopFileRef(dir)
+        return FileRef(dir.toString())
     }
 
-
-    override fun listChildren(fileRef: FileRef): MutableList<FileRef> {
-        val path = toPath(fileRef)
+    override fun listChildren(fileRef: FileRef): List<FileRef> {
+        val path = fileRef.toPath()
         if (!Files.isDirectory(path)) {
             return kotlin.collections.mutableListOf()
         }
 
         try {
             Files.newDirectoryStream(path).use { stream ->
-                val result: MutableList<FileRef> = java.util.ArrayList()
+                val result: MutableList<FileRef> = ArrayList()
                 for (p in stream) {
-                    result.add(DesktopFileRef(p))
+                    result.add(FileRef(p.toString()))
                 }
                 return result
             }
-        } catch (e: java.io.IOException) {
-            throw java.io.UncheckedIOException(e)
+        } catch (e: IOException) {
+            throw UncheckedIOException(e)
         }
     }
 
     override fun deserializeRef(s: String): FileRef {
-        val p = Path.of(s)
-        return DesktopFileRef(p)
-    }
-
-
-    override fun serializeRef(ref: FileRef): String {
-        return toPath(ref).toAbsolutePath().toString()
+        return FileRef(s)
     }
 
     override fun ungzip(bytes: ByteArray): ByteArray {
@@ -142,10 +151,5 @@ class DesktopFileService(appName: String) : FileService {
             gzis.transferTo(out)
         }
         return out.toByteArray()
-    }
-
-    private fun toPath(ref: FileRef): Path {
-        require(ref is DesktopFileRef) { "Unsupported FileRef implementation" }
-        return ref.path
     }
 }

@@ -10,8 +10,8 @@ import dev.buecherregale.ebook_reader.core.formats.books.epub.xml.Container
 import dev.buecherregale.ebook_reader.core.formats.books.epub.xml.Manifest
 import dev.buecherregale.ebook_reader.core.formats.books.epub.xml.Package
 import dev.buecherregale.ebook_reader.core.formats.books.epub.xml.RootFile
-import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
+import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.service.filesystem.ZipFileRef
 import kotlinx.io.readByteArray
 import kotlinx.serialization.decodeFromString
@@ -34,7 +34,7 @@ import nl.adaptivity.xmlutil.serialization.XmlConfig
  * Resources and content is read upon request from the [SpineManager] implementation.
  *
  */
-class EPubParser(val fileService: FileService, bookFiles: FileRef) : BookParser {
+class EPubParser(fileService: FileService, bookFiles: FileRef) : BookParser {
     private val zip: ZipFileRef
     private val container: Container
     private val content: Package
