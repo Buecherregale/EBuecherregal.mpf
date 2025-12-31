@@ -102,8 +102,9 @@ class DictionaryService constructor(
      *
      * @return a list of all names of supported dictionaries
      */
-    val supportedDictionaryNames: List<String>
-        get() = DictionaryImporterFactory.registeredDictionaryNames()
+    fun listSupportedDictionaryNames(): List<String> {
+        return DictionaryImporterFactory.registeredDictionaryNames()
+    }
 
     /**
      * Lists the metadata of all downloaded dictionaries.<br></br>
@@ -113,14 +114,15 @@ class DictionaryService constructor(
      *
      * @return the list of metadata of downloaded dictionaries in the form of fieldName -> fieldValue
      */
-    val downloadedDictionaryMetadata: List<DictionaryMetadata>
-        get() = fileService.listChildren(dictionaryDir)
+    fun listDownloadedDictionaryMetadata(): List<DictionaryMetadata> {
+        return fileService.listChildren(dictionaryDir)
             .map { file ->
                 return@map fileService.read(file)
             }
             .map { json ->
                 return@map jsonUtil.deserialize<DictionaryMetadata>(json)
             }.toList()
+    }
 
     /**
      * Lookup the word in the given dictionary.

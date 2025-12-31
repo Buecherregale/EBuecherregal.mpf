@@ -55,6 +55,10 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
 
+            implementation(libs.androidx.nav3.runtime)
+            implementation(libs.androidx.nav3.lifecycle.viewmodel)
+            implementation(libs.androidx.nav3.materialAdaptive)
+
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
@@ -66,6 +70,10 @@ kotlin {
             implementation(libs.xmlutil.serialization)
 
             implementation(libs.ktor.client.core)
+
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.koin.compose.navigation)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
