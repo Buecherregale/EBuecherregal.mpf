@@ -6,10 +6,10 @@ import dev.buecherregale.ebook_reader.core.formats.books.BookParserFactory
 import dev.buecherregale.ebook_reader.core.formats.books.NavigationController
 import dev.buecherregale.ebook_reader.core.domain.Book
 import dev.buecherregale.ebook_reader.core.domain.BookMetadata
+import dev.buecherregale.ebook_reader.core.repository.BookRepository
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
-import dev.buecherregale.ebook_reader.core.util.JsonUtil
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -18,9 +18,11 @@ import kotlin.uuid.Uuid
  * Handles file storage, book import and opening a book from a library.
  */
 @OptIn(ExperimentalUuidApi::class)
-class BookService(private val fileService: FileService,
-                  private val jsonUtil: JsonUtil,
-                  private val parserFactory: BookParserFactory) {
+class BookService(
+    private val fileService: FileService,
+    private val parserFactory: BookParserFactory,
+    private val repository: BookRepository,
+) {
     private val bookDir: FileRef = fileService.getAppDirectory(AppDirectory.DATA).resolve("books")
 
     /**
@@ -50,8 +52,9 @@ class BookService(private val fileService: FileService,
             bookId,
             0.0,
             parser.parsableType(),
-            bookMetadata)
-        saveBookData(book)
+            bookMetadata
+        )
+        repository.save(book.id, book)
 
         Logger.i("imported book '${book.metadata.title}' with id ${book.id}")
         return book
@@ -65,8 +68,7 @@ class BookService(private val fileService: FileService,
      * @return the book instance
      */
     suspend fun readData(bookId: Uuid): Book {
-        val fileContent: String = fileService.read(getBookDataFile(bookId))
-        return jsonUtil.deserialize(fileContent)
+        return repository.load(bookId)
     }
 
     /**
@@ -81,20 +83,6 @@ class BookService(private val fileService: FileService,
         return parserFactory
             .get(getBookFile(bookId))
             .navigationController()
-    }
-
-    /**
-     * A file ref to the file containing book data as json. <br></br>
-     * BOOK DATA is the serialization of the [Book] type and its metadata. <br></br>
-     * <bold>DOES NOT CHECK IF THE FILE EXISTS</bold> <br></br>
-     * If no book with the given id has been imported, the file won't exist, but this method <bold>WILL</bold> return
-     * the theoretical ref.
-     *
-     * @param bookId the id of the book
-     * @return file ref to the metadata file
-     */
-    fun getBookDataFile(bookId: Uuid): FileRef {
-        return bookDir.resolve("$bookId.meta")
     }
 
     /**
@@ -134,12 +122,14 @@ class BookService(private val fileService: FileService,
      * @return the updated book
      */
     suspend fun updateProgress(book: Book, newProgress: Double): Book {
-        val v2: Book = Book(book.id,
+        val v2: Book = Book(
+            book.id,
             newProgress,
             book.bookType,
-            book.metadata,)
+            book.metadata,
+        )
 
-        saveBookData(v2)
+        repository.save(v2.id, v2)
         return v2
     }
 
@@ -153,10 +143,8 @@ class BookService(private val fileService: FileService,
      * @param book the book data to save
      */
     suspend fun saveBookData(book: Book) {
-        val metaTarget: FileRef = getBookDataFile(book.id)
-        Logger.d("saving book data for ${book.id} to '$metaTarget'")
-        val serializedMetadata: String = jsonUtil.serialize(book)
-        fileService.write(metaTarget, serializedMetadata)
+        Logger.d("saving book data for ${book.id}")
+        repository.save(book.id, book)
     }
 
     /**

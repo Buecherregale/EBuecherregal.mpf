@@ -3,6 +3,8 @@ package dev.buecherregale.ebook_reader
 import dev.buecherregale.ebook_reader.core.config.SettingsManager
 import dev.buecherregale.ebook_reader.core.formats.books.BookParserFactory
 import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporterFactory
+import dev.buecherregale.ebook_reader.core.repository.BookRepository
+import dev.buecherregale.ebook_reader.core.repository.JsonBookRepository
 import dev.buecherregale.ebook_reader.core.repository.JsonLibraryRepository
 import dev.buecherregale.ebook_reader.core.repository.LibraryRepository
 import dev.buecherregale.ebook_reader.core.service.BookService
@@ -20,6 +22,7 @@ val commonModule: Module = module {
     singleOf(::JsonUtil)
 
     singleOf(::JsonLibraryRepository) binds arrayOf(LibraryRepository::class)
+    singleOf(::JsonBookRepository) binds arrayOf(BookRepository::class)
 
     singleOf(::SettingsManager)
     singleOf(::BookService)
