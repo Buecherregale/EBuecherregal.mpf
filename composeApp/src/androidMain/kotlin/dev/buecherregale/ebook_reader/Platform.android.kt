@@ -16,6 +16,6 @@ actual suspend fun pickImage(): PickedImage? {
     TODO("Not yet implemented")
 }
 
-actual suspend fun pickBook(): String {
+actual suspend fun pickBook(): PickedFile? {
     TODO("Not yet implemented")
 }

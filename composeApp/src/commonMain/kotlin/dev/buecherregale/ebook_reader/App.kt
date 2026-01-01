@@ -16,6 +16,21 @@ import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.koinConfiguration
 
+// TODO: let user choose an image in settings, generating fitting theme via  https://github.com/jordond/MaterialKolor
+/**
+ * TODO:
+ * ```
+ * @Composable
+ * fun DynamicTheme(image: ImageBitmap, content: @Composable () -> Unit) {
+ *     val seedColor = rememberThemeColor(image, fallback = MaterialTheme.colorScheme.primary)
+ *
+ *   DynamicMaterialTheme(
+ *         seedColor = seedColor,
+ *         content = content
+ *     )
+ * }
+ * ```
+ */
 @Composable
 @OptIn(KoinExperimentalAPI::class)
 fun App() {
