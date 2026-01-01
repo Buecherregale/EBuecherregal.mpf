@@ -1,30 +1,40 @@
 package dev.buecherregale.ebook_reader
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.navigation3.ui.NavDisplay
-import dev.buecherregale.ebook_reader.ui.navigation.Screen
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import dev.buecherregale.ebook_reader.core.formats.books.BookParserFactory
+import dev.buecherregale.ebook_reader.core.formats.books.epub.EPubParser
+import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporterFactory
+import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.JMDictImporter
+import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
+import dev.buecherregale.ebook_reader.ui.navigation.Navigator
+import dev.buecherregale.ebook_reader.ui.navigation.navigationModule
 import org.koin.compose.KoinApplication
+import org.koin.compose.koinInject
 import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.koinConfiguration
 
-@Preview
 @Composable
 @OptIn(KoinExperimentalAPI::class)
 fun App() {
-    KoinApplication(configuration = koinConfiguration(declaration = {
-        modules(commonModule, platformModule())
-    }), content = {
-        var backStack by remember { mutableStateOf(listOf<Screen>(Screen.LibraryOverview)) }
-        val entryProvider = koinEntryProvider()
+    KoinApplication(
+        configuration = koinConfiguration {
+            modules(navigationModule, commonModule, platformModule())
+        }
+    ) {
+        registerImplsInFactory(koinInject())
         MaterialTheme {
             NavDisplay(
-                backStack = backStack,
-                onBack = { backStack.dropLast(0) },
-                entryProvider = entryProvider
+                backStack = koinInject<Navigator>().backStack,
+                entryProvider = koinEntryProvider()
             )
         }
-    })
+    }
+}
+
+fun registerImplsInFactory(fileService: FileService) {
+    DictionaryImporterFactory.register("JmDict", ::JMDictImporter)
+    BookParserFactory.register({ EPubParser.isEPub(fileService, it) }, ::EPubParser)
 }

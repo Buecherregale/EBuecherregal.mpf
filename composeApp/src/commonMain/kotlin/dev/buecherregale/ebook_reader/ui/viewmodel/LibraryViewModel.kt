@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.buecherregale.ebook_reader.core.domain.Library
 import dev.buecherregale.ebook_reader.core.service.LibraryService
-import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -23,20 +22,17 @@ class LibraryViewModel(
 
     fun loadLibraries() {
         viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
             val libraries = libraryService.loadLibraries()
-            _uiState.update { it.copy(libraries = libraries) }
+            _uiState.update { it.copy(libraries = libraries.toMutableList(), isLoading = false) }
         }
     }
 
-    fun createLibrary(name: String, image: FileRef?) {
+    fun createLibrary(name: String, imageBytes: ByteArray?) {
         viewModelScope.launch {
-            libraryService.createLibrary(name, image)
+            libraryService.createLibrary(name, imageBytes)
             loadLibraries()
         }
-    }
-
-    fun readImageBytes(library: Library): ByteArray? {
-        return libraryService.imageBytes(library)
     }
 }
 

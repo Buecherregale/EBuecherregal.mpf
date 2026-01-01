@@ -52,6 +52,25 @@ class LibraryService(
     }
 
     /**
+     * Create a library based on the name and saves it to disk.
+     *
+     * @param name the desired name
+     * @param imageBytes the bytes for the cover image
+     * @return the created library
+     */
+    fun createLibrary(name: String, imageBytes: ByteArray?): Library {
+        Logger.i("creating library '$name'")
+        val l: Library
+        if (imageBytes != null) {
+            val imageTarget: FileRef = libDir.resolve("images").resolve(name)
+            fileService.write(imageTarget, imageBytes)
+            l = Library(name, imageTarget)
+        } else l = Library(name)
+        saveLibrary(l)
+        return l
+    }
+
+    /**
      * Save the library as a json file to the [.libDir] dir.
      * The resulting file will have the name: `libraryName.json`.
      *
@@ -100,7 +119,7 @@ class LibraryService(
      * @param library the library
      * @return the bytes of the image file or null if image is not set
      */
-    fun imageBytes(library: Library): ByteArray? {
+    suspend fun imageBytes(library: Library): ByteArray? {
         return library.image?.let { fileService.open(it).readByteArray() }
     }
 }

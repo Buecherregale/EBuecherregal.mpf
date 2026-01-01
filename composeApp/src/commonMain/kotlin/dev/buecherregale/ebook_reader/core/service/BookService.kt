@@ -32,7 +32,7 @@ class BookService(private val fileService: FileService,
      * @param bookFiles the book file(s)
      * @return the book instance with metadata
      */
-    fun importBook(bookFiles: FileRef): Book {
+    suspend fun importBook(bookFiles: FileRef): Book {
         Logger.i("importing book from '$bookFiles'")
         val bookId: Uuid = Uuid.generateV4()
         // todo: only copy when parser exists, no merit elsewise, possibly just delete file when no parser exists (new method for fileService)
@@ -42,8 +42,8 @@ class BookService(private val fileService: FileService,
 
         val bookMetadata: BookMetadata = parser.metadata()
 
-        val coverBytes: ByteArray = parser.coverBytes()
-        saveCover(bookId, coverBytes)
+        val coverBytes: ByteArray? = parser.coverBytes()
+        coverBytes?.let { saveCover(bookId, it) }
 
         // after updating the cover path, save the data to file
         val book = Book(
@@ -64,7 +64,7 @@ class BookService(private val fileService: FileService,
      * @param bookId the id of the book
      * @return the book instance
      */
-    fun readData(bookId: Uuid): Book {
+    suspend fun readData(bookId: Uuid): Book {
         val fileContent: String = fileService.read(getBookDataFile(bookId))
         return jsonUtil.deserialize(fileContent)
     }
@@ -77,7 +77,7 @@ class BookService(private val fileService: FileService,
      * @param bookId the id of the book
      * @return a navigation controller implementation based on the used parser
      */
-    fun open(bookId: Uuid): NavigationController {
+    suspend fun open(bookId: Uuid): NavigationController {
         return parserFactory
             .get(getBookFile(bookId))
             .navigationController()
@@ -133,7 +133,7 @@ class BookService(private val fileService: FileService,
      *
      * @return the updated book
      */
-    fun updateProgress(book: Book, newProgress: Double): Book {
+    suspend fun updateProgress(book: Book, newProgress: Double): Book {
         val v2: Book = Book(book.id,
             newProgress,
             book.bookType,
@@ -152,11 +152,24 @@ class BookService(private val fileService: FileService,
      *
      * @param book the book data to save
      */
-    fun saveBookData(book: Book) {
+    suspend fun saveBookData(book: Book) {
         val metaTarget: FileRef = getBookDataFile(book.id)
         Logger.d("saving book data for ${book.id} to '$metaTarget'")
         val serializedMetadata: String = jsonUtil.serialize(book)
         fileService.write(metaTarget, serializedMetadata)
+    }
+
+    /**
+     * Reads the byte content of the file storing the cover from [.getCoverFile].
+     *
+     * @param bookId the id of the book
+     * @return the bytes of the cover image
+     */
+    suspend fun readCoverBytes(bookId: Uuid): ByteArray? {
+        if (!fileService.exists(getCoverFile(bookId))) {
+            return null
+        }
+        return fileService.readBytes(getCoverFile(bookId))
     }
 
     /**
@@ -167,7 +180,7 @@ class BookService(private val fileService: FileService,
      * @param bookFiles the files to copy
      * @return the target where the book has been copied to
      */
-    private fun copyBook(bookId: Uuid, bookFiles: FileRef): FileRef {
+    private suspend fun copyBook(bookId: Uuid, bookFiles: FileRef): FileRef {
         val bookTarget = getBookFile(bookId)
         fileService.open(bookFiles).use { input ->
             fileService.copy(input, bookTarget)
@@ -185,7 +198,7 @@ class BookService(private val fileService: FileService,
      * @param bookId     the id of the book (used as filename)
      * @param coverBytes the bytes of the cover image to write
      */
-    private fun saveCover(bookId: Uuid, coverBytes: ByteArray) {
+    private suspend fun saveCover(bookId: Uuid, coverBytes: ByteArray) {
         val coverTarget = getCoverFile(bookId)
         fileService.write(coverTarget, coverBytes)
     }

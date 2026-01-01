@@ -32,6 +32,10 @@ class DesktopFileService(appName: String) : FileService {
         return Files.readString(file.toPath())
     }
 
+    override fun readBytes(file: FileRef): ByteArray {
+        return Files.readAllBytes(file.toPath())
+    }
+
     override fun read(
         directory: AppDirectory,
         relativeRef: FileRef

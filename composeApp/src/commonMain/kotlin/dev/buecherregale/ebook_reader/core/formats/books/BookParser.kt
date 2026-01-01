@@ -35,7 +35,7 @@ interface BookParser {
      *
      * @return the image bytes, or null if no cover image is found
      */
-    fun coverBytes(): ByteArray
+    fun coverBytes(): ByteArray?
 
     /**
      * Creates a navigation controller that allows readers to access the data

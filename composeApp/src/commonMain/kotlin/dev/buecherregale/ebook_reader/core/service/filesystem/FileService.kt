@@ -17,6 +17,14 @@ interface FileService {
     fun read(file: FileRef): String
 
     /**
+     * Reads a files' whole content to a byte array.
+     *
+     * @param file the reference
+     * @return the whole file data
+     */
+    fun readBytes(file: FileRef): ByteArray
+
+    /**
      * Reads a files whole content as (UTF-8) String.
      *
      * @param directory   the app directory type to write in
