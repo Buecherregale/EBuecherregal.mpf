@@ -23,16 +23,11 @@ class SettingsManager(
     private var settings: ApplicationSettings? = null
     private var state: ApplicationState? = null
 
-    init {
-
-        loadOrCreate()
-    }
-
     /**
      * Loads the config file at [.configFile]. Will fail if the config file is not present. <br></br>
      * Also builds the initial state via [.buildState].
      */
-    fun load() {
+    suspend fun load() {
         val json = fileService.read(configFile())
         settings = jsonUtil.deserialize(json)
         state = buildState()
@@ -43,7 +38,7 @@ class SettingsManager(
      * Checks if the config file exists. If not creates BUT DOES NOT SAVE a blank config and state.
      */
     @OptIn(ExperimentalUuidApi::class)
-    fun loadOrCreate() {
+    suspend fun loadOrCreate() {
         if (!fileService.exists(configFile())) {
             Logger.i("no existing settings found, creating blank...")
             settings = ApplicationSettings()
@@ -64,7 +59,7 @@ class SettingsManager(
     /**
      * Saves the config as json to the file at [.configFile].
      */
-    fun save() {
+    suspend fun save() {
         Logger.d("saving settings at: ${configFile()}")
         val json: String = jsonUtil.serialize(settings!!)
         fileService.write(configFile(), json)
@@ -76,7 +71,7 @@ class SettingsManager(
      *
      * @return the initial state
      */
-    fun buildState(): ApplicationState {
+    suspend fun buildState(): ApplicationState {
         val state = ApplicationState()
         if (settings!!.activeDictionaryId != null) state.activeDictionary = dictionaryService.open(settings!!.activeDictionaryId!!)
 
@@ -88,7 +83,7 @@ class SettingsManager(
      *
      * @param dictionaryId the name of the new dictionary
      */
-    fun activeDictionaryId(dictionaryId: Uuid) {
+    suspend fun activeDictionaryId(dictionaryId: Uuid) {
         settings?.activeDictionaryId = dictionaryId
         state?.activeDictionary = dictionaryService.open(settings!!.activeDictionaryId!!)
     }

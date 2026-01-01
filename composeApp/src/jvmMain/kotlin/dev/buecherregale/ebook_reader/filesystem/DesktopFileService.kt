@@ -28,15 +28,15 @@ class DesktopFileService(appName: String) : FileService {
     private val stateDir: Path = Path.of(System.getenv("XDG_STATE_HOME"), appName)
     private val dataDir: Path = Path.of(System.getenv("XDG_DATA_HOME"), appName)
 
-    override fun read(file: FileRef): String {
+    override suspend fun read(file: FileRef): String {
         return Files.readString(file.toPath())
     }
 
-    override fun readBytes(file: FileRef): ByteArray {
+    override suspend fun readBytes(file: FileRef): ByteArray {
         return Files.readAllBytes(file.toPath())
     }
 
-    override fun read(
+    override suspend fun read(
         directory: AppDirectory,
         relativeRef: FileRef
     ): String {
@@ -49,18 +49,18 @@ class DesktopFileService(appName: String) : FileService {
             .buffered()
     }
 
-    override fun readZip(file: FileRef): ZipFileRef {
+    override suspend fun readZip(file: FileRef): ZipFileRef {
         return DesktopZipFileRef(java.util.zip.ZipFile(file.toPath().toFile()))
     }
 
-    override fun write(
+    override suspend fun write(
         file: FileRef,
         content: String
     ) {
         write(file, content.toByteArray(StandardCharsets.UTF_8))
     }
 
-    override fun write(
+    override suspend fun write(
         file: FileRef,
         content: ByteArray
     ) {
@@ -74,7 +74,7 @@ class DesktopFileService(appName: String) : FileService {
         )
     }
 
-    override fun copy(
+    override suspend fun copy(
         input: Source,
         target: FileRef
     ) {
@@ -85,11 +85,11 @@ class DesktopFileService(appName: String) : FileService {
         }
     }
 
-    override fun exists(file: FileRef): Boolean {
+    override suspend fun exists(file: FileRef): Boolean {
         return Files.exists(file.toPath())
     }
 
-    override fun getMetadata(file: FileRef): FileMetadata {
+    override suspend fun getMetadata(file: FileRef): FileMetadata {
         val path = file.toPath()
         if (!Files.exists(path)) {
             throw java.io.FileNotFoundException("file $file does not exist")
@@ -126,7 +126,7 @@ class DesktopFileService(appName: String) : FileService {
         return FileRef(dir.toString())
     }
 
-    override fun listChildren(fileRef: FileRef): List<FileRef> {
+    override suspend fun listChildren(fileRef: FileRef): List<FileRef> {
         val path = fileRef.toPath()
         if (!Files.isDirectory(path)) {
             return kotlin.collections.mutableListOf()
@@ -143,10 +143,6 @@ class DesktopFileService(appName: String) : FileService {
         } catch (e: IOException) {
             throw UncheckedIOException(e)
         }
-    }
-
-    override fun deserializeRef(s: String): FileRef {
-        return FileRef(s)
     }
 
     override fun ungzip(bytes: ByteArray): ByteArray {

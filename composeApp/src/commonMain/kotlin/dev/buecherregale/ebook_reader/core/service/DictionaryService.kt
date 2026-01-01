@@ -5,10 +5,8 @@ import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImport
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.domain.DictionaryEntry
 import dev.buecherregale.ebook_reader.core.domain.DictionaryMetadata
-import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
+import dev.buecherregale.ebook_reader.core.repository.DictionaryRepository
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
-import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
-import dev.buecherregale.ebook_reader.core.util.JsonUtil
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -21,13 +19,10 @@ import kotlin.uuid.Uuid
  * Generally this class will write and read dictionaries from [.dictionaryDir], deleting or modifying files therein may result in errors.
  */
 @OptIn(ExperimentalUuidApi::class)
-class DictionaryService constructor(
-    private val fileService: FileService,
-    private val jsonUtil: JsonUtil,
+class DictionaryService(
     private val importerFactory: DictionaryImporterFactory,
+    private val repository: DictionaryRepository,
 ) {
-    private val dictionaryDir: FileRef = fileService.getAppDirectory(AppDirectory.DATA).resolve("dictionaries")
-
     /**
      * Downloads the dictionary, transforming it into the [dev.buecherregale.ebook_reader.core.domain.Dictionary] form and saving it to [.getDictionaryFile].
      * <br></br>
@@ -43,7 +38,8 @@ class DictionaryService constructor(
         val downloaded: Dictionary = importerFactory
             .forName(dictionaryName)
             .download(language)
-        save(downloaded)
+        Logger.i("saving dictionary '${downloaded.name}'")
+        repository.save(downloaded.id, downloaded)
         return downloaded
     }
 
@@ -54,9 +50,8 @@ class DictionaryService constructor(
      * @param dictionaryId the id of the dictionary
      * @return the dictionary
      */
-    fun open(dictionaryId: Uuid): Dictionary {
-        val json = fileService.read(getDictionaryFile(dictionaryId))
-        return jsonUtil.deserialize(json)
+    suspend fun open(dictionaryId: Uuid): Dictionary {
+        return repository.load(dictionaryId)
     }
 
     /**
@@ -68,7 +63,7 @@ class DictionaryService constructor(
      * @param language the target language
      * @return the imported dictionary
      */
-    fun importFromFile(
+    suspend fun importFromFile(
         dictionaryName: String,
         location: FileRef,
         language: String
@@ -77,22 +72,9 @@ class DictionaryService constructor(
         val imported: Dictionary = importerFactory
             .forName(dictionaryName)
             .importFromFile(location, language)
-        save(imported)
+        Logger.i("saving dictionary '${imported.name}'")
+        repository.save(imported.id, imported)
         return imported
-    }
-
-    /**
-     * A file ref to the file containing the dictionary as json. <br></br>
-     * <bold>DOES NOT CHECK IF THE FILE EXISTS!</bold> <br></br>
-     * If no dictionary with the given id has been downloaded, the file won't exist, but this method <bold>WILL</bold> return
-     * the theoretical ref. <br></br>
-     * The file name will be `dictId.json`.
-     *
-     * @param dictionaryId the id of the dictionary
-     * @return file ref to the metadata file
-     */
-    fun getDictionaryFile(dictionaryId: Uuid): FileRef {
-        return dictionaryDir.resolve("$dictionaryId.json")
     }
 
     /**
@@ -114,14 +96,8 @@ class DictionaryService constructor(
      *
      * @return the list of metadata of downloaded dictionaries in the form of fieldName -> fieldValue
      */
-    fun listDownloadedDictionaryMetadata(): List<DictionaryMetadata> {
-        return fileService.listChildren(dictionaryDir)
-            .map { file ->
-                return@map fileService.read(file)
-            }
-            .map { json ->
-                return@map jsonUtil.deserialize<DictionaryMetadata>(json)
-            }.toList()
+    suspend fun listDownloadedDictionaryMetadata(): List<DictionaryMetadata> {
+        return repository.loadMetadata()
     }
 
     /**
@@ -144,11 +120,5 @@ class DictionaryService constructor(
             if (entry != null) results.add(entry)
         }
         return results
-    }
-
-    private fun save(toSave: Dictionary) {
-        val targetFile = getDictionaryFile(toSave.id)
-        Logger.i("saving dictionary '${toSave.name}' to '$targetFile'")
-        fileService.write(targetFile, jsonUtil.serialize(toSave))
     }
 }
