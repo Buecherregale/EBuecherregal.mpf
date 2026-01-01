@@ -7,8 +7,8 @@ import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.util.JsonUtil
 
 interface LibraryRepository: Repository<String, Library> {
-    fun saveImage(key: String, imageBytes: ByteArray)
-    fun readImage(key: String): ByteArray?
+    suspend fun saveImage(key: String, imageBytes: ByteArray)
+    suspend fun readImage(key: String): ByteArray?
 }
 
 
@@ -22,7 +22,7 @@ class JsonLibraryRepository(
     override suspend fun loadAll(): List<Library> {
         return fileService.listChildren(libDir)
             .filter { ref -> !fileService.getMetadata(ref).isDirectory }
-            .map(fileService::read)
+            .map {ref  -> fileService.read(ref) }
             .map(jsonUtil::deserialize)
     }
 
@@ -42,14 +42,14 @@ class JsonLibraryRepository(
         TODO("Not yet implemented")
     }
 
-    override fun saveImage(key: String, imageBytes: ByteArray) {
+    override suspend fun saveImage(key: String, imageBytes: ByteArray) {
         fileService.write(
             file = imageFileRef(key),
             imageBytes
         )
     }
 
-    override fun readImage(key: String): ByteArray? {
+    override suspend fun readImage(key: String): ByteArray? {
         val target = imageFileRef(key)
         if (!fileService.exists(target)) return null
         return fileService.readBytes(target)

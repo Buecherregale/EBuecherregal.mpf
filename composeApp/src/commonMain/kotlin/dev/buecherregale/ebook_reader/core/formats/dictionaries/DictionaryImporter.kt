@@ -14,7 +14,7 @@ interface DictionaryImporter {
      * @param language target language
      * @return the loaded dictionary
      */
-    fun importFromFile(file: FileRef, language: String): Dictionary
+    suspend fun importFromFile(file: FileRef, language: String): Dictionary
 
     /**
      * Downloads the dictionary.

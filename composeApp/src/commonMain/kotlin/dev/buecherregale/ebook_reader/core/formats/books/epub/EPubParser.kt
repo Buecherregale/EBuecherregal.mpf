@@ -34,24 +34,21 @@ import nl.adaptivity.xmlutil.serialization.XmlConfig
  * Resources and content is read upon request from the [SpineManager] implementation.
  *
  */
-class EPubParser(
-    private val fileService: FileService,
-    private val bookFiles: FileRef) : BookParser {
-    private var zip: ZipFileRef? = null
-    private var container: Container? = null
-    private var content: Package? = null
-    private var manifestMap: Map<String, EPubResource>? = null
+class EPubParser private constructor(
+    private val zip: ZipFileRef,
+    private val content: Package,
+    private val manifestMap: Map<String, EPubResource>
+) : BookParser {
 
-    override fun parsableType(): BookType {
-        return BookType.EPUB
-    }
+    override fun parsableType(): BookType = BookType.EPUB
 
-    override suspend fun metadata(): BookMetadata {
-        if (content == null) {
-            content = parseRootfile()
-        }
-        val metadata = content!!.metadata
-        val isbn: String = metadata.identifiers.find { identifier -> identifier.scheme == EPubConstants.PREFERRED_IDENTIFIER_SCHEME }?.value ?: ""
+    override suspend  fun metadata(): BookMetadata {
+        val metadata = content.metadata
+        val isbn = metadata.identifiers
+            .find { it.scheme == EPubConstants.PREFERRED_IDENTIFIER_SCHEME }
+            ?.value
+            ?: ""
+
         return BookMetadata(
             title = metadata.title,
             author = metadata.creator.first().name,
@@ -60,68 +57,36 @@ class EPubParser(
         )
     }
 
-    /**
-     * Currently fails if no cover with element id [EPubConstants.COVER_XML_ID] is provided.
-     * Can this happen?
-     */
     override suspend fun coverBytes(): ByteArray {
-        if (manifestMap == null) {
-            if (content == null) {
-                content = parseRootfile()
-            }
-            manifestMap = content!!.manifest.toMap()
-        }
-        val coverEntryPath = manifestMap!![EPubConstants.COVER_XML_ID]?.href
+        val coverEntryPath = manifestMap[EPubConstants.COVER_XML_ID]?.href
             ?: throw EPubParseException("no cover file with xml id '${EPubConstants.COVER_XML_ID}'")
-        val coverEntry = zip!!.getEntry(coverEntryPath) ?: throw EPubParseException("could not read cover file at path '$coverEntryPath'")
-        return coverEntry.open().use { source -> source.readByteArray() }
+
+        val coverEntry = zip.getEntry(coverEntryPath)
+            ?: throw EPubParseException("could not read cover file at path '$coverEntryPath'")
+
+        return coverEntry.open().use { it.readByteArray() }
     }
 
-    override suspend fun navigationController(): NavigationController {
-        if (manifestMap == null) {
-            if (content == null) {
-                content = parseRootfile()
-            }
-            manifestMap = content!!.manifest.toMap()
-        }
-        return SpineManager(zip!!, manifestMap!!, content!!.spine)
-    }
-
-    /**
-     * Parses the xml at [EPubConstants.CONTAINER_XML] to the struct.
-     * The file has to be present to be considered a valid epub.
-     */
-    private suspend fun parseContainerXml(): Container {
-        if (zip == null) {
-            zip = fileService.readZip(bookFiles)
-        }
-        val xmlEntry = zip!!.getEntry(EPubConstants.CONTAINER_XML) ?: throw EPubSyntaxException(
-            EPubConstants.CONTAINER_XML + " is missing")
-        val xmlString = xmlEntry.open().use { source ->
-            source.readByteArray().decodeToString()
-        }
-        val c = xmlParser.decodeFromString<Container>(xmlString)
-        if (c.rootfiles.rootfile.isEmpty())
-            throw EPubSyntaxException("no rootfiles in container.xml")
-        return c
-    }
-
-    /**
-     * Parse the rootfile to a package dto. This normally is the `content.opf`-file.
-     */
-
-    private suspend fun parseRootfile(): Package {
-        if (container == null) {
-            parseContainerXml()
-        }
-        val rootfile = container!!.rootfiles.rootfile[0]
-        val xmlEntry = zip!!.getEntry(rootfile.fullPath) ?: throw EPubParseException(
-            "rootfile $rootfile not found")
-        val xmlString = xmlEntry.open().use { source -> source.readByteArray().decodeToString() }
-        return xmlParser.decodeFromString(xmlString)
-    }
+    override suspend fun navigationController(): NavigationController =
+        SpineManager(zip, manifestMap, content.spine)
 
     companion object {
+
+        /**
+         * Suspending factory replacing the old constructor logic
+         */
+        suspend fun create(
+            fileService: FileService,
+            bookFiles: FileRef
+        ): EPubParser {
+            val zip = fileService.readZip(bookFiles)
+            val container = parseContainerXml(zip)
+            val content = parseRootfile(zip, container.rootfiles.rootfile[0])
+            val manifestMap = content.manifest.toMap()
+
+            return EPubParser(zip, content, manifestMap)
+        }
+
         /**
          * Checks if the given file is an epub file.
          *
@@ -134,11 +99,47 @@ class EPubParser(
          * @param fileService the file service to open the zip with
          * @param bookFiles the reference to the candidate
          */
-        suspend fun isEPub(fileService: FileService, bookFiles: FileRef): Boolean {
+        suspend fun isEPub(
+            fileService: FileService,
+            bookFiles: FileRef
+        ): Boolean {
             fileService.readZip(bookFiles).use { zip ->
                 val mimetypeEntry = zip.getEntry(EPubConstants.MIMETYPE) ?: return false
-                return mimetypeEntry.open().readByteArray().decodeToString() == EPubConstants.CONTENT_TYPE
+                return mimetypeEntry
+                    .open()
+                    .use { it.readByteArray().decodeToString() } == EPubConstants.CONTENT_TYPE
             }
+        }
+
+        private suspend fun parseContainerXml(zip: ZipFileRef): Container {
+            val xmlEntry = zip.getEntry(EPubConstants.CONTAINER_XML)
+                ?: throw EPubSyntaxException("${EPubConstants.CONTAINER_XML} is missing")
+
+            val xmlString = xmlEntry.open().use {
+                it.readByteArray().decodeToString()
+            }
+
+            val container = xmlParser.decodeFromString<Container>(xmlString)
+
+            if (container.rootfiles.rootfile.isEmpty()) {
+                throw EPubSyntaxException("no rootfiles in container.xml")
+            }
+
+            return container
+        }
+
+        private suspend fun parseRootfile(
+            zip: ZipFileRef,
+            rootfile: RootFile
+        ): Package {
+            val xmlEntry = zip.getEntry(rootfile.fullPath)
+                ?: throw EPubParseException("rootfile $rootfile not found")
+
+            val xmlString = xmlEntry.open().use {
+                it.readByteArray().decodeToString()
+            }
+
+            return xmlParser.decodeFromString(xmlString)
         }
 
         @OptIn(ExperimentalXmlUtilApi::class)
@@ -148,16 +149,9 @@ class EPubParser(
             }
         }
 
-        private fun Manifest.toMap(): Map<String, EPubResource> {
-            val map = HashMap<String, EPubResource>()
-            for (i in items) {
-                map[i.id] = EPubResource(
-                    i.id,
-                    i.href,
-                    i.mediaType
-                )
+        private fun Manifest.toMap(): Map<String, EPubResource> =
+            items.associate {
+                it.id to EPubResource(it.id, it.href, it.mediaType)
             }
-            return map
-        }
     }
 }
