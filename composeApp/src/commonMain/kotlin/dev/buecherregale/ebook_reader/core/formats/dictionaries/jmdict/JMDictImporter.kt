@@ -22,11 +22,11 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 class JMDictImporter(private val fileService: FileService) : DictionaryImporter {
 
-    override fun importFromFile(file: FileRef, language: String): Dictionary {
+    override suspend fun importFromFile(file: FileRef, language: String): Dictionary {
         val entries = parse(fileService.read(file), language)
 
         return Dictionary(
-            id = Uuid.Companion.generateV4(),
+            id = Uuid.generateV4(),
             name = this.dictionaryName,
             language = language,
             entries = entries,
@@ -47,7 +47,7 @@ class JMDictImporter(private val fileService: FileService) : DictionaryImporter 
         data = fileService.ungzip(data)
         val entries = parse(data.decodeToString(), language)
         return Dictionary(
-            id = Uuid.Companion.generateV4(),
+            id = Uuid.generateV4(),
             name = this.dictionaryName,
             language = language,
             entries = entries,
@@ -104,7 +104,7 @@ class JMDictImporter(private val fileService: FileService) : DictionaryImporter 
         @OptIn(ExperimentalXmlUtilApi::class)
         private val xmlParser = XML1_0.recommended {
             policy = DefaultXmlSerializationPolicy {
-                unknownChildHandler = XmlConfig.Companion.IGNORING_UNKNOWN_CHILD_HANDLER
+                unknownChildHandler = XmlConfig.IGNORING_UNKNOWN_CHILD_HANDLER
                 isStrictBoolean = false
                 isStrictAttributeNames = false
                 isStrictOtherAttributes = false

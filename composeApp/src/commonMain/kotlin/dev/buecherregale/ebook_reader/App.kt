@@ -36,5 +36,5 @@ fun App() {
 
 fun registerImplsInFactory(fileService: FileService) {
     DictionaryImporterFactory.register("JmDict", ::JMDictImporter)
-    BookParserFactory.register({ EPubParser.isEPub(fileService, it) }, ::EPubParser)
+    BookParserFactory.register({ EPubParser.isEPub(fileService, it) }, EPubParser::create)
 }

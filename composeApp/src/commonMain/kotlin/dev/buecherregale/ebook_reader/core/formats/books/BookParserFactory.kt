@@ -24,7 +24,7 @@ class BookParserFactory(
          * @param bookFiles the book file(s)
          * @return if the parser can parse the files
          */
-        fun canParse(bookFiles: FileRef): Boolean
+        suspend fun canParse(bookFiles: FileRef): Boolean
     }
 
     /**
@@ -40,7 +40,7 @@ class BookParserFactory(
          * @param bookFiles the book file(s)
          * @return a new parser instance
          */
-        fun create(fileService: FileService, bookFiles: FileRef): BookParser
+        suspend fun create(fileService: FileService, bookFiles: FileRef): BookParser
     }
 
     private data class RegisteredParser(val creator: ParserConstructor, val checker: ParseChecker)
@@ -53,7 +53,7 @@ class BookParserFactory(
      * @param bookFiles the book file(s)
      * @return a BookParser instance
      */
-    fun get(bookFiles: FileRef): BookParser {
+    suspend fun get(bookFiles: FileRef): BookParser {
         for (impl in impls) if (impl.checker.canParse(
                 bookFiles
             )

@@ -28,14 +28,14 @@ interface BookParser {
      *
      * @return the metadata specified in the book files
      */
-    fun metadata(): BookMetadata
+    suspend fun metadata(): BookMetadata
 
     /**
      * gets all the bytes for the cover image, weather its taken from an image file or extracted from a larger file.
      *
      * @return the image bytes, or null if no cover image is found
      */
-    fun coverBytes(): ByteArray?
+    suspend fun coverBytes(): ByteArray?
 
     /**
      * Creates a navigation controller that allows readers to access the data
@@ -44,7 +44,7 @@ interface BookParser {
      *
      * @return the NavigationController implementation
      */
-    fun navigationController(): NavigationController
+    suspend fun navigationController(): NavigationController
 
     /**
      * Returns the type of book this parser can parse.

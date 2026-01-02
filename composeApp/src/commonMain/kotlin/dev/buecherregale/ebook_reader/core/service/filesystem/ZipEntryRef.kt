@@ -12,5 +12,5 @@ interface ZipEntryRef {
      *
      * @return an open input stream
      */
-    fun open(): Source
+    suspend fun open(): Source
 }

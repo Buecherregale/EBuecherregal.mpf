@@ -14,7 +14,7 @@ interface FileService {
      * @param file the reference
      * @return the data
      */
-    fun read(file: FileRef): String
+    suspend fun read(file: FileRef): String
 
     /**
      * Reads a files' whole content to a byte array.
@@ -22,7 +22,7 @@ interface FileService {
      * @param file the reference
      * @return the whole file data
      */
-    fun readBytes(file: FileRef): ByteArray
+    suspend fun readBytes(file: FileRef): ByteArray
 
     /**
      * Reads a files whole content as (UTF-8) String.
@@ -31,7 +31,7 @@ interface FileService {
      * @param relativeRef the ref to a file in this directory
      * @return the data
      */
-    fun read(directory: AppDirectory, relativeRef: FileRef): String
+    suspend fun read(directory: AppDirectory, relativeRef: FileRef): String
 
     /**
      * Opens an input stream to the file denoted by the ref.
@@ -47,7 +47,7 @@ interface FileService {
      * @param file the ref
      * @return the file interpreted as zip
      */
-    fun readZip(file: FileRef): ZipFileRef
+    suspend fun readZip(file: FileRef): ZipFileRef
 
     /**
      * Writes the content as UTF-8 to the file, creating it if necessary.
@@ -55,7 +55,7 @@ interface FileService {
      * @param file the ref
      * @param content the content to write
      */
-    fun write(file: FileRef, content: String)
+    suspend fun write(file: FileRef, content: String)
 
     /**
      * Writes the content bytes to the file, creating it if necessary.
@@ -63,7 +63,7 @@ interface FileService {
      * @param file the ref
      * @param content the content
      */
-    fun write(file: FileRef, content: ByteArray)
+    suspend fun write(file: FileRef, content: ByteArray)
 
     /**
      * Copies the values read from the input stream to the file, creating/overwriting it.
@@ -71,7 +71,7 @@ interface FileService {
      * @param input the input stream
      * @param target the target file reference
      */
-    fun copy(input: Source, target: FileRef)
+    suspend fun copy(input: Source, target: FileRef)
 
     /**
      * Checks if the given file exists.
@@ -79,7 +79,7 @@ interface FileService {
      * @param file the target file to check
      * @return if it exists
      */
-    fun exists(file: FileRef): Boolean
+    suspend fun exists(file: FileRef): Boolean
 
     /**
      * Obtains metadata from a file.
@@ -87,7 +87,7 @@ interface FileService {
      * @param file the ref
      * @return the metadata
      */
-    fun getMetadata(file: FileRef): FileMetadata
+    suspend fun getMetadata(file: FileRef): FileMetadata
 
     /**
      * Gets the actual reference to the directory type. <br></br>
@@ -104,26 +104,7 @@ interface FileService {
      * @param fileRef the ref
      * @return empty if none exist (or fileRef is a file)
      */
-    fun listChildren(fileRef: FileRef): List<FileRef>
-
-    /**
-     * Deserialize a reference from a string, creating the instance.
-     *
-     * @param s a string
-     * @return the reference instance
-     */
-    fun deserializeRef(s: String): FileRef
-
-    /**
-     * Serialize a reference to a string.
-     *
-     * @param fileRef the reference
-     * @return the serialization
-     * @implNote default refers to [FileRef.path]
-     */
-    fun serializeRef(fileRef: FileRef): String {
-        return fileRef.path
-    }
+    suspend fun listChildren(fileRef: FileRef): List<FileRef>
 
     /**
      * Removes gz compression on the given byte array.
