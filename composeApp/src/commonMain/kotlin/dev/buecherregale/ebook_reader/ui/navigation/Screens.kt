@@ -1,10 +1,9 @@
 package dev.buecherregale.ebook_reader.ui.navigation
 
 import androidx.navigation3.runtime.NavKey
+import dev.buecherregale.ebook_reader.core.domain.Book
 import dev.buecherregale.ebook_reader.core.domain.Library
 import kotlinx.serialization.Serializable
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 @Serializable
 sealed interface Screen : NavKey {
@@ -14,8 +13,7 @@ sealed interface Screen : NavKey {
     data class LibraryDetail(val library: Library) : Screen
 
     @Serializable
-    @OptIn(ExperimentalUuidApi::class)
-    data class Reader(val bookId: Uuid) : Screen
+    data class Reader(val book: Book) : Screen
     @Serializable
     data object Settings : Screen
 }

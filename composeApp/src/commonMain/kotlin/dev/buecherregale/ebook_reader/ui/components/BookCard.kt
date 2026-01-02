@@ -23,9 +23,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.buecherregale.ebook_reader.core.domain.Book
 import dev.buecherregale.ebook_reader.core.service.BookService
+import dev.buecherregale.ebook_reader.ui.navigation.Navigator
+import dev.buecherregale.ebook_reader.ui.navigation.Screen
 import ebook_reader.composeapp.generated.resources.Res
 import ebook_reader.composeapp.generated.resources.broken_image_48px
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.koinInject
 import kotlin.uuid.ExperimentalUuidApi
 
 @Composable
@@ -35,12 +38,13 @@ fun BookCard(bookService: BookService, book: Book) {
         key = book.id,
         bitmapLoader = bookService::readCoverBytes
     )
+    val navigator = koinInject<Navigator>()
     Card(
         modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth(),
         elevation = CardDefaults.cardElevation(2.dp),
-        onClick = {},
+        onClick = { navigator.push(Screen.Reader(book))},
     ) {
         Column {
             Box(

@@ -3,8 +3,10 @@ package dev.buecherregale.ebook_reader.ui.navigation
 import androidx.compose.runtime.mutableStateListOf
 import dev.buecherregale.ebook_reader.ui.screens.LibraryDetailScreen
 import dev.buecherregale.ebook_reader.ui.screens.LibraryScreen
+import dev.buecherregale.ebook_reader.ui.screens.ReaderScreen
 import dev.buecherregale.ebook_reader.ui.viewmodel.LibraryDetailViewModel
 import dev.buecherregale.ebook_reader.ui.viewmodel.LibraryViewModel
+import dev.buecherregale.ebook_reader.ui.viewmodel.ReaderViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.module.dsl.viewModel
@@ -37,6 +39,7 @@ val navigationModule = module {
 
     viewModelOf(::LibraryViewModel)
     viewModel { params -> LibraryDetailViewModel(library = params.get(), get(), get()) }
+    viewModel { params -> ReaderViewModel(book = params.get(), get()) }
 
     navigation<Screen.LibraryOverview> { _ ->
         LibraryScreen(viewModel = koinViewModel())
@@ -49,6 +52,18 @@ val navigationModule = module {
             ) {
                 parametersOf(route.library)
             }
+        )
+    }
+    navigation<Screen.Reader> { route ->
+        ReaderScreen(
+            viewModel = koinViewModel(
+                key = route.book.id.toString()
+            ) {
+                parametersOf(route.book)
+            },
+            onPageChange = { },
+            onToggleMenu = { },
+            content = { _ -> }
         )
     }
 }
