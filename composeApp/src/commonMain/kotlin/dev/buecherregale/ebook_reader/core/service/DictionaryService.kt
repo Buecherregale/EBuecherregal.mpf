@@ -51,7 +51,7 @@ class DictionaryService(
      * @return the dictionary
      */
     suspend fun open(dictionaryId: Uuid): Dictionary {
-        return repository.load(dictionaryId)
+        return repository.load(dictionaryId) ?: throw IllegalArgumentException("dictionary $dictionaryId does not exist")
     }
 
     /**

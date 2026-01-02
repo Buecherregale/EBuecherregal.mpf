@@ -1,10 +1,13 @@
 package dev.buecherregale.ebook_reader
 
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import dev.buecherregale.ebook_reader.core.domain.BookType
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.filesystem.DesktopFileService
 import dev.buecherregale.ebook_reader.ui.pickFile
+import dev.buecherregale.sql.Buecherregal
 import org.koin.core.module.Module
 import org.koin.dsl.binds
 import org.koin.dsl.module
@@ -45,4 +48,10 @@ actual suspend fun pickBook(): PickedFile? = pickFile(
 ) { file: File? ->
     if (file == null) return@pickFile null
     PickedFile(file.path)
+}
+
+actual fun createSqlDriver(): SqlDriver {
+    val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+    Buecherregal.Schema.create(driver)
+    return driver
 }

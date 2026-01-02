@@ -77,7 +77,7 @@ class LibraryService(
      * @return the deserialized library instance.
      */
     suspend fun loadLibrary(name: String): Library {
-        return repository.load(name)
+        return repository.load(name) ?: throw IllegalArgumentException("library $name does not exist")
     }
 
     /**

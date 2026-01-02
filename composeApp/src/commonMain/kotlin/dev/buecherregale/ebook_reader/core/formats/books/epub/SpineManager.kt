@@ -34,7 +34,7 @@ class SpineManager(private val zipFile: ZipFileRef,
         return if (currentIndex < 0) 0.0 else (currentIndex.toDouble()) / spine.itemRefs.size
     }
 
-    fun openResource(href: String): Source {
+    suspend fun openResource(href: String): Source {
         val entry = zipFile.getEntry(href) ?: throw EPubSyntaxException("resource $href not present")
         return entry.open()
     }

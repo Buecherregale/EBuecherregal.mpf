@@ -68,7 +68,7 @@ class BookService(
      * @return the book instance
      */
     suspend fun readData(bookId: Uuid): Book {
-        return repository.load(bookId)
+        return repository.load(bookId) ?: throw IllegalArgumentException("book $bookId does not exist")
     }
 
     /**
