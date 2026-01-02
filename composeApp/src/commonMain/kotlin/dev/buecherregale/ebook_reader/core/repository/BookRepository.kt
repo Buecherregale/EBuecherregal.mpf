@@ -24,7 +24,7 @@ class JsonBookRepository(
         TODO("Not yet implemented")
     }
 
-    override suspend fun load(key: Uuid): Book {
+    override suspend fun load(key: Uuid): Book? {
         val fileContent: String = fileService.read(metaTarget(key))
         return jsonUtil.deserialize(fileContent)
     }

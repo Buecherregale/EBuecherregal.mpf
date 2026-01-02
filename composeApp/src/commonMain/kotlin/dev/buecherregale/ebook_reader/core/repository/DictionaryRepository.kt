@@ -35,7 +35,7 @@ class DictionaryRepository(
             }.toList()
     }
 
-    override suspend fun load(key: Uuid): Dictionary {
+    override suspend fun load(key: Uuid): Dictionary? {
         val json = fileService.read(dictionaryFile(key))
         return jsonUtil.deserialize(json)
     }

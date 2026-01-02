@@ -26,7 +26,7 @@ class JsonLibraryRepository(
             .map(jsonUtil::deserialize)
     }
 
-    override suspend fun load(key: String): Library {
+    override suspend fun load(key: String): Library? {
         val content: String = fileService.read(fileRef(key))
         return jsonUtil.deserialize(content)
     }
