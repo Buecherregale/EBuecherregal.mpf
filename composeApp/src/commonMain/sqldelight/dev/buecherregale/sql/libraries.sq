@@ -36,3 +36,14 @@ DELETE FROM library_books WHERE library_id = ?;
 insertLibraryBook:
 INSERT OR IGNORE INTO library_books(library_id, book_id)
 VALUES (?, ?);
+
+selectLibrariesWithBooks:
+SELECT
+  l.id AS library_id,
+  l.name AS library_name,
+  lb.book_id AS book_id
+FROM libraries l
+LEFT JOIN library_books lb
+  ON l.id = lb.library_id
+ORDER BY l.name;
+

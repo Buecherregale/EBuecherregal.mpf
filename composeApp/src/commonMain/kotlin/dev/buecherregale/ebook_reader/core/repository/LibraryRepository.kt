@@ -19,12 +19,22 @@ class LibrarySqlRepository(
     private val queries: LibrariesQueries
 ) : LibraryRepository {
 
-    override suspend fun loadAll(): List<Library> =
-        queries.selectAllLibraries()
-            .executeAsList()
-            .map { row ->
-                row.toLibrary(loadBookIds(row.id))
+    override suspend fun loadAll(): List<Library> {
+        val rows = queries.selectLibrariesWithBooks().executeAsList()
+
+        return rows
+            .groupBy { it.library_id }
+            .map { (libraryId, rowsForLibrary) ->
+                Library(
+                    id = Uuid.parse(libraryId),
+                    name = rowsForLibrary.first().library_name,
+                    bookIds = rowsForLibrary
+                        .mapNotNull { it.book_id }
+                        .map(Uuid::parse)
+                )
             }
+    }
+
 
     override suspend fun load(key: Uuid): Library? =
         queries.selectLibraryById(key.toString())
