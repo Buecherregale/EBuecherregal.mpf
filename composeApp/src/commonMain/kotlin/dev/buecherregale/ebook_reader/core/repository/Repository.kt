@@ -32,7 +32,7 @@ interface Repository<Key, T> {
     suspend fun delete(key: Key)
 }
 
-internal class FileRepository<Key>(
+class FileRepository<Key>(
     private val keyToFilename: (Key) -> String,
     private val storeInDir: FileRef,
     private val fileService: FileService,
