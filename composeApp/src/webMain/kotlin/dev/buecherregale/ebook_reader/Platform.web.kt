@@ -15,6 +15,6 @@ actual suspend fun pickBook(): PickedFile? {
     TODO("Not yet implemented")
 }
 
-actual fun createSqlDriver(): SqlDriver {
+actual fun createSqlDriver(dbName: String, create: Boolean): SqlDriver {
     TODO("Not yet implemented")
 }

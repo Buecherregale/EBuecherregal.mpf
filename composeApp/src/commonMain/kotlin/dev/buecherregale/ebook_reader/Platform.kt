@@ -13,7 +13,7 @@ expect fun platformModule(): Module
 expect suspend fun pickBook(): PickedFile?
 expect suspend fun pickImage(): PickedImage?
 
-expect fun createSqlDriver(): SqlDriver
+expect fun createSqlDriver(dbName: String, create: Boolean = false): SqlDriver
 
 
 data class PickedFile(

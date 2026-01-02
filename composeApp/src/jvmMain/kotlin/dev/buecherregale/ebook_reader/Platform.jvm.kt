@@ -50,8 +50,8 @@ actual suspend fun pickBook(): PickedFile? = pickFile(
     PickedFile(file.path)
 }
 
-actual fun createSqlDriver(): SqlDriver {
-    val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
-    Buecherregal.Schema.create(driver)
-    return driver
+actual fun createSqlDriver(dbName: String, create: Boolean): SqlDriver {
+    return JdbcSqliteDriver("jdbc:sqlite:$dbName.db").also {
+        if (create) Buecherregal.Schema.create(it)
+    }
 }
