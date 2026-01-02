@@ -2,6 +2,8 @@ package dev.buecherregale.ebook_reader.core.service
 
 import co.touchlab.kermit.Logger
 import dev.buecherregale.ebook_reader.core.domain.Library
+import dev.buecherregale.ebook_reader.core.repository.FileRepository
+import dev.buecherregale.ebook_reader.core.repository.LibraryImageRepository
 import dev.buecherregale.ebook_reader.core.repository.LibraryRepository
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
@@ -15,7 +17,8 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 class LibraryService(
     private val fileService: FileService,
-    private val repository: LibraryRepository) {
+    private val repository: LibraryRepository,
+    private val imageRepository: LibraryImageRepository) {
     private val libDir: FileRef = fileService.getAppDirectory(AppDirectory.STATE).resolve("libraries")
 
     /**
@@ -23,12 +26,11 @@ class LibraryService(
      * Will also save and <bold>WRITE</bold> the library to disk. <br></br>
      * Use this instead of manipulating the [Library.bookIds] directly.
      *
-     * @param library the library
+     * @param libraryId the id of the library
      * @param bookId the book to add
      */
-    suspend fun addBook(library: Library, bookId: Uuid) {
-        library.bookIds.add(bookId)
-        repository.save(library.name, library)
+    suspend fun addBook(libraryId: Uuid, bookId: Uuid) {
+        repository.addBook(libraryId, bookId)
     }
 
     /**
@@ -40,14 +42,12 @@ class LibraryService(
      */
     suspend fun createLibrary(name: String, image: FileRef?): Library {
         Logger.i("creating library '$name'")
-        val l: Library
+        val l = Library(Uuid.random(), name)
         if (image != null) {
             val bytes = fileService.readBytes(image)
-            val imageTarget: FileRef = libDir.resolve("images").resolve(name)
-            repository.saveImage(name, bytes)
-            l = Library(name, imageTarget)
-        } else l = Library(name)
-        repository.save(l.name, l)
+            imageRepository.save(l.id, bytes)
+        }
+        repository.save(l.id, l)
         return l
     }
 
@@ -60,24 +60,32 @@ class LibraryService(
      */
     suspend fun createLibrary(name: String, imageBytes: ByteArray?): Library {
         Logger.i("creating library '$name'")
-        val l: Library
+        val l = Library(Uuid.random(), name)
         if (imageBytes != null) {
-            val imageTarget: FileRef = libDir.resolve("images").resolve(name)
-            repository.saveImage(name, imageBytes)
-            l = Library(name, imageTarget)
-        } else l = Library(name)
-        repository.save(l.name, l)
+            imageRepository.save(l.id, imageBytes)
+        }
+        repository.save(l.id, l)
         return l
     }
 
     /**
-     * Loads a library from the json file by its name.
+     * Loads a library from the repository by its name.
      *
      * @param name the name of the library
      * @return the deserialized library instance.
      */
     suspend fun loadLibrary(name: String): Library {
-        return repository.load(name)
+        return repository.loadByName(name) ?: throw IllegalArgumentException("library $name does not exist")
+    }
+
+    /**
+     * Loads a library from the repository by its name.
+     *
+     * @param id the id of the library
+     * @return the deserialized library instance.
+     */
+    suspend fun loadLibrary(id: Uuid): Library {
+        return repository.load(id) ?: throw IllegalArgumentException("library $id does not exist")
     }
 
     /**
@@ -102,6 +110,6 @@ class LibraryService(
      * @return the bytes of the image file or null if image is not set
      */
     suspend fun imageBytes(library: Library): ByteArray? {
-        return library.image?.let { repository.readImage(library.name) }
+        return imageRepository.load(library.id)
     }
 }

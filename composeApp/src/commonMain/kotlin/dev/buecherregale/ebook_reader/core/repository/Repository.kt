@@ -1,5 +1,9 @@
 package dev.buecherregale.ebook_reader.core.repository
 
+import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
+import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
+import dev.buecherregale.ebook_reader.core.util.JsonUtil
+
 /**
  * A generic repository aimed at persisting data.
  *
@@ -20,10 +24,42 @@ interface Repository<Key, T> {
     /**
      * Saves data at the given key.
      */
-    suspend fun save(key: Key, value: T)
+    suspend fun save(key: Key, value: T): T
 
     /**
      * Deletes data with the given key.
      */
     suspend fun delete(key: Key)
+}
+
+class FileRepository<Key>(
+    private val keyToFilename: (Key) -> String,
+    private val storeInDir: FileRef,
+    private val fileService: FileService,
+) : Repository<Key, ByteArray> {
+
+    override suspend fun loadAll(): List<ByteArray> {
+        return fileService.listChildren(storeInDir)
+            .map { fileService.readBytes(it) }
+    }
+
+    override suspend fun load(key: Key): ByteArray? {
+        val file = storeInDir.resolve(keyToFilename(key))
+        if (!fileService.exists(file)) return null
+
+        return fileService.readBytes(file)
+    }
+
+    override suspend fun save(key: Key, value: ByteArray): ByteArray {
+        val file = storeInDir.resolve(keyToFilename(key))
+
+        fileService.write(file, value)
+        return load(key)!! // should def exist now
+    }
+
+    override suspend fun delete(key: Key) {
+        TODO("cant delete files yet")
+    }
+
+    fun getFile(key: Key): FileRef = storeInDir.resolve(keyToFilename(key))
 }

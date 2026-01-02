@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.sqldelight)
 }
 
 kotlin {
@@ -46,6 +47,7 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.sql.driver.android)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -74,6 +76,9 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.compose.navigation)
+
+            implementation(libs.sql.runtime)
+            implementation(libs.sql.coroutines)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -83,9 +88,11 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.apache)
             implementation(libs.logging.backend.jvm)
+            implementation(libs.sql.driver.jvm)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            implementation(libs.sql.driver.native)
         }
     }
 }
@@ -132,3 +139,13 @@ compose.desktop {
         }
     }
 }
+
+sqldelight {
+    databases {
+        create("Buecherregal") {
+            packageName.set("dev.buecherregale.sql")
+            dialect(libs.sql.dialect)
+        }
+    }
+}
+

@@ -1,0 +1,55 @@
+CREATE TABLE books (
+  id TEXT NOT NULL PRIMARY KEY,
+
+  -- reading state
+  progress REAL NOT NULL,
+
+  -- type info
+  book_type TEXT NOT NULL,
+
+  -- metadata (flattened)
+  title TEXT NOT NULL,
+  author TEXT NOT NULL,
+  isbn TEXT NOT NULL,
+  language TEXT NOT NULL
+);
+
+CREATE INDEX books_author_idx ON books(author);
+CREATE INDEX books_title_idx ON books(title);
+CREATE INDEX books_language_idx ON books(language);
+
+selectAll:
+SELECT * FROM books;
+
+selectById:
+SELECT * FROM books WHERE id = ?;
+
+upsert:
+INSERT INTO books(
+  id,
+  progress,
+  book_type,
+  title,
+  author,
+  isbn,
+  language
+)
+VALUES (?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(id)
+ DO UPDATE SET
+    progress = excluded.progress,
+    book_type = excluded.book_type,
+    title = excluded.title,
+    author = excluded.author,
+    isbn = excluded.isbn,
+    language = excluded.language;
+
+deleteById:
+DELETE FROM books WHERE id = ?;
+
+selectByAuthor:
+SELECT * FROM books WHERE author = ?;
+
+searchByTitle:
+SELECT * FROM books
+WHERE title LIKE '%' || ? || '%';

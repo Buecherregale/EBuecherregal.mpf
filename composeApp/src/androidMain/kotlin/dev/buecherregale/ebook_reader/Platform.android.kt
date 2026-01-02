@@ -1,6 +1,7 @@
 package dev.buecherregale.ebook_reader
 
 import android.os.Build
+import app.cash.sqldelight.db.SqlDriver
 import org.koin.core.module.Module
 
 class AndroidPlatform : Platform {
@@ -16,6 +17,10 @@ actual suspend fun pickImage(): PickedImage? {
     TODO("Not yet implemented")
 }
 
-actual suspend fun pickBook(): String {
+actual suspend fun pickBook(): PickedFile? {
+    TODO("Not yet implemented")
+}
+
+actual fun createSqlDriver(dbName: String, create: Boolean): SqlDriver {
     TODO("Not yet implemented")
 }

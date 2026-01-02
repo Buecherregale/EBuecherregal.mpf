@@ -1,0 +1,51 @@
+CREATE TABLE libraries (
+  id TEXT NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
+CREATE TABLE library_books (
+  library_id TEXT NOT NULL,
+  book_id TEXT NOT NULL,
+  PRIMARY KEY (library_id, book_id)
+);
+
+CREATE INDEX libraries_name_idx ON libraries(name);
+
+selectAllLibraries:
+SELECT * FROM libraries;
+
+selectLibraryById:
+SELECT * FROM libraries WHERE id = ?;
+
+selectLibraryByName:
+SELECT * FROM libraries WHERE name = ?;
+
+selectBookIdsForLibrary:
+SELECT book_id FROM library_books WHERE library_id = ?;
+
+insertLibrary:
+INSERT INTO libraries(id, name) VALUES (?, ?);
+
+updateLibraryName:
+UPDATE libraries SET name = ? WHERE id = ?;
+
+deleteLibrary:
+DELETE FROM libraries WHERE id = ?;
+
+deleteLibraryBooks:
+DELETE FROM library_books WHERE library_id = ?;
+
+insertLibraryBook:
+INSERT OR IGNORE INTO library_books(library_id, book_id)
+VALUES (?, ?);
+
+selectLibrariesWithBooks:
+SELECT
+  l.id AS library_id,
+  l.name AS library_name,
+  lb.book_id AS book_id
+FROM libraries l
+LEFT JOIN library_books lb
+  ON l.id = lb.library_id
+ORDER BY l.name;
+

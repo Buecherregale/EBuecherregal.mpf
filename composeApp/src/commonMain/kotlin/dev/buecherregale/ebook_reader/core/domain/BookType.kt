@@ -12,6 +12,4 @@ enum class BookType(
     PDF("pdf"),
     EPUB("epub"),
     TXT("txt");
-
-
 }

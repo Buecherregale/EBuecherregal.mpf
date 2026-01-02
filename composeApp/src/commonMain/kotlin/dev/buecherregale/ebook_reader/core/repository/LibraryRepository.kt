@@ -1,60 +1,99 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dev.buecherregale.ebook_reader.core.repository
 
 import dev.buecherregale.ebook_reader.core.domain.Library
-import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
-import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
-import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
-import dev.buecherregale.ebook_reader.core.util.JsonUtil
+import dev.buecherregale.sql.Libraries
+import dev.buecherregale.sql.LibrariesQueries
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
-interface LibraryRepository: Repository<String, Library> {
-    suspend fun saveImage(key: String, imageBytes: ByteArray)
-    suspend fun readImage(key: String): ByteArray?
+typealias LibraryImageRepository = FileRepository<Uuid>
+
+interface LibraryRepository: Repository<Uuid, Library> {
+    suspend fun loadByName(name: String): Library?
+    suspend fun addBook(libraryId: Uuid, bookId: Uuid)
 }
 
-
-class JsonLibraryRepository(
-    private val fileService: FileService,
-    private val jsonUtil: JsonUtil,
+class LibrarySqlRepository(
+    private val queries: LibrariesQueries
 ) : LibraryRepository {
 
-    private val libDir: FileRef = fileService.getAppDirectory(AppDirectory.STATE).resolve("libraries")
-
     override suspend fun loadAll(): List<Library> {
-        return fileService.listChildren(libDir)
-            .filter { ref -> !fileService.getMetadata(ref).isDirectory }
-            .map {ref  -> fileService.read(ref) }
-            .map(jsonUtil::deserialize)
+        val rows = queries.selectLibrariesWithBooks().executeAsList()
+
+        return rows
+            .groupBy { it.library_id }
+            .map { (libraryId, rowsForLibrary) ->
+                Library(
+                    id = Uuid.parse(libraryId),
+                    name = rowsForLibrary.first().library_name,
+                    bookIds = rowsForLibrary
+                        .mapNotNull { it.book_id }
+                        .map(Uuid::parse)
+                )
+            }
     }
 
-    override suspend fun load(key: String): Library? {
-        val content: String = fileService.read(fileRef(key))
-        return jsonUtil.deserialize(content)
+
+    override suspend fun load(key: Uuid): Library? =
+        queries.selectLibraryById(key.toString())
+            .executeAsOneOrNull()
+            ?.toLibrary(loadBookIds(key.toString()))
+
+    override suspend fun loadByName(name: String): Library? =
+        queries.selectLibraryByName(name)
+            .executeAsOneOrNull().let { libraries ->
+                return@loadByName libraries?.toLibrary(loadBookIds(libraries.id))
+            }
+
+    override suspend fun addBook(libraryId: Uuid, bookId: Uuid) {
+        queries.insertLibraryBook(libraryId.toString(), bookId.toString())
     }
 
-    override suspend fun save(
-        key: String,
-        value: Library
-    ) {
-        fileService.write(fileRef(key), jsonUtil.serialize(value))
+    override suspend fun save(key: Uuid, value: Library): Library {
+        val exists = queries.selectLibraryById(key.toString())
+            .executeAsOneOrNull() != null
+
+        if (exists) {
+            queries.updateLibraryName(
+                name = value.name,
+                id = key.toString()
+            )
+        } else {
+            queries.insertLibrary(
+                id = key.toString(),
+                name = value.name
+            )
+        }
+
+        // Replace books
+        queries.deleteLibraryBooks(key.toString())
+        value.bookIds.forEach { bookId ->
+            queries.insertLibraryBook(
+                library_id = key.toString(),
+                book_id = bookId.toString()
+            )
+        }
+        return load(key)!!
     }
 
-    override suspend fun delete(key: String) {
-        TODO("Not yet implemented")
+    override suspend fun delete(key: Uuid) {
+        queries.deleteLibraryBooks(key.toString())
+        queries.deleteLibrary(key.toString())
     }
 
-    override suspend fun saveImage(key: String, imageBytes: ByteArray) {
-        fileService.write(
-            file = imageFileRef(key),
-            imageBytes
-        )
-    }
-
-    override suspend fun readImage(key: String): ByteArray? {
-        val target = imageFileRef(key)
-        if (!fileService.exists(target)) return null
-        return fileService.readBytes(target)
-    }
-
-    private fun imageFileRef(name: String): FileRef = libDir.resolve("images").resolve(name)
-    private fun fileRef(name: String): FileRef = libDir.resolve("$name.json")
+    private fun loadBookIds(libraryId: String): List<Uuid> =
+        queries.selectBookIdsForLibrary(libraryId)
+            .executeAsList()
+            .map { Uuid.parse(it) }
 }
+
+private fun Libraries.toLibrary(bookIds: List<Uuid>): Library =
+    Library(
+        id = Uuid.parse(id),
+        name = name,
+        bookIds = bookIds.toMutableList() // TODO: make list immutable
+    )
+
+

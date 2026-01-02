@@ -9,7 +9,7 @@ import java.util.zip.ZipFile
 
 data class DesktopZipEntryRef(val parent: ZipFile, val entry: ZipEntry) : ZipEntryRef {
 
-    override fun open(): Source {
+    override suspend fun open(): Source {
         return parent.getInputStream(entry).asSource().buffered()
     }
 }

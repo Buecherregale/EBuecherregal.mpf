@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dev.buecherregale.ebook_reader.core.repository
 
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
@@ -6,24 +8,57 @@ import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.util.JsonUtil
+import dev.buecherregale.sql.Dictionaries
+import dev.buecherregale.sql.DictionariesQueries
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
+typealias DictionaryMetadataRepository = Repository<Uuid, DictionaryMetadata>
+typealias DictionaryEntryRepository = FileRepository<Uuid>
+
+fun Dictionaries.toDomain(): DictionaryMetadata =
+    DictionaryMetadata(
+        id = Uuid.parse(id),
+        name = name,
+        language = language
+    )
+
+class DictionarySqlRepository(
+    private val queries: DictionariesQueries
+): DictionaryMetadataRepository {
+    override suspend fun loadAll(): List<DictionaryMetadata> {
+        return queries.selectAll().executeAsList()
+            .map { it.toDomain() }
+    }
+
+    override suspend fun load(key: Uuid): DictionaryMetadata? {
+        return queries.selectById(key.toString())
+            .executeAsOneOrNull()
+            .let { it?.toDomain() }
+    }
+
+    override suspend fun save(
+        key: Uuid,
+        value: DictionaryMetadata
+    ): DictionaryMetadata {
+        queries.save(
+            id = key.toString(),
+            name = value.name,
+            language = value.language
+        )
+        return value
+    }
+
+    override suspend fun delete(key: Uuid) {
+        queries.deleteById(key.toString())
+    }
+
+}
+
 class DictionaryRepository(
     private val fileService: FileService,
     private val jsonUtil: JsonUtil,
 ): Repository<Uuid, Dictionary> {
-
-    suspend fun loadMetadata(): List<DictionaryMetadata> {
-        return fileService.listChildren(dictionaryDir)
-            .map { file ->
-                return@map fileService.read(file)
-            }
-            .map { json ->
-                return@map jsonUtil.deserialize<DictionaryMetadata>(json)
-            }.toList()
-    }
 
     override suspend fun loadAll(): List<Dictionary> {
         return fileService.listChildren(dictionaryDir)
@@ -43,8 +78,9 @@ class DictionaryRepository(
     override suspend fun save(
         key: Uuid,
         value: Dictionary
-    ) {
+    ): Dictionary {
         fileService.write(dictionaryFile(key), jsonUtil.serialize(value))
+        return value
     }
 
     override suspend fun delete(key: Uuid) {
