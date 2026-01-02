@@ -144,6 +144,7 @@ sqldelight {
     databases {
         create("Buecherregal") {
             packageName.set("dev.buecherregale.sql")
+            dialect(libs.sql.dialect)
         }
     }
 }

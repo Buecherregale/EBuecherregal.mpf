@@ -1,15 +1,18 @@
 package dev.buecherregale.ebook_reader.core.service
 
 import co.touchlab.kermit.Logger
+import dev.buecherregale.ebook_reader.core.domain.Book
+import dev.buecherregale.ebook_reader.core.domain.BookMetadata
 import dev.buecherregale.ebook_reader.core.formats.books.BookParser
 import dev.buecherregale.ebook_reader.core.formats.books.BookParserFactory
 import dev.buecherregale.ebook_reader.core.formats.books.NavigationController
-import dev.buecherregale.ebook_reader.core.domain.Book
-import dev.buecherregale.ebook_reader.core.domain.BookMetadata
+import dev.buecherregale.ebook_reader.core.repository.BookCoverRepository
+import dev.buecherregale.ebook_reader.core.repository.BookFileRepository
 import dev.buecherregale.ebook_reader.core.repository.BookRepository
-import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
+import dev.buecherregale.ebook_reader.core.repository.FileRepository
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
+import kotlinx.io.readByteArray
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -22,8 +25,9 @@ class BookService(
     private val fileService: FileService,
     private val parserFactory: BookParserFactory,
     private val repository: BookRepository,
+    private val coverRepository: BookCoverRepository,
+    private val fileRepository: BookFileRepository,
 ) {
-    private val bookDir: FileRef = fileService.getAppDirectory(AppDirectory.DATA).resolve("books")
 
     /**
      * Import the book into the app system.
@@ -38,14 +42,16 @@ class BookService(
         Logger.i("importing book from '$bookFiles'")
         val bookId: Uuid = Uuid.generateV4()
         // todo: only copy when parser exists, no merit elsewise, possibly just delete file when no parser exists (new method for fileService)
-        val bookTarget: FileRef = copyBook(bookId, bookFiles)
+        fileService.open(bookFiles).use { input ->
+            fileRepository.save(bookId, input.readByteArray())
+        }
 
-        val parser: BookParser = parserFactory.get(bookTarget)
+        val parser: BookParser = parserFactory.get(fileRepository.getFile(bookId))
 
         val bookMetadata: BookMetadata = parser.metadata()
 
         val coverBytes: ByteArray? = parser.coverBytes()
-        coverBytes?.let { saveCover(bookId, it) }
+        coverBytes?.let { coverRepository.save(bookId, it) }
 
         // after updating the cover path, save the data to file
         val book = Book(
@@ -81,34 +87,8 @@ class BookService(
      */
     suspend fun open(bookId: Uuid): NavigationController {
         return parserFactory
-            .get(getBookFile(bookId))
+            .get(fileRepository.getFile(bookId))
             .navigationController()
-    }
-
-    /**
-     * A file ref to the file containing the cover. <br></br>
-     * <bold>DOES NOT CHECK IF THE FILE EXISTS</bold> <br></br>
-     * If no book with the given id has been imported, the file won't exist, but this method <bold>WILL</bold> return
-     * the theoretical ref.
-     *
-     * @param bookId the id of the book
-     * @return file ref to the cover file (image, type unknown)
-     */
-    fun getCoverFile(bookId: Uuid): FileRef {
-        return bookDir.resolve("$bookId.cover")
-    }
-
-    /**
-     * A file ref to the file containing the book, in whichever format it was imported. <br></br>
-     * <bold>DOES NOT CHECK IF THE FILE EXISTS</bold> <br></br>
-     * If no book with the given id has been imported, the file won't exist, but this method <bold>WILL</bold> return
-     * the theoretical ref.
-     *
-     * @param bookId the id of the book
-     * @return file ref to the book file (original extension (e.g. epub) is NOT preserved
-     */
-    fun getBookFile(bookId: Uuid?): FileRef {
-        return bookDir.resolve("$bookId.book")
     }
 
     /**
@@ -149,45 +129,12 @@ class BookService(
 
     /**
      * Reads the byte content of the file storing the cover from [.getCoverFile].
+     * TODO: possibly give filetype (easy for epub via content-type). For that [BookParser.coverBytes] needs to return the filetype
      *
      * @param bookId the id of the book
      * @return the bytes of the cover image
      */
     suspend fun readCoverBytes(bookId: Uuid): ByteArray? {
-        if (!fileService.exists(getCoverFile(bookId))) {
-            return null
-        }
-        return fileService.readBytes(getCoverFile(bookId))
-    }
-
-    /**
-     * Saves the book to the book directory, using the id as file name.
-     * The file name will be [.getBookFile].
-     *
-     * @param bookId the book id to use
-     * @param bookFiles the files to copy
-     * @return the target where the book has been copied to
-     */
-    private suspend fun copyBook(bookId: Uuid, bookFiles: FileRef): FileRef {
-        val bookTarget = getBookFile(bookId)
-        fileService.open(bookFiles).use { input ->
-            fileService.copy(input, bookTarget)
-            return bookTarget
-        }
-    }
-
-    /**
-     * Save the cover to the book dir by the book id.
-     * The cover is not associated with any file type, opting for generic extension `.cover`.
-     * The file name will be [.getCoverFile].
-     * <br></br>
-     * TODO: possibly give filetype (easy for epub via content-type). For that [BookParser.coverBytes] needs to return the filetype
-     *
-     * @param bookId     the id of the book (used as filename)
-     * @param coverBytes the bytes of the cover image to write
-     */
-    private suspend fun saveCover(bookId: Uuid, coverBytes: ByteArray) {
-        val coverTarget = getCoverFile(bookId)
-        fileService.write(coverTarget, coverBytes)
+        return coverRepository.load(bookId)
     }
 }

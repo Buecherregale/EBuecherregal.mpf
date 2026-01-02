@@ -62,4 +62,5 @@ class FileRepository<Key>(
         TODO("cant delete files yet")
     }
 
+    fun getFile(key: Key): FileRef = storeInDir.resolve(keyToFilename(key))
 }

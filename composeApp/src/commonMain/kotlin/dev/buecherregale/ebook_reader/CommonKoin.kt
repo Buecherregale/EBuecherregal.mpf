@@ -3,6 +3,8 @@ package dev.buecherregale.ebook_reader
 import dev.buecherregale.ebook_reader.core.config.SettingsManager
 import dev.buecherregale.ebook_reader.core.formats.books.BookParserFactory
 import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporterFactory
+import dev.buecherregale.ebook_reader.core.repository.BookCoverRepository
+import dev.buecherregale.ebook_reader.core.repository.BookFileRepository
 import dev.buecherregale.ebook_reader.core.repository.BookRepository
 import dev.buecherregale.ebook_reader.core.repository.FileRepository
 import dev.buecherregale.ebook_reader.core.repository.JsonBookRepository
@@ -41,6 +43,16 @@ val commonModule: Module = module {
         get<FileService>().getAppDirectory(AppDirectory.STATE).resolve("libraries"),
         get()
     ) } binds arrayOf(LibraryImageRepository::class)
+    single { FileRepository<Uuid>(
+        keyToFilename = { name -> "$name.cover" },
+        get<FileService>().getAppDirectory(AppDirectory.STATE).resolve("books"),
+        get()
+    ) } binds arrayOf(BookCoverRepository::class)
+    single { FileRepository<Uuid>(
+        keyToFilename = { name -> "$name.book" },
+        get<FileService>().getAppDirectory(AppDirectory.STATE).resolve("books"),
+        get()
+    ) } binds arrayOf(BookFileRepository::class)
 
     singleOf(::SettingsManager)
     singleOf(::BookService)
