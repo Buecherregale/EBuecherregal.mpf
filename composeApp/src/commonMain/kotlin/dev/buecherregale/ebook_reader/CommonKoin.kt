@@ -11,6 +11,7 @@ import dev.buecherregale.ebook_reader.core.service.BookService
 import dev.buecherregale.ebook_reader.core.service.DictionaryService
 import dev.buecherregale.ebook_reader.core.service.LibraryService
 import dev.buecherregale.ebook_reader.core.util.JsonUtil
+import dev.buecherregale.sql.Buecherregal
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -19,6 +20,8 @@ import org.koin.dsl.module
 
 @OptIn(KoinExperimentalAPI::class)
 val commonModule: Module = module {
+    single { Buecherregal(createSqlDriver()) }
+
     singleOf(::JsonUtil)
 
     singleOf(::JsonLibraryRepository) binds arrayOf(LibraryRepository::class)

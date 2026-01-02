@@ -8,6 +8,7 @@ import kotlin.uuid.Uuid
 @Serializable
 @OptIn(ExperimentalUuidApi::class)
 class Library {
+    val id: Uuid = Uuid.random()
     val name: String
     var image: FileRef? = null
 
