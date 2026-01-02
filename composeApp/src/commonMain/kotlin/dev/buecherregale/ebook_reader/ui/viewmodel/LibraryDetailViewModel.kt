@@ -44,15 +44,18 @@ class LibraryDetailViewModel(
             _uiState.update { it.copy(isLoading = true) }
 
             val book = bookService.importBook(ref)
-            libraryService.addBook(library, book.id)
+            libraryService.addBook(library.id, book.id)
 
-            loadBooks()
+            val books = _uiState.value.books.toMutableList()
+            books.add(book)
+
+            _uiState.update { it.copy(books = books, isLoading = false) }
         }
     }
 }
 
 data class LibraryDetailUiState(
-    val library: Library,
+    var library: Library,
     val books: List<Book> = emptyList(),
     val isLoading: Boolean = false
 )

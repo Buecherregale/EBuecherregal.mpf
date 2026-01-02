@@ -43,8 +43,9 @@ class DictionaryRepository(
     override suspend fun save(
         key: Uuid,
         value: Dictionary
-    ) {
+    ): Dictionary {
         fileService.write(dictionaryFile(key), jsonUtil.serialize(value))
+        return value
     }
 
     override suspend fun delete(key: Uuid) {

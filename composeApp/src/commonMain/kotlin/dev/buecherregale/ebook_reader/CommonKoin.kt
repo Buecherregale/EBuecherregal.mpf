@@ -6,7 +6,6 @@ import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImport
 import dev.buecherregale.ebook_reader.core.repository.BookRepository
 import dev.buecherregale.ebook_reader.core.repository.FileRepository
 import dev.buecherregale.ebook_reader.core.repository.JsonBookRepository
-import dev.buecherregale.ebook_reader.core.repository.JsonLibraryRepository
 import dev.buecherregale.ebook_reader.core.repository.LibraryImageRepository
 import dev.buecherregale.ebook_reader.core.repository.LibraryRepository
 import dev.buecherregale.ebook_reader.core.repository.LibrarySqlRepository

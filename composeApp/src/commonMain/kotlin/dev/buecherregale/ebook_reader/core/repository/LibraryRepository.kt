@@ -3,10 +3,6 @@
 package dev.buecherregale.ebook_reader.core.repository
 
 import dev.buecherregale.ebook_reader.core.domain.Library
-import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
-import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
-import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
-import dev.buecherregale.ebook_reader.core.util.JsonUtil
 import dev.buecherregale.sql.Libraries
 import dev.buecherregale.sql.LibrariesQueries
 import kotlin.uuid.ExperimentalUuidApi
@@ -17,51 +13,6 @@ typealias LibraryImageRepository = FileRepository<Uuid>
 interface LibraryRepository: Repository<Uuid, Library> {
     suspend fun loadByName(name: String): Library?
     suspend fun addBook(libraryId: Uuid, bookId: Uuid)
-}
-
-
-class JsonLibraryRepository(
-    fileService: FileService,
-    private val jsonUtil: JsonUtil,
-    ) : LibraryRepository {
-
-    private val libDir: FileRef = fileService.getAppDirectory(AppDirectory.STATE).resolve("libraries")
-    private val delegate: FileRepository<Uuid> = FileRepository(
-        keyToFilename = { name -> "$name.json" },
-        storeInDir = libDir,
-        fileService = fileService
-    )
-
-    override suspend fun loadByName(name: String): Library {
-        throw UnsupportedOperationException()
-    }
-
-    override suspend fun addBook(libraryId: Uuid, bookId: Uuid) {
-        throw UnsupportedOperationException()
-    }
-
-    override suspend fun loadAll(): List<Library> {
-        return delegate.loadAll()
-            .map { it.decodeToString() }
-            .map { jsonUtil.deserialize<Library>(it) }
-            .toList()
-    }
-
-    override suspend fun load(key: Uuid): Library? {
-        val bytes: ByteArray =  delegate.load(key) ?: return null
-        return jsonUtil.deserialize(bytes.decodeToString())
-    }
-
-    override suspend fun save(
-        key: Uuid,
-        value: Library
-    ) {
-        delegate.save(key, jsonUtil.serialize(value).encodeToByteArray())
-    }
-
-    override suspend fun delete(key: Uuid) {
-        throw UnsupportedOperationException("cant delete files yet") // TODO: enable file deletion
-    }
 }
 
 class LibrarySqlRepository(
@@ -90,7 +41,7 @@ class LibrarySqlRepository(
         queries.insertLibraryBook(libraryId.toString(), bookId.toString())
     }
 
-    override suspend fun save(key: Uuid, value: Library) {
+    override suspend fun save(key: Uuid, value: Library): Library {
         val exists = queries.selectLibraryById(key.toString())
             .executeAsOneOrNull() != null
 
@@ -114,6 +65,7 @@ class LibrarySqlRepository(
                 book_id = bookId.toString()
             )
         }
+        return load(key)!!
     }
 
     override suspend fun delete(key: Uuid) {

@@ -9,5 +9,5 @@ import kotlin.uuid.Uuid
 data class Library(
     val id: Uuid,
     val name: String,
-    val bookIds: MutableList<Uuid> = ArrayList()
+    val bookIds: List<Uuid> = ArrayList()
 )

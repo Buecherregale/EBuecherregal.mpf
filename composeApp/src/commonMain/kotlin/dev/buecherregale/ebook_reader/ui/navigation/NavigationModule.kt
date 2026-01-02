@@ -12,6 +12,7 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
+import kotlin.uuid.ExperimentalUuidApi
 
 class Navigator(
     start: Screen
@@ -30,7 +31,7 @@ class Navigator(
     }
 }
 
-@OptIn(KoinExperimentalAPI::class)
+@OptIn(KoinExperimentalAPI::class, ExperimentalUuidApi::class)
 val navigationModule = module {
     single { Navigator(Screen.LibraryOverview) }
 
@@ -44,7 +45,7 @@ val navigationModule = module {
         LibraryDetailScreen(
             library = route.library,
             viewModel = koinViewModel(
-                key = route.library.name // name is unique
+                key = route.library.id.toString(),
             ) {
                 parametersOf(route.library)
             }

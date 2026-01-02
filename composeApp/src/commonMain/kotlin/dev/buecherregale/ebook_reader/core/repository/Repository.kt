@@ -24,7 +24,7 @@ interface Repository<Key, T> {
     /**
      * Saves data at the given key.
      */
-    suspend fun save(key: Key, value: T)
+    suspend fun save(key: Key, value: T): T
 
     /**
      * Deletes data with the given key.
@@ -51,14 +51,15 @@ class FileRepository<Key>(
         return fileService.readBytes(file)
     }
 
-    override suspend fun save(key: Key, value: ByteArray) {
+    override suspend fun save(key: Key, value: ByteArray): ByteArray {
         val file = storeInDir.resolve(keyToFilename(key))
 
         fileService.write(file, value)
+        return load(key)!! // should def exist now
     }
 
     override suspend fun delete(key: Key) {
-        TODO("Not yet implemented")
+        TODO("cant delete files yet")
     }
 
 }

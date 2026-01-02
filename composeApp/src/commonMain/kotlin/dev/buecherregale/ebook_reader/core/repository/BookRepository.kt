@@ -32,9 +32,10 @@ class JsonBookRepository(
     override suspend fun save(
         key: Uuid,
         value: Book
-    ) {
+    ): Book {
         val serializedMetadata: String = jsonUtil.serialize(value)
         fileService.write(metaTarget(key), serializedMetadata)
+        return value
     }
 
     override suspend fun delete(key: Uuid) {

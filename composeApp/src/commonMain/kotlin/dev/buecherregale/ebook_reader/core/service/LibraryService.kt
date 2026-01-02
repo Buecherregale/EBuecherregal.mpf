@@ -26,12 +26,11 @@ class LibraryService(
      * Will also save and <bold>WRITE</bold> the library to disk. <br></br>
      * Use this instead of manipulating the [Library.bookIds] directly.
      *
-     * @param library the library
+     * @param libraryId the id of the library
      * @param bookId the book to add
      */
-    suspend fun addBook(library: Library, bookId: Uuid) {
-        library.bookIds.add(bookId)
-        repository.addBook(library.id, bookId)
+    suspend fun addBook(libraryId: Uuid, bookId: Uuid) {
+        repository.addBook(libraryId, bookId)
     }
 
     /**
@@ -70,13 +69,23 @@ class LibraryService(
     }
 
     /**
-     * Loads a library from the json file by its name.
+     * Loads a library from the repository by its name.
      *
      * @param name the name of the library
      * @return the deserialized library instance.
      */
     suspend fun loadLibrary(name: String): Library {
         return repository.loadByName(name) ?: throw IllegalArgumentException("library $name does not exist")
+    }
+
+    /**
+     * Loads a library from the repository by its name.
+     *
+     * @param id the id of the library
+     * @return the deserialized library instance.
+     */
+    suspend fun loadLibrary(id: Uuid): Library {
+        return repository.load(id) ?: throw IllegalArgumentException("library $id does not exist")
     }
 
     /**
