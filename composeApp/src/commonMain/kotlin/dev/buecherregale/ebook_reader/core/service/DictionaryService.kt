@@ -1,12 +1,15 @@
 package dev.buecherregale.ebook_reader.core.service
 
 import co.touchlab.kermit.Logger
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporterFactory
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.domain.DictionaryEntry
 import dev.buecherregale.ebook_reader.core.domain.DictionaryMetadata
-import dev.buecherregale.ebook_reader.core.repository.DictionaryRepository
+import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporterFactory
+import dev.buecherregale.ebook_reader.core.repository.DictionaryEntryRepository
+import dev.buecherregale.ebook_reader.core.repository.DictionaryMetadataRepository
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
+import dev.buecherregale.ebook_reader.core.util.JsonUtil
+import io.ktor.utils.io.core.toByteArray
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -20,9 +23,11 @@ import kotlin.uuid.Uuid
  */
 @OptIn(ExperimentalUuidApi::class)
 class DictionaryService(
+    private val jsonUtil: JsonUtil,
     private val importerFactory: DictionaryImporterFactory,
-    private val repository: DictionaryRepository,
-) {
+    private val metadataRepository: DictionaryMetadataRepository,
+    private val entryRepository: DictionaryEntryRepository,
+    ) {
     /**
      * Downloads the dictionary, transforming it into the [dev.buecherregale.ebook_reader.core.domain.Dictionary] form and saving it to [.getDictionaryFile].
      * <br></br>
@@ -39,7 +44,8 @@ class DictionaryService(
             .forName(dictionaryName)
             .download(language)
         Logger.i("saving dictionary '${downloaded.name}'")
-        repository.save(downloaded.id, downloaded)
+        metadataRepository.save(downloaded.id, downloaded.toMetadata())
+        entryRepository.save(downloaded.id, toBytes(downloaded))
         return downloaded
     }
 
@@ -51,7 +57,7 @@ class DictionaryService(
      * @return the dictionary
      */
     suspend fun open(dictionaryId: Uuid): Dictionary {
-        return repository.load(dictionaryId) ?: throw IllegalArgumentException("dictionary $dictionaryId does not exist")
+        return fromBytes(entryRepository.load(dictionaryId) ?: throw IllegalArgumentException("dictionary $dictionaryId does not exist"))
     }
 
     /**
@@ -73,7 +79,8 @@ class DictionaryService(
             .forName(dictionaryName)
             .importFromFile(location, language)
         Logger.i("saving dictionary '${imported.name}'")
-        repository.save(imported.id, imported)
+        metadataRepository.save(imported.id, imported.toMetadata())
+        entryRepository.save(imported.id, toBytes(imported))
         return imported
     }
 
@@ -97,7 +104,7 @@ class DictionaryService(
      * @return the list of metadata of downloaded dictionaries in the form of fieldName -> fieldValue
      */
     suspend fun listDownloadedDictionaryMetadata(): List<DictionaryMetadata> {
-        return repository.loadMetadata()
+        return metadataRepository.loadAll()
     }
 
     /**
@@ -120,5 +127,21 @@ class DictionaryService(
             if (entry != null) results.add(entry)
         }
         return results
+    }
+
+    companion object {
+        fun Dictionary.toMetadata(): DictionaryMetadata =
+            DictionaryMetadata(
+                id = id,
+                name = name,
+                language = language
+            )
+    }
+
+    private fun toBytes(dictionary: Dictionary): ByteArray {
+        return jsonUtil.serialize(dictionary).toByteArray()
+    }
+    private fun fromBytes(bytes: ByteArray): Dictionary {
+        return jsonUtil.deserialize(bytes.decodeToString())
     }
 }

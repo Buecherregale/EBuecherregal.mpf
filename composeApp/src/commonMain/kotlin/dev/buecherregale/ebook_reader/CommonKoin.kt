@@ -6,8 +6,11 @@ import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImport
 import dev.buecherregale.ebook_reader.core.repository.BookCoverRepository
 import dev.buecherregale.ebook_reader.core.repository.BookFileRepository
 import dev.buecherregale.ebook_reader.core.repository.BookRepository
+import dev.buecherregale.ebook_reader.core.repository.BookSqlRepository
+import dev.buecherregale.ebook_reader.core.repository.DictionaryEntryRepository
+import dev.buecherregale.ebook_reader.core.repository.DictionaryRepository
+import dev.buecherregale.ebook_reader.core.repository.DictionarySqlRepository
 import dev.buecherregale.ebook_reader.core.repository.FileRepository
-import dev.buecherregale.ebook_reader.core.repository.JsonBookRepository
 import dev.buecherregale.ebook_reader.core.repository.LibraryImageRepository
 import dev.buecherregale.ebook_reader.core.repository.LibraryRepository
 import dev.buecherregale.ebook_reader.core.repository.LibrarySqlRepository
@@ -33,26 +36,34 @@ val commonModule: Module = module {
         create = false
     )) }
     single { get<Buecherregal>().librariesQueries }
+    single { get<Buecherregal>().booksQueries }
+    single { get<Buecherregal>().dictionariesQueries }
 
     singleOf(::JsonUtil)
 
     singleOf(::LibrarySqlRepository) binds arrayOf(LibraryRepository::class)
-    singleOf(::JsonBookRepository) binds arrayOf(BookRepository::class)
     single { FileRepository<Uuid>(
         keyToFilename = { name -> "$name.cover" },
-        get<FileService>().getAppDirectory(AppDirectory.STATE).resolve("libraries"),
+        get<FileService>().getAppDirectory(AppDirectory.DATA).resolve("libraries"),
         get()
     ) } binds arrayOf(LibraryImageRepository::class)
+    singleOf(::BookSqlRepository) binds arrayOf(BookRepository::class)
     single { FileRepository<Uuid>(
         keyToFilename = { name -> "$name.cover" },
-        get<FileService>().getAppDirectory(AppDirectory.STATE).resolve("books"),
+        get<FileService>().getAppDirectory(AppDirectory.DATA).resolve("books"),
         get()
     ) } binds arrayOf(BookCoverRepository::class)
     single { FileRepository<Uuid>(
         keyToFilename = { name -> "$name.book" },
-        get<FileService>().getAppDirectory(AppDirectory.STATE).resolve("books"),
+        get<FileService>().getAppDirectory(AppDirectory.DATA).resolve("books"),
         get()
     ) } binds arrayOf(BookFileRepository::class)
+    singleOf(::DictionarySqlRepository) binds arrayOf(DictionaryRepository::class)
+    single { FileRepository<Uuid>(
+        keyToFilename = { id -> "$id.json" },
+        get<FileService>().getAppDirectory(AppDirectory.DATA).resolve("dictionaries"),
+        get()
+        ) } binds arrayOf(DictionaryEntryRepository::class)
 
     singleOf(::SettingsManager)
     singleOf(::BookService)

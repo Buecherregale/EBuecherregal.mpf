@@ -41,7 +41,6 @@ class FileRepository<Key>(
     override suspend fun loadAll(): List<ByteArray> {
         return fileService.listChildren(storeInDir)
             .map { fileService.readBytes(it) }
-            .toList()
     }
 
     override suspend fun load(key: Key): ByteArray? {

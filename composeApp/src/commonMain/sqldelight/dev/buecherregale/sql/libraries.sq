@@ -9,6 +9,8 @@ CREATE TABLE library_books (
   PRIMARY KEY (library_id, book_id)
 );
 
+CREATE INDEX libraries_name_idx ON libraries(name);
+
 selectAllLibraries:
 SELECT * FROM libraries;
 
