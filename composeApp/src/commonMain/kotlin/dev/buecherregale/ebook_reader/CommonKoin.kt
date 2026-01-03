@@ -32,8 +32,8 @@ import kotlin.uuid.Uuid
 @OptIn(KoinExperimentalAPI::class, ExperimentalUuidApi::class)
 val commonModule: Module = module {
     single { Buecherregal(createSqlDriver(
-        dbName = "ebook-reader",
-        create = false
+        get<FileService>(),
+        appName = "ebook-reader"
     )) }
     single { get<Buecherregal>().librariesQueries }
     single { get<Buecherregal>().booksQueries }

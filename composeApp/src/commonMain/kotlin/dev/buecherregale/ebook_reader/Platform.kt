@@ -1,6 +1,7 @@
 package dev.buecherregale.ebook_reader
 
 import app.cash.sqldelight.db.SqlDriver
+import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import org.koin.core.module.Module
 
 interface Platform {
@@ -13,8 +14,7 @@ expect fun platformModule(): Module
 expect suspend fun pickBook(): PickedFile?
 expect suspend fun pickImage(): PickedImage?
 
-expect fun createSqlDriver(dbName: String, create: Boolean = false): SqlDriver
-
+expect fun createSqlDriver(fileService: FileService, appName: String): SqlDriver
 
 data class PickedFile(
     val path: String

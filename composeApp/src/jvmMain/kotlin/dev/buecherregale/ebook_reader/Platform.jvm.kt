@@ -3,6 +3,7 @@ package dev.buecherregale.ebook_reader
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import dev.buecherregale.ebook_reader.core.domain.BookType
+import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.filesystem.DesktopFileService
@@ -50,8 +51,14 @@ actual suspend fun pickBook(): PickedFile? = pickFile(
     PickedFile(file.path)
 }
 
-actual fun createSqlDriver(dbName: String, create: Boolean): SqlDriver {
-    return JdbcSqliteDriver("jdbc:sqlite:$dbName.db").also {
-        if (create) Buecherregal.Schema.create(it)
-    }
+actual fun createSqlDriver(fileService: FileService, appName: String): SqlDriver {
+    val dbFile = fileService.getAppDirectory(AppDirectory.STATE).resolve("$appName.db")
+        .toPath().toFile()
+
+    dbFile.parentFile?.mkdirs()
+
+    return JdbcSqliteDriver(
+        url = "jdbc:sqlite:${dbFile.absolutePath}",
+        schema = Buecherregal.Schema
+    )
 }
