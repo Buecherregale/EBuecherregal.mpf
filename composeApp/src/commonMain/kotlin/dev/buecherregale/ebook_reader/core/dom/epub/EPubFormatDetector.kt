@@ -2,7 +2,7 @@ package dev.buecherregale.ebook_reader.core.dom.epub
 
 import dev.buecherregale.ebook_reader.core.dom.DocumentFormat
 import dev.buecherregale.ebook_reader.core.dom.FormatDetector
-import dev.buecherregale.ebook_reader.core.formats.books.epub.EPubConstants
+import dev.buecherregale.ebook_reader.core.dom.epub.EPubConstants
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import kotlinx.io.readString

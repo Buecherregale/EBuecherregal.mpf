@@ -1,7 +1,6 @@
 package dev.buecherregale.ebook_reader
 
 import dev.buecherregale.ebook_reader.core.config.SettingsManager
-import dev.buecherregale.ebook_reader.core.formats.books.BookParserFactory
 import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporterFactory
 import dev.buecherregale.ebook_reader.core.repository.BookCoverRepository
 import dev.buecherregale.ebook_reader.core.repository.BookFileRepository
@@ -89,6 +88,5 @@ val commonModule: Module = module {
     singleOf(::DictionaryService)
     singleOf(::LibraryService)
 
-    singleOf(::BookParserFactory)
     singleOf(::DictionaryImporterFactory)
 }

@@ -2,6 +2,7 @@ package dev.buecherregale.ebook_reader.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.buecherregale.ebook_reader.core.dom.DomDocument
 import dev.buecherregale.ebook_reader.core.domain.Book
 import dev.buecherregale.ebook_reader.core.service.BookService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,13 +18,15 @@ class ReaderViewModel(
     private val bookService: BookService
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ReaderUiState())
+    private val _uiState = MutableStateFlow(ReaderUiState(book =book))
     val uiState: StateFlow<ReaderUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
             updateProgress(book.progress)
-            _uiState.update { it.copy(title = book.metadata.title) }
+            val dom = bookService.open(book.id)
+            _uiState.update { it.copy(title = book.metadata.title, isLoading = false, dom = dom) }
         }
     }
 
@@ -43,5 +46,7 @@ data class ReaderUiState(
     val title: String = "",
     val progress: Double = 0.0,
     val isMenuVisible: Boolean = true,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val book: Book,
+    var dom: DomDocument? = null,
 )

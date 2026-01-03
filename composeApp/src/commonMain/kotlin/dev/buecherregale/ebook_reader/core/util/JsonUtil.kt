@@ -7,8 +7,7 @@ import kotlinx.serialization.json.Json
  * Utility class for simple generic Json handling with jackson.
  * Not static, as it relies on [FileService] to serialize and deserialize [dev.buecherregale.ebook_reader.core.service.filesystem.FileRef].
  */
-// TODO: use kotlinx.serialization.json
-class JsonUtil(fileService: FileService) {
+class JsonUtil {
     val json = Json {
         prettyPrint = true
         ignoreUnknownKeys = true
@@ -22,7 +21,7 @@ class JsonUtil(fileService: FileService) {
      * @return the json string
      */
     inline fun <reified T>serialize(o: T): String {
-        return json.encodeToString(o);
+        return json.encodeToString(o)
     }
 
     /**

@@ -1,12 +1,14 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dev.buecherregale.ebook_reader.core.dom.epub
 
 import dev.buecherregale.ebook_reader.core.dom.ImageRef
+import dev.buecherregale.ebook_reader.core.dom.ResourceRepository
 import dev.buecherregale.ebook_reader.core.dom.epub.xml.Item
 import dev.buecherregale.ebook_reader.core.dom.epub.xml.Package
 import dev.buecherregale.ebook_reader.core.exception.EPubParseException
 import dev.buecherregale.ebook_reader.core.exception.EPubSyntaxException
-import dev.buecherregale.ebook_reader.core.formats.books.epub.EPubConstants
-import dev.buecherregale.ebook_reader.core.formats.books.epub.xml.Container
+import dev.buecherregale.ebook_reader.core.dom.epub.xml.Container
 import dev.buecherregale.ebook_reader.core.service.filesystem.ZipFileRef
 import kotlinx.io.readByteArray
 import kotlinx.serialization.decodeFromString
@@ -14,6 +16,8 @@ import nl.adaptivity.xmlutil.ExperimentalXmlUtilApi
 import nl.adaptivity.xmlutil.serialization.DefaultXmlSerializationPolicy
 import nl.adaptivity.xmlutil.serialization.XML1_0
 import nl.adaptivity.xmlutil.serialization.XmlConfig
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalXmlUtilApi::class)
 private val xmlParser = XML1_0.recommended {
@@ -57,19 +61,48 @@ internal object PackageReader {
 internal class ResourceResolver(
     private val zip: ZipFileRef,
     private val opf: Package,
+    private val resourceRepository: ResourceRepository
 ) {
-    suspend fun resolveImage(href: String): ImageRef {
+    suspend fun extractImage(href: String) : ImageRef {
+        val res = extractResource(href)
+        return ImageRef(
+            id = generateNodeId(),
+            mimeType = res.second.mediaType,
+            resourceFileId = res.first
+        )
+    }
+
+    suspend fun extractResource(href: String) : Pair<Uuid, Item> {
         val manifestItem = opf.manifest.items.find { item -> item.href == href }
             ?: throw EPubParseException("could not find resource '$href' in manifest")
         val bytes = (zip.getEntry(href)
             ?: throw EPubParseException("could not find resource '$href' in zip")
                 )
             .open().readByteArray()
-        return ImageRef(manifestItem.id, manifestItem.mediaType, bytes)
+        val resourceId = Uuid.generateV4()
+        resourceRepository.save(resourceId, bytes)
+        return resourceId to manifestItem
     }
 
-    fun resolveId(id: String) : Item {
-        return opf.manifest.items.find { (itemId, _, _) -> itemId == itemId }
-            ?: throw EPubParseException("could not find item '$id' in manifest")
+    fun resolveId(xmlId: String) : Item {
+        return opf.manifest.items.find { (itemId, _, _) -> xmlId == itemId }
+            ?: throw EPubParseException("could not find item '$xmlId' in manifest")
+    }
+
+    fun resolvePath(base: String, href: String) : String {
+        val baseParts = base.substringBeforeLast('/', "")
+            .split('/')
+            .filter { it.isNotEmpty() }
+            .toMutableList()
+        val refParts = href.split('/')
+
+        for (part in refParts) {
+            when (part) {
+                "", "." -> Unit
+                ".." -> if (baseParts.isNotEmpty()) baseParts.removeAt(baseParts.lastIndex)
+                else -> baseParts.add(part)
+            }
+        }
+        return baseParts.joinToString("/")
     }
 }

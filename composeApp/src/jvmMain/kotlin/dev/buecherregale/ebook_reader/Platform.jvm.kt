@@ -2,7 +2,6 @@ package dev.buecherregale.ebook_reader
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
-import dev.buecherregale.ebook_reader.core.domain.BookType
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
@@ -45,7 +44,7 @@ actual suspend fun pickImage(): PickedImage? = pickFile(
 
 actual suspend fun pickBook(): PickedFile? = pickFile(
     "Books",
-    BookType.entries.map { it.extension }.toList()
+    listOf("pdf", "epub", "txt", "md")
 ) { file: File? ->
     if (file == null) return@pickFile null
     PickedFile(file.path)

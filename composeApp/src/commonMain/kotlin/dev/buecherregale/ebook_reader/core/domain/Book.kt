@@ -9,6 +9,5 @@ import kotlin.uuid.Uuid
 data class Book(
     val id: Uuid,
     val progress: Double,
-    val bookType: BookType,
     val metadata: BookMetadata
 )

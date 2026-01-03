@@ -2,11 +2,8 @@ package dev.buecherregale.ebook_reader
 
 import androidx.compose.runtime.Composable
 import androidx.navigation3.ui.NavDisplay
-import dev.buecherregale.ebook_reader.core.formats.books.BookParserFactory
-import dev.buecherregale.ebook_reader.core.formats.books.epub.EPubParser
 import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporterFactory
 import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.JMDictImporter
-import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.ui.navigation.Navigator
 import dev.buecherregale.ebook_reader.ui.navigation.navigationModule
 import dev.buecherregale.ebook_reader.ui.theming.ShellTheme
@@ -24,7 +21,7 @@ fun App() {
             modules(navigationModule, commonModule, platformModule())
         }
     ) {
-        registerImplsInFactory(koinInject())
+        registerImplsInFactory()
         ShellTheme {
             NavDisplay(
                 backStack = koinInject<Navigator>().backStack,
@@ -34,7 +31,6 @@ fun App() {
     }
 }
 
-fun registerImplsInFactory(fileService: FileService) {
+fun registerImplsInFactory() {
     DictionaryImporterFactory.register("JmDict", ::JMDictImporter)
-    BookParserFactory.register({ EPubParser.isEPub(fileService, it) }, EPubParser::create)
 }

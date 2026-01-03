@@ -63,7 +63,6 @@ val navigationModule = module {
             },
             onPageChange = { },
             onToggleMenu = { },
-            content = { _ -> }
         )
     }
 }

@@ -79,8 +79,6 @@ kotlin {
 
             implementation(libs.sql.runtime)
             implementation(libs.sql.coroutines)
-
-            implementation(libs.aral)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

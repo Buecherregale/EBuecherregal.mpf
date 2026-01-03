@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dev.buecherregale.ebook_reader.core.dom.epub
 
 import dev.buecherregale.ebook_reader.core.dom.Emphasis
@@ -5,6 +7,7 @@ import dev.buecherregale.ebook_reader.core.dom.Emphasized
 import dev.buecherregale.ebook_reader.core.dom.Heading
 import dev.buecherregale.ebook_reader.core.dom.ImageBlock
 import dev.buecherregale.ebook_reader.core.dom.Paragraph
+import kotlin.uuid.ExperimentalUuidApi
 
 internal interface TagHandler {
     suspend fun onStart(ctx: ParseContext, attrs: Map<String, String>)
@@ -88,8 +91,11 @@ internal class EmphasisHandler(
 internal class ImageHandler : TagHandler {
 
     override suspend fun onStart(ctx: ParseContext, attrs: Map<String, String>) {
-        val src = attrs["src"] ?: return
-        val image = ctx.resources.resolveImage(src)
+        val src = attrs["src"]
+            ?: attrs["href"]
+            ?: return
+        val ref = ctx.resources.resolvePath(ctx.parsingItem.href, src)
+        val image = ctx.resources.extractImage(ref)
 
         ctx.blocks.add(
             ImageBlock(

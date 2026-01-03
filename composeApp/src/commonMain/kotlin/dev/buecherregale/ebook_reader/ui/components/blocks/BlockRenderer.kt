@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dev.buecherregale.ebook_reader.ui.components.blocks
 
 import androidx.compose.foundation.Image
@@ -21,17 +23,25 @@ import dev.buecherregale.ebook_reader.core.dom.ImageBlock
 import dev.buecherregale.ebook_reader.core.dom.ListBlock
 import dev.buecherregale.ebook_reader.core.dom.ListItem
 import dev.buecherregale.ebook_reader.core.dom.Paragraph
+import dev.buecherregale.ebook_reader.core.dom.epub.generateNodeId
+import dev.buecherregale.ebook_reader.core.service.BookService
 import dev.buecherregale.ebook_reader.ui.AnnotatedTextBuilder
 import dev.buecherregale.ebook_reader.ui.components.rememberImageBitmap
+import org.koin.compose.koinInject
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @Composable
-fun BlockRenderer(block: BlockNode) {
+fun BlockRenderer(
+    bookId: Uuid,
+    block: BlockNode
+) {
     when (block) {
         is Paragraph -> ParagraphView(block)
         is Heading -> HeadingView(block)
-        is ImageBlock -> ImageBlockView(block)
-        is BlockQuote -> BlockQuoteView(block)
-        is ListBlock -> ListBlockView(block)
+        is ImageBlock -> ImageBlockView(bookId, block)
+        is BlockQuote -> BlockQuoteView(bookId, block)
+        is ListBlock -> ListBlockView(bookId, block)
     }
 }
 
@@ -68,9 +78,13 @@ fun HeadingView(block: Heading) {
 }
 
 @Composable
-fun ImageBlockView(block: ImageBlock) {
+fun ImageBlockView(
+    bookId: Uuid,
+    block: ImageBlock,
+    bookService: BookService = koinInject()
+) {
     val imageBitmap by rememberImageBitmap(block.imageRef) {
-        it.bytes
+        bookService.bookResourceRepository(bookId).load(block.imageRef.resourceFileId)
     }
     
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
@@ -85,7 +99,7 @@ fun ImageBlockView(block: ImageBlock) {
         
         block.caption?.let { caption ->
             val annotatedString = remember(caption) {
-                AnnotatedTextBuilder().build(caption, block.id + "_caption")
+                AnnotatedTextBuilder().build(caption, generateNodeId())
             }
             Text(
                 text = annotatedString,
@@ -97,28 +111,39 @@ fun ImageBlockView(block: ImageBlock) {
 }
 
 @Composable
-fun BlockQuoteView(block: BlockQuote) {
+fun BlockQuoteView(
+    bookId: Uuid,
+    block: BlockQuote
+) {
     Column(
         modifier = Modifier
             .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
     ) {
         block.blocks.forEach { childBlock ->
-            BlockRenderer(childBlock)
+            BlockRenderer(bookId, childBlock)
         }
     }
 }
 
 @Composable
-fun ListBlockView(block: ListBlock) {
+fun ListBlockView(
+    bookId: Uuid,
+    block: ListBlock
+) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         block.items.forEachIndexed { index, item ->
-            ListItemView(item, block.ordered, index + 1)
+            ListItemView(bookId, item, block.ordered, index + 1)
         }
     }
 }
 
 @Composable
-fun ListItemView(item: ListItem, ordered: Boolean, index: Int) {
+fun ListItemView(
+    bookId: Uuid,
+    item: ListItem,
+    ordered: Boolean,
+    index: Int
+) {
     Row(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = if (ordered) "$index." else "•",
@@ -127,7 +152,7 @@ fun ListItemView(item: ListItem, ordered: Boolean, index: Int) {
         )
         Column {
             item.blocks.forEach { childBlock ->
-                BlockRenderer(childBlock)
+                BlockRenderer(bookId, childBlock)
             }
         }
     }

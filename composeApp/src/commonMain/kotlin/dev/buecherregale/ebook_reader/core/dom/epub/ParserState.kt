@@ -1,12 +1,17 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package dev.buecherregale.ebook_reader.core.dom.epub
 
 import dev.buecherregale.ebook_reader.core.dom.BlockNode
 import dev.buecherregale.ebook_reader.core.dom.InlineNode
 import dev.buecherregale.ebook_reader.core.dom.Text
+import dev.buecherregale.ebook_reader.core.dom.epub.xml.Item
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 internal sealed interface CurrentBlock {
-    data class Paragraph(val id: String) : CurrentBlock
-    data class Heading(val id: String, val level: Int) : CurrentBlock
+    data class Paragraph(val id: Uuid) : CurrentBlock
+    data class Heading(val id: Uuid, val level: Int) : CurrentBlock
 }
 
 internal class InlineStack {
@@ -36,6 +41,7 @@ internal class InlineStack {
 }
 
 internal class ParseContext(
+    val parsingItem: Item,
     val blocks: MutableList<BlockNode>,
     val resources: ResourceResolver
 ) {
