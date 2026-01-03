@@ -1,6 +1,5 @@
 package dev.buecherregale.ebook_reader
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.navigation3.ui.NavDisplay
 import dev.buecherregale.ebook_reader.core.formats.books.BookParserFactory
@@ -10,6 +9,7 @@ import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.JMDictImp
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.ui.navigation.Navigator
 import dev.buecherregale.ebook_reader.ui.navigation.navigationModule
+import dev.buecherregale.ebook_reader.ui.theming.ShellTheme
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import org.koin.compose.navigation3.koinEntryProvider
@@ -25,7 +25,7 @@ fun App() {
         }
     ) {
         registerImplsInFactory(koinInject())
-        MaterialTheme {
+        ShellTheme {
             NavDisplay(
                 backStack = koinInject<Navigator>().backStack,
                 entryProvider = koinEntryProvider()
