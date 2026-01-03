@@ -8,7 +8,9 @@ import dev.buecherregale.sql.LibrariesQueries
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-typealias LibraryImageRepository = FileRepository<Uuid>
+class LibraryImageRepository(
+    delegate: FileRepository<Uuid>
+): FileBasedRepository<Uuid> by delegate
 
 interface LibraryRepository: Repository<Uuid, Library> {
     suspend fun loadByName(name: String): Library?

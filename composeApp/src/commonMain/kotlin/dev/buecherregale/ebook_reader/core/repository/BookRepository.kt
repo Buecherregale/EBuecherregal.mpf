@@ -14,10 +14,16 @@ import dev.buecherregale.sql.BooksQueries
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-typealias BookRepository = Repository<Uuid, Book>
-typealias BookCoverRepository = FileRepository<Uuid>
 /** repository for the book files themselves (e.g. epub) */
-typealias BookFileRepository = FileRepository<Uuid>
+class BookFileRepository(
+    delegate: FileRepository<Uuid>
+): FileBasedRepository<Uuid> by delegate
+
+class BookCoverRepository(
+    delegate: FileRepository<Uuid>
+): FileBasedRepository<Uuid> by delegate
+
+typealias BookRepository = Repository<Uuid, Book>
 
 class BookSqlRepository(
     private val queries: BooksQueries

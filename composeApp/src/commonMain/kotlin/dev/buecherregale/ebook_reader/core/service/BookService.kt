@@ -25,6 +25,7 @@ class BookService(
     private val fileService: FileService,
     private val parserFactory: BookParserFactory,
     private val repository: BookRepository,
+    
     private val coverRepository: BookCoverRepository,
     private val fileRepository: BookFileRepository,
 ) {
