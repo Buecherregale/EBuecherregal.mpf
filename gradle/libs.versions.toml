@@ -69,6 +69,8 @@ sql-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version
 sql-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqlDelight" }
 sql-dialect = { module = "app.cash.sqldelight:sqlite-3-38-dialect", version.ref = "sqlDelight" }
 
+aral = { module = "it.calogerosanfilippo:aral", version = "0.7.0" }
+
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }

@@ -21,6 +21,7 @@ import dev.buecherregale.ebook_reader.core.domain.BookType
  * There can be invocations of [.getMetadata] without the book ever being opened or read, the actual content only has to be read for the navigation controller
  *
  */
+@Deprecated("replaced by unifying formats into a DOM, see dev.buecherregale.ebook_reader.core.dom.Parser.kt")
 interface BookParser {
 
     /**

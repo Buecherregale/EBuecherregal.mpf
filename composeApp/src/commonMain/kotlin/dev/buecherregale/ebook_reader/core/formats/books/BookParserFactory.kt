@@ -10,6 +10,7 @@ import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
  * Creates the instances via the [ParserConstructor].
  *
  */
+@Deprecated("replaced by unified dom, see dev.buecherregale.ebook_reader.core.dom.BookParserFactory.kt")
 class BookParserFactory(
     val fileService: FileService
 ) {

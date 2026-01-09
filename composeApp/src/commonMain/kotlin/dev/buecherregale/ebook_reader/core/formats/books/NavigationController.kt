@@ -10,6 +10,7 @@ package dev.buecherregale.ebook_reader.core.formats.books
  * <br></br>
  * TODO: this class still needs `instanceof` checks. maybe an interface for [dev.buecherregale.ebuecherregale.core.books.epub.EPubNavigationElement]?
  */
+@Deprecated("replaced by unified dom, see dev.buecherregale.ebook_reader.core.dom.NavigationController.kt")
 interface NavigationController {
     /**
      * Gets the next scrollable item.

@@ -1,18 +1,27 @@
 package dev.buecherregale.ebook_reader.core.dom
 
-import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import kotlinx.serialization.Serializable
 
+const val DOM_SCHEMA_VERSION = 1
+
 @Serializable
-data class DomBook(
+data class DomDocument(
     val schemaVersion: Int,
+    val chapter: List<Chapter>
+)
+
+
+@Serializable
+data class Chapter(
+    val id: String,
+    val title: String?,
     val blocks: List<BlockNode>
 )
 
 interface DomMigration {
     val fromVersion: Int
     val toVersion: Int
-    fun migrate(document: DomBook): DomBook
+    fun migrate(document: DomDocument): DomDocument
 }
 
 sealed interface BlockNode {
@@ -39,7 +48,7 @@ data class ImageBlock(
 data class ImageRef(
     val id: String,
     val mimeType: String,
-    val file: FileRef // or lazy loader
+    val bytes: ByteArray // or lazy loader
 )
 
 data class BlockQuote(
