@@ -89,8 +89,11 @@ data class Link(
     val children: List<InlineNode>
 ) : InlineNode
 
+@Serializable
 sealed interface LinkTarget {
+    @Serializable
     data class External(val url: String) : LinkTarget
+    @Serializable
     data class Internal(val nodeId: String) : LinkTarget
 }
 
