@@ -72,14 +72,14 @@ internal class ResourceResolver(
         )
     }
 
-    suspend fun extractResource(href: String) : Pair<Uuid, Item> {
+    suspend fun extractResource(href: String) : Pair<String, Item> {
         val manifestItem = opf.manifest.items.find { item -> item.href == href }
             ?: throw EPubParseException("could not find resource '$href' in manifest")
         val bytes = (zip.getEntry(href)
             ?: throw EPubParseException("could not find resource '$href' in zip")
                 )
             .open().readByteArray()
-        val resourceId = Uuid.generateV4()
+        val resourceId = Uuid.generateV4().toString()
         resourceRepository.save(resourceId, bytes)
         return resourceId to manifestItem
     }

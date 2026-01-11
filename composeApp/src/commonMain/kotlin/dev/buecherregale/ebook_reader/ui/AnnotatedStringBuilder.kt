@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalUuidApi::class)
-
 package dev.buecherregale.ebook_reader.ui
 
 import androidx.compose.ui.graphics.Color
@@ -16,8 +14,6 @@ import dev.buecherregale.ebook_reader.core.dom.Link
 import dev.buecherregale.ebook_reader.core.dom.LinkTarget
 import dev.buecherregale.ebook_reader.core.dom.Text
 import kotlinx.serialization.serializer
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 sealed interface TextAnnotation {
 
@@ -26,7 +22,7 @@ sealed interface TextAnnotation {
     ) : TextAnnotation
 
     data class DomPosition(
-        val nodeId: Uuid,
+        val nodeId: String,
         val offsetInNode: Int
     ) : TextAnnotation
 }
@@ -50,7 +46,7 @@ class AnnotatedTextBuilder {
 
     fun build(
         inlines: List<InlineNode>,
-        baseNodeId: Uuid
+        baseNodeId: String
     ): AnnotatedString {
         appendInlineNodes(inlines, baseNodeId)
         return builder.toAnnotatedString()
@@ -58,7 +54,7 @@ class AnnotatedTextBuilder {
 
     private fun appendInlineNodes(
         nodes: List<InlineNode>,
-        baseNodeId: Uuid
+        baseNodeId: String
     ) {
         for (node in nodes) {
             when (node) {

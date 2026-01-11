@@ -135,7 +135,7 @@ class EPubParser : DocumentParser {
         }
 
         return Chapter(
-            id = generateNodeId(),
+            id = item.id,
             title = item.id,
             blocks = blocks
         )
@@ -143,6 +143,6 @@ class EPubParser : DocumentParser {
 }
 
 @OptIn(ExperimentalUuidApi::class)
-internal fun generateNodeId(): Uuid {
-    return Uuid.generateV4()
+internal fun generateNodeId(): String {
+    return Uuid.generateV4().toString()
 }
