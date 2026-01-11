@@ -87,7 +87,11 @@ fun ImageBlockView(
         bookService.bookResourceRepository(bookId).load(block.imageRef.resourceFileId)
     }
     
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+    Column(
+        modifier = Modifier
+        .fillMaxWidth()
+        .padding(vertical = 8.dp)
+    ) {
         imageBitmap?.let {
             Image(
                 bitmap = it,
@@ -130,7 +134,9 @@ fun ListBlockView(
     bookId: Uuid,
     block: ListBlock
 ) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+    Column(
+        modifier = Modifier.padding(vertical = 8.dp)
+    ) {
         block.items.forEachIndexed { index, item ->
             ListItemView(bookId, item, block.ordered, index + 1)
         }
@@ -144,7 +150,9 @@ fun ListItemView(
     ordered: Boolean,
     index: Int
 ) {
-    Row(modifier = Modifier.fillMaxWidth()) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Text(
             text = if (ordered) "$index." else "•",
             style = MaterialTheme.typography.bodyMedium,

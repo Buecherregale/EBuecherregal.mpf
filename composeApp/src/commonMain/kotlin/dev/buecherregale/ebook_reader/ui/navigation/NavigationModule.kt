@@ -61,7 +61,6 @@ val navigationModule = module {
             ) {
                 parametersOf(route.book)
             },
-            onPageChange = { },
             onToggleMenu = { },
         )
     }

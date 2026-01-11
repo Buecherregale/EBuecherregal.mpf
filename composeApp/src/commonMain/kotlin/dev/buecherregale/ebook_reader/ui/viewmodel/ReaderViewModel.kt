@@ -40,6 +40,24 @@ class ReaderViewModel(
             _uiState.update { it.copy(progress = progress) }
         }
      }
+
+    fun nextChapter() {
+        _uiState.update { state ->
+            state.dom?.let { dom ->
+                if (state.chapterIdx < dom.chapter.lastIndex) {
+                    state.copy(chapterIdx = state.chapterIdx + 1)
+                } else state
+            } ?: state
+        }
+    }
+
+    fun previousChapter() {
+        _uiState.update { state ->
+            if (state.chapterIdx > 0) {
+                state.copy(chapterIdx = state.chapterIdx - 1)
+            } else state
+        }
+    }
 }
 
 data class ReaderUiState(
@@ -49,4 +67,5 @@ data class ReaderUiState(
     val isLoading: Boolean = false,
     val book: Book,
     var dom: DomDocument? = null,
+    var chapterIdx: Int = 0,
 )

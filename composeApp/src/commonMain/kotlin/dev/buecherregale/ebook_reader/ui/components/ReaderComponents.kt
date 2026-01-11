@@ -1,6 +1,8 @@
 package dev.buecherregale.ebook_reader.ui.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ebook_reader.composeapp.generated.resources.Res
 import ebook_reader.composeapp.generated.resources.arrow_back_24px
+import ebook_reader.composeapp.generated.resources.arrow_forward_24px
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -38,7 +41,11 @@ fun ReaderTopBar(title: String, onBackClick: () -> Unit) {
 }
 
 @Composable
-fun ReaderBottomControls(currentProgress: () -> Double, onPageChange: (Int) -> Unit) {
+fun ReaderBottomControls(
+    currentProgress: () -> Double,
+    onNextChapter: () -> Unit = {},
+    onPreviousChapter: () -> Unit = {}
+) {
     Surface(
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
         tonalElevation = 4.dp
@@ -62,6 +69,24 @@ fun ReaderBottomControls(currentProgress: () -> Double, onPageChange: (Int) -> U
                     .padding(4.dp)
                     .defaultMinSize(minHeight = 8.dp),
             )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                IconButton(onClick = onPreviousChapter) {
+                    Icon(
+                        painter = painterResource(Res.drawable.arrow_back_24px),
+                        contentDescription = "Previous Chapter"
+                    )
+                }
+                IconButton(onClick = onNextChapter) {
+                    Icon(
+                        painter = painterResource(Res.drawable.arrow_forward_24px),
+                        contentDescription = "Next Chapter"
+                    )
+                }
+            }
         }
     }
 }

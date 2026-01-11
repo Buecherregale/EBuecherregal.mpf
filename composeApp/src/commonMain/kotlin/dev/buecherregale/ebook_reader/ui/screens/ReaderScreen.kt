@@ -8,7 +8,6 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
@@ -28,7 +27,6 @@ import kotlin.uuid.ExperimentalUuidApi
 @Composable
 fun ReaderScreen(
     viewModel: ReaderViewModel,
-    onPageChange: (Int) -> Unit,
     onToggleMenu: () -> Unit,
 ) {
     val navigator = koinInject<Navigator>()
@@ -49,10 +47,14 @@ fun ReaderScreen(
                 enter = slideInVertically(initialOffsetY = { it }),
                 exit = slideOutVertically(targetOffsetY = { it })
             ) {
-                ReaderBottomControls({ viewModel.uiState.value.progress }, onPageChange)
+                ReaderBottomControls(
+                    currentProgress = { viewModel.uiState.value.progress },
+                    onNextChapter = { viewModel.nextChapter() },
+                    onPreviousChapter = { viewModel.previousChapter() }
+                )
             }
         }
-    ) { paddingValues ->
+    ) { _ ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -66,7 +68,7 @@ fun ReaderScreen(
             } else {
                 ChapterView(
                     bookId = uiState.book.id,
-                    chapter = uiState.dom!!.chapter.first()
+                    chapter = uiState.dom!!.chapter[uiState.chapterIdx]
                 )
             }
         }
