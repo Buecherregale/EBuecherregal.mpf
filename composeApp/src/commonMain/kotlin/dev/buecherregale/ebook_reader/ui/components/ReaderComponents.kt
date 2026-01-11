@@ -43,6 +43,7 @@ fun ReaderTopBar(title: String, onBackClick: () -> Unit) {
 @Composable
 fun ReaderBottomControls(
     currentProgress: () -> Double,
+    onPageChange: (Int) -> Unit,
     onNextChapter: () -> Unit = {},
     onPreviousChapter: () -> Unit = {}
 ) {

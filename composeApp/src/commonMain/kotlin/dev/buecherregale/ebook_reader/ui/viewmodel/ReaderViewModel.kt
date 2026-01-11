@@ -23,8 +23,7 @@ class ReaderViewModel(
 
     init {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            updateProgress(book.progress)
+            _uiState.update { it.copy(isLoading = true, progress = book.progress) }
             val dom = bookService.open(book.id)
             _uiState.update { it.copy(title = book.metadata.title, isLoading = false, dom = dom) }
         }
@@ -34,10 +33,11 @@ class ReaderViewModel(
         _uiState.update { it.copy(isMenuVisible = !it.isMenuVisible) }
     }
 
-    fun updateProgress(progress: Double) {
+    fun updateProgress() {
+        val newProgress = uiState.value.chapterIdx.toDouble() / uiState.value.dom!!.chapter.lastIndex
         viewModelScope.launch {
-            bookService.updateProgress(book, progress)
-            _uiState.update { it.copy(progress = progress) }
+            bookService.updateProgress(book, newProgress)
+            _uiState.update { it.copy(progress = newProgress) }
         }
      }
 
@@ -45,18 +45,24 @@ class ReaderViewModel(
         _uiState.update { state ->
             state.dom?.let { dom ->
                 if (state.chapterIdx < dom.chapter.lastIndex) {
-                    state.copy(chapterIdx = state.chapterIdx + 1)
+                    state.copy(
+                        chapterIdx = state.chapterIdx + 1,
+                    )
                 } else state
             } ?: state
         }
+        updateProgress()
     }
 
     fun previousChapter() {
         _uiState.update { state ->
             if (state.chapterIdx > 0) {
-                state.copy(chapterIdx = state.chapterIdx - 1)
+                state.copy(
+                    chapterIdx = state.chapterIdx - 1,
+                )
             } else state
         }
+        updateProgress()
     }
 }
 

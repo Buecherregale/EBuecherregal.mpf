@@ -55,13 +55,14 @@ val navigationModule = module {
         )
     }
     navigation<Screen.Reader> { route ->
+        val viewModel = koinViewModel<ReaderViewModel>(
+            key = route.book.id.toString()
+        ) {
+            parametersOf(route.book)
+        }
         ReaderScreen(
-            viewModel = koinViewModel(
-                key = route.book.id.toString()
-            ) {
-                parametersOf(route.book)
-            },
-            onToggleMenu = { },
+            viewModel = viewModel,
+            onToggleMenu = { viewModel.toggleMenu() },
         )
     }
 }

@@ -5,8 +5,6 @@ package dev.buecherregale.ebook_reader.ui.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -14,7 +12,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import dev.buecherregale.ebook_reader.ui.components.ReaderBottomControls
@@ -34,7 +31,7 @@ fun ReaderScreen(
     Scaffold(
         topBar = {
             AnimatedVisibility(
-                visible = viewModel.uiState.value.isMenuVisible,
+                visible = uiState.isMenuVisible,
                 enter = slideInVertically(initialOffsetY = { -it }),
                 exit = slideOutVertically(targetOffsetY = { -it })
             ) {
@@ -43,12 +40,13 @@ fun ReaderScreen(
         },
         bottomBar = {
             AnimatedVisibility(
-                visible = viewModel.uiState.value.isMenuVisible,
+                visible = uiState.isMenuVisible,
                 enter = slideInVertically(initialOffsetY = { it }),
                 exit = slideOutVertically(targetOffsetY = { it })
             ) {
                 ReaderBottomControls(
-                    currentProgress = { viewModel.uiState.value.progress },
+                    currentProgress = { uiState.progress },
+                    onPageChange = { /* No-op for now */ },
                     onNextChapter = { viewModel.nextChapter() },
                     onPreviousChapter = { viewModel.previousChapter() }
                 )
@@ -58,17 +56,14 @@ fun ReaderScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .clickable(
-                    indication = null,
-                    interactionSource = remember { MutableInteractionSource() }
-                ) { onToggleMenu() }
         ) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
                 ChapterView(
                     bookId = uiState.book.id,
-                    chapter = uiState.dom!!.chapter[uiState.chapterIdx]
+                    chapter = uiState.dom!!.chapter[uiState.chapterIdx],
+                    onToggleMenu = onToggleMenu
                 )
             }
         }
