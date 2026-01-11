@@ -4,7 +4,6 @@ package dev.buecherregale.ebook_reader.core.repository
 
 import dev.buecherregale.ebook_reader.core.domain.Book
 import dev.buecherregale.ebook_reader.core.domain.BookMetadata
-import dev.buecherregale.ebook_reader.core.domain.BookType
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
@@ -14,10 +13,16 @@ import dev.buecherregale.sql.BooksQueries
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-typealias BookRepository = Repository<Uuid, Book>
-typealias BookCoverRepository = FileRepository<Uuid>
 /** repository for the book files themselves (e.g. epub) */
-typealias BookFileRepository = FileRepository<Uuid>
+class BookFileRepository(
+    delegate: FileRepository<Uuid>
+): FileBasedRepository<Uuid> by delegate
+
+class BookCoverRepository(
+    delegate: FileRepository<Uuid>
+): FileBasedRepository<Uuid> by delegate
+
+typealias BookRepository = Repository<Uuid, Book>
 
 class BookSqlRepository(
     private val queries: BooksQueries
@@ -41,8 +46,6 @@ class BookSqlRepository(
             id = key.toString(),
             progress = value.progress,
 
-            book_type = value.bookType.name,
-
             title = value.metadata.title,
             author = value.metadata.author,
             isbn = value.metadata.isbn,
@@ -61,7 +64,6 @@ fun Books.toDomain(): Book =
     Book(
         id = Uuid.parse(id),
         progress = progress,
-        bookType = BookType.valueOf(book_type),
         metadata = BookMetadata(
             title = title,
             author = author,

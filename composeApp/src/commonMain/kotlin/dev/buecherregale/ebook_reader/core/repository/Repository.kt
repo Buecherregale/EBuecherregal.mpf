@@ -32,11 +32,16 @@ interface Repository<Key, T> {
     suspend fun delete(key: Key)
 }
 
+interface FileBasedRepository<Key>: Repository<Key, ByteArray> {
+    fun getFile(key: Key): FileRef
+}
+
+
 class FileRepository<Key>(
     private val keyToFilename: (Key) -> String,
     private val storeInDir: FileRef,
     private val fileService: FileService,
-) : Repository<Key, ByteArray> {
+) : FileBasedRepository<Key> {
 
     override suspend fun loadAll(): List<ByteArray> {
         return fileService.listChildren(storeInDir)
@@ -61,5 +66,5 @@ class FileRepository<Key>(
         TODO("cant delete files yet")
     }
 
-    fun getFile(key: Key): FileRef = storeInDir.resolve(keyToFilename(key))
+    override fun getFile(key: Key): FileRef = storeInDir.resolve(keyToFilename(key))
 }

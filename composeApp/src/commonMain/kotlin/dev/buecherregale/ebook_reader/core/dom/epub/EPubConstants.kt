@@ -1,4 +1,4 @@
-package dev.buecherregale.ebook_reader.core.formats.books.epub
+package dev.buecherregale.ebook_reader.core.dom.epub
 
 /**
  * Class containing constants for use in epub xml

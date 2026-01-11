@@ -4,9 +4,6 @@ CREATE TABLE books (
   -- reading state
   progress REAL NOT NULL,
 
-  -- type info
-  book_type TEXT NOT NULL,
-
   -- metadata (flattened)
   title TEXT NOT NULL,
   author TEXT NOT NULL,
@@ -28,17 +25,15 @@ upsert:
 INSERT INTO books(
   id,
   progress,
-  book_type,
   title,
   author,
   isbn,
   language
 )
-VALUES (?, ?, ?, ?, ?, ?, ?)
+VALUES (?, ?, ?, ?,?, ?)
 ON CONFLICT(id)
  DO UPDATE SET
     progress = excluded.progress,
-    book_type = excluded.book_type,
     title = excluded.title,
     author = excluded.author,
     isbn = excluded.isbn,

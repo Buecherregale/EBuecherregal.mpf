@@ -1,18 +1,18 @@
 package dev.buecherregale.ebook_reader.core.service
 
 import co.touchlab.kermit.Logger
+import dev.buecherregale.ebook_reader.core.dom.DomDocument
+import dev.buecherregale.ebook_reader.core.dom.ParserFactory
+import dev.buecherregale.ebook_reader.core.dom.ResourceRepository
 import dev.buecherregale.ebook_reader.core.domain.Book
-import dev.buecherregale.ebook_reader.core.domain.BookMetadata
-import dev.buecherregale.ebook_reader.core.formats.books.BookParser
-import dev.buecherregale.ebook_reader.core.formats.books.BookParserFactory
-import dev.buecherregale.ebook_reader.core.formats.books.NavigationController
 import dev.buecherregale.ebook_reader.core.repository.BookCoverRepository
 import dev.buecherregale.ebook_reader.core.repository.BookFileRepository
 import dev.buecherregale.ebook_reader.core.repository.BookRepository
 import dev.buecherregale.ebook_reader.core.repository.FileRepository
+import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
-import kotlinx.io.readByteArray
+import dev.buecherregale.ebook_reader.core.util.JsonUtil
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -23,7 +23,8 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 class BookService(
     private val fileService: FileService,
-    private val parserFactory: BookParserFactory,
+    private val jsonUtil: JsonUtil,
+
     private val repository: BookRepository,
     private val coverRepository: BookCoverRepository,
     private val fileRepository: BookFileRepository,
@@ -31,39 +32,72 @@ class BookService(
 
     /**
      * Import the book into the app system.
-     * Copies the book files to the app files.
-     * Extracts a cover based on the parser and saves this in an additional file.
-     * Creates a meta file for the book json data.
+     * Converts the book into the internal DOM structure, serializing it to file.
+     * Stores the book (meta-)data.
      *
-     * @param bookFiles the book file(s)
+     * This method may run for quite some time, depending on the format and size of the book.
+     *
+     * @param bookFile the book file(s)
+     *
      * @return the book instance with metadata
      */
-    suspend fun importBook(bookFiles: FileRef): Book {
-        Logger.i("importing book from '$bookFiles'")
-        val bookId: Uuid = Uuid.generateV4()
-        // todo: only copy when parser exists, no merit elsewise, possibly just delete file when no parser exists (new method for fileService)
-        fileService.open(bookFiles).use { input ->
-            fileRepository.save(bookId, input.readByteArray())
-        }
+    suspend fun importBook(bookFile: FileRef): Book {
+        Logger.i { "importing book from '$bookFile'" }
 
-        val parser: BookParser = parserFactory.get(fileRepository.getFile(bookId))
+        val bookId = Uuid.generateV4()
 
-        val bookMetadata: BookMetadata = parser.metadata()
+        val parser = ParserFactory.get(bookFile, fileService)
+        val domBook = parser.parse(bookId, bookFile, fileService, bookResourceRepository(bookId))
 
-        val coverBytes: ByteArray? = parser.coverBytes()
-        coverBytes?.let { coverRepository.save(bookId, it) }
+        repository.save(bookId, domBook.first)
+        fileRepository.save(bookId, jsonUtil.serialize(domBook.second).encodeToByteArray())
+        parser.getCoverBytes(bookFile, fileService)?.let { coverRepository.save(bookId, it) }
 
-        // after updating the cover path, save the data to file
-        val book = Book(
-            bookId,
-            0.0,
-            parser.parsableType(),
-            bookMetadata
+        Logger.i("imported book '${domBook.first.metadata.title}' with id ${domBook.first.id}")
+
+        return domBook.first
+    }
+
+    /**
+     * Reads the serialized DOM used for rendering the book.
+     * This file can be quite large, reading can be quite slow, so reading DOM is separated from metadata ([.readData]).
+     * This method should be called when the book gets rendered.
+     *
+     * @param bookId the id of the book to open
+     *
+     * @return the deserialized DOM
+     */
+    suspend fun open(bookId: Uuid) : DomDocument {
+        val bytes = fileRepository.load(bookId) ?: throw IllegalArgumentException("book $bookId not found")
+        return jsonUtil.deserialize(bytes.decodeToString())
+    }
+
+    /**
+     * Obtains the repository where the resources for a given book are stored.
+     *
+     * Resources, like images, are stored as files on disk in [AppDirectory.DATA] based on the book.
+     * This method creates the correct repository to manage these files for a single given book.
+     *
+     * **NOTE:** if the bookId is invalid, meaning no book with that id exists, the (empty) repository describing
+     * the resources is still returned.
+     *
+     * The repository itself is the interface to manage data and does not hold any data itself. Therefore, construction is cheap.
+     *
+     * @param bookId the id of the book (used in file path)
+     *
+     * @return the repository managing the resources of a book
+     */
+    fun bookResourceRepository(bookId: Uuid) : ResourceRepository {
+        return ResourceRepository(
+            FileRepository(
+                keyToFilename = { key -> "${key}.resource" },
+                storeInDir = fileService.getAppDirectory(AppDirectory.DATA)
+                    .resolve("books")
+                    .resolve(bookId.toString())
+                    .resolve("resources"),
+                fileService = fileService
+            )
         )
-        repository.save(book.id, book)
-
-        Logger.i("imported book '${book.metadata.title}' with id ${book.id}")
-        return book
     }
 
     /**
@@ -78,20 +112,6 @@ class BookService(
     }
 
     /**
-     * Creates the navigation controller to navigate the book
-     * and obtain its content. <br></br>
-     * This will open and read the book files.
-     *
-     * @param bookId the id of the book
-     * @return a navigation controller implementation based on the used parser
-     */
-    suspend fun open(bookId: Uuid): NavigationController {
-        return parserFactory
-            .get(fileRepository.getFile(bookId))
-            .navigationController()
-    }
-
-    /**
      * Updates the book progress. <br></br>
      * <bold>WRITES THE BOOK DATA again</bold> <br></br>
      * Use this method instead of manipulating the [Book] class.
@@ -102,14 +122,13 @@ class BookService(
      * @return the updated book
      */
     suspend fun updateProgress(book: Book, newProgress: Double): Book {
-        val v2: Book = Book(
+        val v2 = Book(
             book.id,
             newProgress,
-            book.bookType,
             book.metadata,
         )
 
-        repository.save(v2.id, v2)
+        saveBookData(v2)
         return v2
     }
 
@@ -129,7 +148,7 @@ class BookService(
 
     /**
      * Reads the byte content of the file storing the cover from [.getCoverFile].
-     * TODO: possibly give filetype (easy for epub via content-type). For that [BookParser.coverBytes] needs to return the filetype
+     * TODO: possibly give filetype (easy for epub via content-type). For that [dev.buecherregale.ebook_reader.core.dom.DocumentParser.getCoverBytes] needs to return the filetype
      *
      * @param bookId the id of the book
      * @return the bytes of the cover image

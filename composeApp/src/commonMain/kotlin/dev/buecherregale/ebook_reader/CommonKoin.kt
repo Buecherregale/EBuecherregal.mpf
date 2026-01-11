@@ -1,7 +1,6 @@
 package dev.buecherregale.ebook_reader
 
 import dev.buecherregale.ebook_reader.core.config.SettingsManager
-import dev.buecherregale.ebook_reader.core.formats.books.BookParserFactory
 import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporterFactory
 import dev.buecherregale.ebook_reader.core.repository.BookCoverRepository
 import dev.buecherregale.ebook_reader.core.repository.BookFileRepository
@@ -27,14 +26,17 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.binds
 import org.koin.dsl.module
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 @OptIn(KoinExperimentalAPI::class, ExperimentalUuidApi::class)
 val commonModule: Module = module {
-    single { Buecherregal(createSqlDriver(
-        dbName = "ebook-reader",
-        create = false
-    )) }
+    single {
+        Buecherregal(
+            createSqlDriver(
+                get<FileService>(),
+                appName = "ebook-reader"
+            )
+        )
+    }
     single { get<Buecherregal>().librariesQueries }
     single { get<Buecherregal>().booksQueries }
     single { get<Buecherregal>().dictionariesQueries }
@@ -42,34 +44,49 @@ val commonModule: Module = module {
     singleOf(::JsonUtil)
 
     singleOf(::LibrarySqlRepository) binds arrayOf(LibraryRepository::class)
-    single { FileRepository<Uuid>(
-        keyToFilename = { name -> "$name.cover" },
-        get<FileService>().getAppDirectory(AppDirectory.DATA).resolve("libraries"),
-        get()
-    ) } binds arrayOf(LibraryImageRepository::class)
+    single {
+        LibraryImageRepository(
+            delegate = FileRepository(
+                keyToFilename = { name -> "$name.cover" },
+                get<FileService>().getAppDirectory(AppDirectory.DATA).resolve("libraries"),
+                get()
+            )
+        )
+    }
     singleOf(::BookSqlRepository) binds arrayOf(BookRepository::class)
-    single { FileRepository<Uuid>(
-        keyToFilename = { name -> "$name.cover" },
-        get<FileService>().getAppDirectory(AppDirectory.DATA).resolve("books"),
-        get()
-    ) } binds arrayOf(BookCoverRepository::class)
-    single { FileRepository<Uuid>(
-        keyToFilename = { name -> "$name.book" },
-        get<FileService>().getAppDirectory(AppDirectory.DATA).resolve("books"),
-        get()
-    ) } binds arrayOf(BookFileRepository::class)
+    single {
+        BookCoverRepository(
+            delegate = FileRepository(
+                keyToFilename = { name -> "$name.cover" },
+                get<FileService>().getAppDirectory(AppDirectory.DATA).resolve("books"),
+                get()
+            )
+        )
+    }
+    single {
+        BookFileRepository(
+            delegate = FileRepository(
+                keyToFilename = { name -> "$name.book" },
+                get<FileService>().getAppDirectory(AppDirectory.DATA).resolve("books"),
+                get()
+            )
+        )
+    }
     singleOf(::DictionarySqlRepository) binds arrayOf(DictionaryRepository::class)
-    single { FileRepository<Uuid>(
-        keyToFilename = { id -> "$id.json" },
-        get<FileService>().getAppDirectory(AppDirectory.DATA).resolve("dictionaries"),
-        get()
-        ) } binds arrayOf(DictionaryEntryRepository::class)
+    single {
+        DictionaryEntryRepository(
+            delegate = FileRepository(
+                keyToFilename = { id -> "$id.json" },
+                get<FileService>().getAppDirectory(AppDirectory.DATA).resolve("dictionaries"),
+                get()
+            )
+        )
+    }
 
     singleOf(::SettingsManager)
     singleOf(::BookService)
     singleOf(::DictionaryService)
     singleOf(::LibraryService)
 
-    singleOf(::BookParserFactory)
     singleOf(::DictionaryImporterFactory)
 }

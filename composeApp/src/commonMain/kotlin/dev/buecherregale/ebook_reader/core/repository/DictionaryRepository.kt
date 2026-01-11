@@ -13,8 +13,11 @@ import dev.buecherregale.sql.DictionariesQueries
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
+class DictionaryEntryRepository(
+    delegate: FileRepository<Uuid>
+): FileBasedRepository<Uuid> by delegate
+
 typealias DictionaryMetadataRepository = Repository<Uuid, DictionaryMetadata>
-typealias DictionaryEntryRepository = FileRepository<Uuid>
 
 fun Dictionaries.toDomain(): DictionaryMetadata =
     DictionaryMetadata(

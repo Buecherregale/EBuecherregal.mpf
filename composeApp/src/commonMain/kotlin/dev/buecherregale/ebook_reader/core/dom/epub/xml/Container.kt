@@ -1,4 +1,4 @@
-package dev.buecherregale.ebook_reader.core.formats.books.epub.xml
+package dev.buecherregale.ebook_reader.core.dom.epub.xml
 
 import kotlinx.serialization.Serializable
 import nl.adaptivity.xmlutil.serialization.*

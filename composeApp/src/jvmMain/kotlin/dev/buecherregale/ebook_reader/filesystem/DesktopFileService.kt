@@ -1,11 +1,14 @@
 package dev.buecherregale.ebook_reader.filesystem
 
+import co.touchlab.kermit.Logger
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileMetadata
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.service.filesystem.ZipFileRef
 import dev.buecherregale.ebook_reader.toPath
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.io.Source
 import kotlinx.io.asInputStream
 import kotlinx.io.asSource
@@ -20,27 +23,69 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
 import java.util.zip.GZIPInputStream
+import java.util.zip.ZipFile
 
 class DesktopFileService(appName: String) : FileService {
 
-    private val configDir: Path =
-        Path.of(System.getenv("XDG_CONFIG_HOME"), appName)
-    private val stateDir: Path = Path.of(System.getenv("XDG_STATE_HOME"), appName)
-    private val dataDir: Path = Path.of(System.getenv("XDG_DATA_HOME"), appName)
+    private val configDir: Path = configDir(appName)
+    private val stateDir: Path = stateDir(appName)
+    private val dataDir: Path = dataDir(appName)
+
+    private fun configDir(appName: String): Path {
+        val xdg = System.getenv("XDG_CONFIG_HOME")
+        if (xdg != null)
+            return Path.of(xdg, appName)
+        val home = System.getProperty("user.home")
+        if (home != null)
+            return Path.of(System.getProperty("user.home"), ".$appName", "config")
+        val fallback = Path.of(appName).toAbsolutePath()
+        Logger.w { "XDG_CONFIG_HOME and 'user.home' not not set, fallback to $fallback" }
+        return fallback
+    }
+
+    private fun stateDir(appName: String): Path {
+        val xdg = System.getenv("XDG_STATE_HOME")
+        if (xdg != null)
+            return Path.of(xdg, appName)
+        val home = System.getProperty("user.home")
+        if (home != null)
+            return Path.of(System.getProperty("user.home"), ".$appName", "state")
+        val fallback = Path.of(appName).toAbsolutePath()
+        Logger.w { "XDG_STATE_HOME and 'user.home' not not set, fallback to $fallback" }
+        return fallback
+    }
+
+    private fun dataDir(appName: String): Path {
+        val xdg = System.getenv("XDG_DATA_HOME")
+        if (xdg != null)
+            return Path.of(xdg, appName)
+        val home = System.getProperty("user.home")
+        if (home != null)
+            return Path.of(System.getProperty("user.home"), ".$appName", "data")
+        val fallback = Path.of(appName).toAbsolutePath()
+        Logger.w { "XDG_STATE_HOME and 'user.home' not not set, fallback to $fallback" }
+        return fallback
+    }
 
     override suspend fun read(file: FileRef): String {
-        return Files.readString(file.toPath())
+        return withContext(Dispatchers.IO) {
+            Files.readString(file.toPath())
+        }
     }
 
     override suspend fun readBytes(file: FileRef): ByteArray {
-        return Files.readAllBytes(file.toPath())
+        return withContext(Dispatchers.IO) {
+            Files.readAllBytes(file.toPath())
+        }
     }
 
     override suspend fun read(
         directory: AppDirectory,
         relativeRef: FileRef
     ): String {
-        return Files.readString(getAppDirectory(directory).resolve(relativeRef).toPath())
+        return withContext(Dispatchers.IO) {
+            Files.readString(getAppDirectory(directory).resolve(relativeRef).toPath())
+        }
     }
 
     override fun open(file: FileRef): Source {
@@ -50,7 +95,9 @@ class DesktopFileService(appName: String) : FileService {
     }
 
     override suspend fun readZip(file: FileRef): ZipFileRef {
-        return DesktopZipFileRef(java.util.zip.ZipFile(file.toPath().toFile()))
+        return DesktopZipFileRef(withContext(Dispatchers.IO) {
+            ZipFile(file.toPath().toFile())
+        })
     }
 
     override suspend fun write(
@@ -65,13 +112,17 @@ class DesktopFileService(appName: String) : FileService {
         content: ByteArray
     ) {
         val path = file.toPath()
-        Files.createDirectories(path.parent)
-        Files.write(
-            path,
-            content,
-            StandardOpenOption.CREATE,
-            StandardOpenOption.TRUNCATE_EXISTING
-        )
+        withContext(Dispatchers.IO) {
+            Files.createDirectories(path.parent)
+        }
+        withContext(Dispatchers.IO) {
+            Files.write(
+                path,
+                content,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING
+            )
+        }
     }
 
     override suspend fun copy(
@@ -79,7 +130,9 @@ class DesktopFileService(appName: String) : FileService {
         target: FileRef
     ) {
         val path = target.toPath()
-        Files.createDirectories(path.parent)
+        withContext(Dispatchers.IO) {
+            Files.createDirectories(path.parent)
+        }
         input.use {
             Files.copy(input.asInputStream(), path, StandardCopyOption.REPLACE_EXISTING)
         }
@@ -100,14 +153,18 @@ class DesktopFileService(appName: String) : FileService {
             return FileMetadata(
                 fileName,
                 extension = null,
-                size = if (Files.isDirectory(path)) 0 else Files.size(path),
+                size = if (Files.isDirectory(path)) 0 else withContext(Dispatchers.IO) {
+                    Files.size(path)
+                },
                 isDirectory = Files.isDirectory(path)
             )
         }
         return FileMetadata(
             name = fileName.take(firstDot),
             extension = fileName.substring(firstDot),
-            size = if (Files.isDirectory(path)) 0 else Files.size(path),
+            size = if (Files.isDirectory(path)) 0 else withContext(Dispatchers.IO) {
+                Files.size(path)
+            },
             isDirectory = Files.isDirectory(path)
         )
     }
@@ -133,7 +190,9 @@ class DesktopFileService(appName: String) : FileService {
         }
 
         try {
-            Files.newDirectoryStream(path).use { stream ->
+            withContext(Dispatchers.IO) {
+                Files.newDirectoryStream(path)
+            }.use { stream ->
                 val result: MutableList<FileRef> = ArrayList()
                 for (p in stream) {
                     result.add(FileRef(p.toString()))

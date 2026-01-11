@@ -2,6 +2,7 @@ package dev.buecherregale.ebook_reader.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.buecherregale.ebook_reader.core.dom.DomDocument
 import dev.buecherregale.ebook_reader.core.domain.Book
 import dev.buecherregale.ebook_reader.core.service.BookService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,13 +18,14 @@ class ReaderViewModel(
     private val bookService: BookService
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ReaderUiState())
+    private val _uiState = MutableStateFlow(ReaderUiState(book =book))
     val uiState: StateFlow<ReaderUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            updateProgress(book.progress)
-            _uiState.update { it.copy(title = book.metadata.title) }
+            _uiState.update { it.copy(isLoading = true, progress = book.progress) }
+            val dom = bookService.open(book.id)
+            _uiState.update { it.copy(title = book.metadata.title, isLoading = false, dom = dom) }
         }
     }
 
@@ -31,17 +33,45 @@ class ReaderViewModel(
         _uiState.update { it.copy(isMenuVisible = !it.isMenuVisible) }
     }
 
-    fun updateProgress(progress: Double) {
+    fun updateProgress() {
+        val newProgress = uiState.value.chapterIdx.toDouble() / uiState.value.dom!!.chapter.lastIndex
         viewModelScope.launch {
-            bookService.updateProgress(book, progress)
-            _uiState.update { it.copy(progress = progress) }
+            bookService.updateProgress(book, newProgress)
+            _uiState.update { it.copy(progress = newProgress) }
         }
      }
+
+    fun nextChapter() {
+        _uiState.update { state ->
+            state.dom?.let { dom ->
+                if (state.chapterIdx < dom.chapter.lastIndex) {
+                    state.copy(
+                        chapterIdx = state.chapterIdx + 1,
+                    )
+                } else state
+            } ?: state
+        }
+        updateProgress()
+    }
+
+    fun previousChapter() {
+        _uiState.update { state ->
+            if (state.chapterIdx > 0) {
+                state.copy(
+                    chapterIdx = state.chapterIdx - 1,
+                )
+            } else state
+        }
+        updateProgress()
+    }
 }
 
 data class ReaderUiState(
     val title: String = "",
     val progress: Double = 0.0,
     val isMenuVisible: Boolean = true,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val book: Book,
+    var dom: DomDocument? = null,
+    var chapterIdx: Int = 0,
 )
