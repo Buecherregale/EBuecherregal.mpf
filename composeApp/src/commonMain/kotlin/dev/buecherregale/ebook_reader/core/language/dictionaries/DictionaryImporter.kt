@@ -1,4 +1,4 @@
-package dev.buecherregale.ebook_reader.core.formats.dictionaries
+package dev.buecherregale.ebook_reader.core.language.dictionaries
 
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef

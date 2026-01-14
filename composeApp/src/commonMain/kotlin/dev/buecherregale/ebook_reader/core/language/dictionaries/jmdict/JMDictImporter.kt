@@ -1,12 +1,12 @@
-package dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict
+package dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict
 
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.domain.DictionaryEntry
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporter
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.xml.JMDict
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.xml.JMEntry
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.xml.KanjiElement
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.xml.ReadingElement
+import dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter
+import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.xml.JMDict
+import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.xml.JMEntry
+import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.xml.KanjiElement
+import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.xml.ReadingElement
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.util.ImportUtil

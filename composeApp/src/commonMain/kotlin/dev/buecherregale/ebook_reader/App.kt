@@ -2,8 +2,8 @@ package dev.buecherregale.ebook_reader
 
 import androidx.compose.runtime.Composable
 import androidx.navigation3.ui.NavDisplay
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporterFactory
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.JMDictImporter
+import dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporterFactory
+import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.JMDictImporter
 import dev.buecherregale.ebook_reader.ui.navigation.Navigator
 import dev.buecherregale.ebook_reader.ui.navigation.navigationModule
 import dev.buecherregale.ebook_reader.ui.theming.ShellTheme

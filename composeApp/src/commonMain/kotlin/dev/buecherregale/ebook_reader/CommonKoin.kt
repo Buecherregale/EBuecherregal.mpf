@@ -1,7 +1,7 @@
 package dev.buecherregale.ebook_reader
 
 import dev.buecherregale.ebook_reader.core.config.SettingsManager
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporterFactory
+import dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporterFactory
 import dev.buecherregale.ebook_reader.core.repository.BookCoverRepository
 import dev.buecherregale.ebook_reader.core.repository.BookFileRepository
 import dev.buecherregale.ebook_reader.core.repository.BookRepository

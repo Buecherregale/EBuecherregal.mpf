@@ -4,7 +4,7 @@ import co.touchlab.kermit.Logger
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.domain.DictionaryEntry
 import dev.buecherregale.ebook_reader.core.domain.DictionaryMetadata
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporterFactory
+import dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporterFactory
 import dev.buecherregale.ebook_reader.core.repository.DictionaryEntryRepository
 import dev.buecherregale.ebook_reader.core.repository.DictionaryMetadataRepository
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
@@ -17,7 +17,7 @@ import kotlin.uuid.Uuid
  * Service to download and manage downloaded dictionaries. When downloading a dictionary via [.download],
  * the dictionary is transformed into a standard format, the [Dictionary] dto and saved like that.
  * <br></br>
- * Supported dictionaries need to have a [dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporter] implemented and registered
+ * Supported dictionaries need to have a [dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter] implemented and registered
  * in the [DictionaryImporterFactory]. <br></br>
  * Generally this class will write and read dictionaries from [.dictionaryDir], deleting or modifying files therein may result in errors.
  */
@@ -31,7 +31,7 @@ class DictionaryService(
     /**
      * Downloads the dictionary, transforming it into the [dev.buecherregale.ebook_reader.core.domain.Dictionary] form and saving it to [.getDictionaryFile].
      * <br></br>
-     * This happens by calling [dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporter.download]. <br></br>
+     * This happens by calling [dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter.download]. <br></br>
      * Then its serialized as a json file to [.getDictionaryFile].
      *
      * @param dictionaryName the dictionary name
@@ -86,7 +86,7 @@ class DictionaryService(
 
     /**
      * Lists the names of all supported dictionaries. <br></br>
-     * Supported means that a [dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporter] with the given [dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporter.getDictionaryName] has been registered
+     * Supported means that a [dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter] with the given [dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter.getDictionaryName] has been registered
      * in [DictionaryImporterFactory].
      *
      * @return a list of all names of supported dictionaries
