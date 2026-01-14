@@ -3,26 +3,15 @@
 package dev.buecherregale.ebook_reader.ui.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import dev.buecherregale.ebook_reader.core.dom.BlockNode
-import dev.buecherregale.ebook_reader.core.dom.BlockQuote
-import dev.buecherregale.ebook_reader.core.dom.Heading
-import dev.buecherregale.ebook_reader.core.dom.ImageBlock
-import dev.buecherregale.ebook_reader.core.dom.ListBlock
-import dev.buecherregale.ebook_reader.core.dom.ListItem
-import dev.buecherregale.ebook_reader.core.dom.Paragraph
+import dev.buecherregale.ebook_reader.core.dom.*
 import dev.buecherregale.ebook_reader.core.dom.epub.generateNodeId
 import dev.buecherregale.ebook_reader.core.service.BookService
 import dev.buecherregale.ebook_reader.ui.AnnotatedTextBuilder
@@ -49,7 +38,7 @@ fun ParagraphView(block: Paragraph) {
     val annotatedString = remember(block) {
         AnnotatedTextBuilder().build(block.inlines, block.id)
     }
-    Text(
+    SelectableText(
         text = annotatedString,
         style = MaterialTheme.typography.bodyMedium,
         modifier = Modifier.padding(bottom = 8.dp)
@@ -69,7 +58,7 @@ fun HeadingView(block: Heading) {
         5 -> MaterialTheme.typography.titleMedium
         else -> MaterialTheme.typography.titleSmall
     }
-    Text(
+    SelectableText(
         text = annotatedString,
         style = style,
         modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
@@ -104,7 +93,7 @@ fun ImageBlockView(
             val annotatedString = remember(caption) {
                 AnnotatedTextBuilder().build(caption, generateNodeId())
             }
-            Text(
+            SelectableText(
                 text = annotatedString,
                 style = MaterialTheme.typography.labelMedium,
                 modifier = Modifier.padding(top = 4.dp)
@@ -152,7 +141,7 @@ fun ListItemView(
     Row(
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
+        SelectableText(
             text = if (ordered) "$index." else "•",
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.width(24.dp)
