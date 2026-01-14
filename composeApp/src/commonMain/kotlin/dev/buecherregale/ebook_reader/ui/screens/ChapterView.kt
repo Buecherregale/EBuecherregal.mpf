@@ -12,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import dev.buecherregale.ebook_reader.core.dom.Chapter
 import dev.buecherregale.ebook_reader.ui.components.BlockRenderer
@@ -23,8 +24,10 @@ import kotlin.uuid.Uuid
 fun ChapterView(
     bookId: Uuid,
     chapter: Chapter,
+    selectedRange: TextRange? = null,
+    selectedBlockId: String? = null,
     onToggleMenu: () -> Unit = {},
-    onSelected: (SelectedText) -> Unit = {},
+    onSelected: (SelectedText, String) -> Unit = { _, _ -> },
 ) {
     Column(
         modifier = Modifier
@@ -37,7 +40,7 @@ fun ChapterView(
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         chapter.blocks.forEach { block ->
-            BlockRenderer(bookId, block, onSelected)
+            BlockRenderer(bookId, block, selectedRange, selectedBlockId, onSelected)
         }
     }
 }

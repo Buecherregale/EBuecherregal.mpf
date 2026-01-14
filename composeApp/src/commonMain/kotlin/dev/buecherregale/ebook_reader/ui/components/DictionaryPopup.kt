@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.unit.dp
@@ -21,16 +22,22 @@ import dev.buecherregale.ebook_reader.core.language.findWordUAX29
 class PopupState {
     var text by mutableStateOf<String?>(null)
     var offset by mutableStateOf(Offset.Zero)
+    var selectedRange by mutableStateOf<TextRange?>(null)
+    var selectedBlockId by mutableStateOf<String?>(null)
 
-    fun show(selectedText: SelectedText) {
+    fun show(selectedText: SelectedText, blockId: String) {
         val word = findWordUAX29(selectedText.text, selectedText.index)
             ?: return
         text = word.word
         offset = selectedText.position
+        selectedRange = TextRange(word.start, word.endExclusive)
+        selectedBlockId = blockId
     }
 
     fun dismiss() {
         text = null
+        selectedRange = null
+        selectedBlockId = null
     }
 
     val isVisible: Boolean

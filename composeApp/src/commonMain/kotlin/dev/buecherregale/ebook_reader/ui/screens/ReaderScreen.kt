@@ -66,8 +66,10 @@ fun ReaderScreen(
                 ChapterView(
                     bookId = uiState.book.id,
                     chapter = uiState.dom!!.chapter[uiState.chapterIdx],
+                    selectedRange = popupState.selectedRange,
+                    selectedBlockId = popupState.selectedBlockId,
                     onToggleMenu = onToggleMenu,
-                    onSelected = { popupState.show(it) }
+                    onSelected = { selectedText, blockId -> popupState.show(selectedText, blockId) }
                 )
                 DictionaryPopup(state = popupState)
             }
