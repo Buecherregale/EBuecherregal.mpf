@@ -14,7 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.buecherregale.ebook_reader.core.dom.Chapter
-import dev.buecherregale.ebook_reader.ui.components.blocks.BlockRenderer
+import dev.buecherregale.ebook_reader.ui.components.BlockRenderer
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 

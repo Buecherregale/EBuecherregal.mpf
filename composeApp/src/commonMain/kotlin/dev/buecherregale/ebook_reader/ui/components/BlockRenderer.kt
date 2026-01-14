@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalUuidApi::class)
 
-package dev.buecherregale.ebook_reader.ui.components.blocks
+package dev.buecherregale.ebook_reader.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -26,7 +26,6 @@ import dev.buecherregale.ebook_reader.core.dom.Paragraph
 import dev.buecherregale.ebook_reader.core.dom.epub.generateNodeId
 import dev.buecherregale.ebook_reader.core.service.BookService
 import dev.buecherregale.ebook_reader.ui.AnnotatedTextBuilder
-import dev.buecherregale.ebook_reader.ui.components.rememberImageBitmap
 import org.koin.compose.koinInject
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
