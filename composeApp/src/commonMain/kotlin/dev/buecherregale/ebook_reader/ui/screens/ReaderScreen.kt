@@ -14,8 +14,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import dev.buecherregale.ebook_reader.ui.components.DictionaryPopup
 import dev.buecherregale.ebook_reader.ui.components.ReaderBottomControls
 import dev.buecherregale.ebook_reader.ui.components.ReaderTopBar
+import dev.buecherregale.ebook_reader.ui.components.rememberPopupState
 import dev.buecherregale.ebook_reader.ui.navigation.Navigator
 import dev.buecherregale.ebook_reader.ui.viewmodel.ReaderViewModel
 import org.koin.compose.koinInject
@@ -60,11 +62,14 @@ fun ReaderScreen(
             if (uiState.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
+                val popupState = rememberPopupState()
                 ChapterView(
                     bookId = uiState.book.id,
                     chapter = uiState.dom!!.chapter[uiState.chapterIdx],
-                    onToggleMenu = onToggleMenu
+                    onToggleMenu = onToggleMenu,
+                    onSelected = { popupState.show(it) }
                 )
+                DictionaryPopup(state = popupState)
             }
         }
     }

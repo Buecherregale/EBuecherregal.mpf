@@ -22,31 +22,38 @@ import kotlin.uuid.Uuid
 @Composable
 fun BlockRenderer(
     bookId: Uuid,
-    block: BlockNode
+    block: BlockNode,
+    onSelected: (SelectedText) -> Unit = {},
 ) {
     when (block) {
-        is Paragraph -> ParagraphView(block)
-        is Heading -> HeadingView(block)
-        is ImageBlock -> ImageBlockView(bookId, block)
-        is BlockQuote -> BlockQuoteView(bookId, block)
-        is ListBlock -> ListBlockView(bookId, block)
+        is Paragraph -> ParagraphView(block, onSelected)
+        is Heading -> HeadingView(block, onSelected)
+        is ImageBlock -> ImageBlockView(bookId, block, onSelected = onSelected)
+        is BlockQuote -> BlockQuoteView(bookId, block, onSelected)
+        is ListBlock -> ListBlockView(bookId, block, onSelected)
     }
 }
 
 @Composable
-fun ParagraphView(block: Paragraph) {
+fun ParagraphView(
+    block: Paragraph,
+    onSelected: (SelectedText) -> Unit = {},
+) {
     val annotatedString = remember(block) {
         AnnotatedTextBuilder().build(block.inlines, block.id)
     }
     SelectableText(
         text = annotatedString,
         style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.padding(bottom = 8.dp)
+        modifier = Modifier.padding(bottom = 8.dp),
+        onSelected = onSelected
     )
 }
 
 @Composable
-fun HeadingView(block: Heading) {
+fun HeadingView(block: Heading,
+                onSelected: (SelectedText) -> Unit = {}
+) {
     val annotatedString = remember(block) {
         AnnotatedTextBuilder().build(block.inlines, block.id)
     }
@@ -61,7 +68,8 @@ fun HeadingView(block: Heading) {
     SelectableText(
         text = annotatedString,
         style = style,
-        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+        onSelected = onSelected
     )
 }
 
@@ -69,7 +77,8 @@ fun HeadingView(block: Heading) {
 fun ImageBlockView(
     bookId: Uuid,
     block: ImageBlock,
-    bookService: BookService = koinInject()
+    bookService: BookService = koinInject(),
+    onSelected: (SelectedText) -> Unit = {}
 ) {
     val imageBitmap by rememberImageBitmap(block.imageRef) {
         bookService.bookResourceRepository(bookId).load(block.imageRef.resourceFileId)
@@ -96,7 +105,8 @@ fun ImageBlockView(
             SelectableText(
                 text = annotatedString,
                 style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.padding(top = 4.dp)
+                modifier = Modifier.padding(top = 4.dp),
+                onSelected = onSelected
             )
         }
     }
@@ -105,14 +115,15 @@ fun ImageBlockView(
 @Composable
 fun BlockQuoteView(
     bookId: Uuid,
-    block: BlockQuote
+    block: BlockQuote,
+    onSelected: (SelectedText) -> Unit = {},
 ) {
     Column(
         modifier = Modifier
             .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
     ) {
         block.blocks.forEach { childBlock ->
-            BlockRenderer(bookId, childBlock)
+            BlockRenderer(bookId, childBlock, onSelected)
         }
     }
 }
@@ -120,13 +131,14 @@ fun BlockQuoteView(
 @Composable
 fun ListBlockView(
     bookId: Uuid,
-    block: ListBlock
+    block: ListBlock,
+    onSelected: (SelectedText) -> Unit = {},
 ) {
     Column(
         modifier = Modifier.padding(vertical = 8.dp)
     ) {
         block.items.forEachIndexed { index, item ->
-            ListItemView(bookId, item, block.ordered, index + 1)
+            ListItemView(bookId, item, block.ordered, index + 1, onSelected)
         }
     }
 }
@@ -136,7 +148,8 @@ fun ListItemView(
     bookId: Uuid,
     item: ListItem,
     ordered: Boolean,
-    index: Int
+    index: Int,
+    onSelected: (SelectedText) -> Unit = {},
 ) {
     Row(
         modifier = Modifier.fillMaxWidth()
@@ -144,7 +157,8 @@ fun ListItemView(
         SelectableText(
             text = if (ordered) "$index." else "•",
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.width(24.dp)
+            modifier = Modifier.width(24.dp),
+            onSelected = onSelected
         )
         Column {
             item.blocks.forEach { childBlock ->
