@@ -1,21 +1,19 @@
 package dev.buecherregale.ebook_reader.ui.components
 
-import androidx.compose.runtime.*
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
-import dev.buecherregale.ebook_reader.core.language.findWordUAX29
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
+import dev.buecherregale.ebook_reader.findWordInSelection
 
 
 @Stable
@@ -26,11 +24,10 @@ class PopupState {
     var selectedBlockId by mutableStateOf<String?>(null)
 
     fun show(selectedText: SelectedText, blockId: String) {
-        val word = findWordUAX29(selectedText.text, selectedText.index)
-            ?: return
-        text = word.word
+        val word = findWordInSelection(selectedText)
+        text = selectedText.text.substring(word.start, word.end)
         offset = selectedText.position
-        selectedRange = TextRange(word.start, word.endExclusive)
+        selectedRange = TextRange(word.start, word.end)
         selectedBlockId = blockId
     }
 
