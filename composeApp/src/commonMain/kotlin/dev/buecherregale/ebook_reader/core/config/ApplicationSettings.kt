@@ -8,5 +8,5 @@ import kotlin.uuid.Uuid
  */
 @OptIn(ExperimentalUuidApi::class)
 class ApplicationSettings {
-    internal var activeDictionaryId: Uuid? = null
+    internal var activeDictionaryIds: MutableMap<String, Uuid> = mutableMapOf()
 }

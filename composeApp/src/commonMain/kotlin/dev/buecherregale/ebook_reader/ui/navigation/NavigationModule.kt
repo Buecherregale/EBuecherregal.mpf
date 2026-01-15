@@ -39,7 +39,7 @@ val navigationModule = module {
 
     viewModelOf(::LibraryViewModel)
     viewModel { params -> LibraryDetailViewModel(library = params.get(), get(), get()) }
-    viewModel { params -> ReaderViewModel(book = params.get(), get()) }
+    viewModel { params -> ReaderViewModel(book = params.get(), get(), get()) }
 
     navigation<Screen.LibraryOverview> { _ ->
         LibraryScreen(viewModel = koinViewModel())

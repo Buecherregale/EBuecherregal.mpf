@@ -5,7 +5,7 @@ import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.domain.Library
 
 class ApplicationState {
-    var activeDictionary: Dictionary? = null
+    var activeDictionaries: MutableMap<String, Dictionary> = mutableMapOf()
     var openBook: Book? = null
     var openLibrary: Library? = null
 }

@@ -21,7 +21,9 @@ class SettingsManager(
 ) {
 
     private var settings: ApplicationSettings? = null
-    private var state: ApplicationState? = null
+    private var _state: ApplicationState? = null
+    val state: ApplicationState?
+        get() = _state
 
     /**
      * Loads the config file at [.configFile]. Will fail if the config file is not present. <br></br>
@@ -30,7 +32,7 @@ class SettingsManager(
     suspend fun load() {
         val json = fileService.read(configFile())
         settings = jsonUtil.deserialize(json)
-        state = buildState()
+        _state = buildState()
         Logger.i("loaded application settings: $settings")
     }
 
@@ -42,7 +44,7 @@ class SettingsManager(
         if (!fileService.exists(configFile())) {
             Logger.i("no existing settings found, creating blank...")
             settings = ApplicationSettings()
-            state = ApplicationState()
+            _state = ApplicationState()
         } else load()
     }
 
@@ -73,19 +75,26 @@ class SettingsManager(
      */
     suspend fun buildState(): ApplicationState {
         val state = ApplicationState()
-        if (settings!!.activeDictionaryId != null) state.activeDictionary = dictionaryService.open(settings!!.activeDictionaryId!!)
+        for ((lang, dictId) in settings!!.activeDictionaryIds) {
+            dictionaryService.open(dictId)?.let {
+                state.activeDictionaries[lang] = it
+            }
+        }
 
         return state
     }
 
     /**
-     * Set the active dictionary, updating the state as well.
+     * Set the active dictionary for a given language, updating the state as well.
      *
-     * @param dictionaryId the name of the new dictionary
+     * @param language the language for which to set the dictionary
+     * @param dictionaryId the id of the new dictionary
      */
-    suspend fun activeDictionaryId(dictionaryId: Uuid) {
-        settings?.activeDictionaryId = dictionaryId
-        state?.activeDictionary = dictionaryService.open(settings!!.activeDictionaryId!!)
+    suspend fun setActiveDictionary(language: String, dictionaryId: Uuid) {
+        settings?.activeDictionaryIds?.set(language, dictionaryId)
+        dictionaryService.open(dictionaryId)?.let {
+            _state?.activeDictionaries?.set(language, it)
+        }
     }
 
     companion object {

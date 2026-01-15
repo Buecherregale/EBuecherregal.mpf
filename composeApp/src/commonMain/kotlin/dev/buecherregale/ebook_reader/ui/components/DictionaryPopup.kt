@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.findWordInSelection
 
 
@@ -48,9 +49,12 @@ fun rememberPopupState(): PopupState =
 
 @Composable
 fun DictionaryPopup(
-    state: PopupState
+    state: PopupState,
+    dictionary: Dictionary
 ) {
     if (!state.isVisible) return
+
+    val entry = state.text?.let { dictionary.entries[it] }
 
     Popup(
         offset = state.offset.round(),
@@ -61,7 +65,7 @@ fun DictionaryPopup(
         )
     ) {
         Text(
-            text = state.text.orEmpty(),
+            text = entry?.meaning ?: "No definition found.",
             modifier = Modifier
                 .background(
                     color = MaterialTheme.colorScheme.surface,
