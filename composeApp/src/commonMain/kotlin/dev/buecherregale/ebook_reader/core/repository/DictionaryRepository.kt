@@ -2,6 +2,7 @@
 
 package dev.buecherregale.ebook_reader.core.repository
 
+import androidx.compose.ui.text.intl.Locale
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.domain.DictionaryMetadata
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
@@ -23,7 +24,7 @@ fun Dictionaries.toDomain(): DictionaryMetadata =
     DictionaryMetadata(
         id = Uuid.parse(id),
         name = name,
-        language = language
+        language = Locale(language)
     )
 
 class DictionarySqlRepository(
@@ -47,7 +48,7 @@ class DictionarySqlRepository(
         queries.save(
             id = key.toString(),
             name = value.name,
-            language = value.language
+            language = value.language.toLanguageTag()
         )
         return value
     }

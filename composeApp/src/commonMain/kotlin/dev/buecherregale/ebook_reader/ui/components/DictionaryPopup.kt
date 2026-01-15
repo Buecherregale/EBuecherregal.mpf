@@ -24,7 +24,7 @@ class PopupState {
     var selectedBlockId by mutableStateOf<String?>(null)
 
     fun show(selectedText: SelectedText, blockId: String) {
-        val word = findWordInSelection(selectedText)
+        val word = findWordInSelection(selectedText) ?: return
         text = selectedText.text.substring(word.start, word.end)
         offset = selectedText.position
         selectedRange = TextRange(word.start, word.end)

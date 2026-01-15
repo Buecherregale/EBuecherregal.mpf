@@ -5,6 +5,7 @@ import dev.buecherregale.ebook_reader.core.dom.epub.xml.*
 import dev.buecherregale.ebook_reader.core.domain.Book
 import dev.buecherregale.ebook_reader.core.domain.BookMetadata
 import dev.buecherregale.ebook_reader.core.exception.EPubParseException
+import dev.buecherregale.ebook_reader.core.language.normalizeLanguage
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.service.filesystem.ZipFileRef
@@ -94,7 +95,7 @@ class EPubParser : DocumentParser {
             ?: ""
         return BookMetadata(
             title = opf.metadata.title,
-            language = opf.metadata.language,
+            language = normalizeLanguage(opf.metadata.language),
             author = opf.metadata.creator.first().name,
             isbn = isbn
         )

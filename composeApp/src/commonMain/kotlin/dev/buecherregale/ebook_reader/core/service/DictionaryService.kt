@@ -1,5 +1,6 @@
 package dev.buecherregale.ebook_reader.core.service
 
+import androidx.compose.ui.text.intl.Locale
 import co.touchlab.kermit.Logger
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.domain.DictionaryEntry
@@ -38,7 +39,7 @@ class DictionaryService(
      * @param language the target language
      * @return the downloaded dictionary
      */
-    suspend fun download(dictionaryName: String, language: String): Dictionary {
+    suspend fun download(dictionaryName: String, language: Locale): Dictionary {
         Logger.i("downloading dictionary '$dictionaryName' in '$language'")
         val downloaded: Dictionary = importerFactory
             .forName(dictionaryName)
@@ -72,7 +73,7 @@ class DictionaryService(
     suspend fun importFromFile(
         dictionaryName: String,
         location: FileRef,
-        language: String
+        language: Locale
     ): Dictionary {
         Logger.i("importing dictionary '$dictionaryName' in '$language' from '$location'")
         val imported: Dictionary = importerFactory

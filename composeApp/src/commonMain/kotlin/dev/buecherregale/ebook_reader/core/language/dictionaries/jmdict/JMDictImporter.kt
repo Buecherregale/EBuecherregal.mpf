@@ -1,5 +1,6 @@
 package dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict
 
+import androidx.compose.ui.text.intl.Locale
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.domain.DictionaryEntry
 import dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter
@@ -22,8 +23,8 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 class JMDictImporter(private val fileService: FileService) : DictionaryImporter {
 
-    override suspend fun importFromFile(file: FileRef, language: String): Dictionary {
-        val entries = parse(fileService.read(file), language)
+    override suspend fun importFromFile(file: FileRef, language: Locale): Dictionary {
+        val entries = parse(fileService.read(file), language.toLanguageTag())
 
         return Dictionary(
             id = Uuid.generateV4(),
@@ -41,11 +42,11 @@ class JMDictImporter(private val fileService: FileService) : DictionaryImporter 
         return data
     }
 
-    override suspend fun download(language: String): Dictionary {
+    override suspend fun download(language: Locale): Dictionary {
         var data: ByteArray =
             ImportUtil.download(Url(CURRENT_DOWNLOAD_URI))
         data = fileService.ungzip(data)
-        val entries = parse(data.decodeToString(), language)
+        val entries = parse(data.decodeToString(), language.toLanguageTag())
         return Dictionary(
             id = Uuid.generateV4(),
             name = this.dictionaryName,

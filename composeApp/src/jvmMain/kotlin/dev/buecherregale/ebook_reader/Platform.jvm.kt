@@ -79,6 +79,5 @@ actual fun findWordInSelection(selection: SelectedText): TextRange? {
 
     if (start == BreakIterator.DONE || end == BreakIterator.DONE) return null
 
-    val word = text.substring(start, end)
-    return word.takeIf { it.any { ch -> ch.isLetterOrDigit() } }
+    return TextRange(start, end)
 }

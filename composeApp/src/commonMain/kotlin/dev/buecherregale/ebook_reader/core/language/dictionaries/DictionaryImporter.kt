@@ -1,5 +1,6 @@
 package dev.buecherregale.ebook_reader.core.language.dictionaries
 
+import androidx.compose.ui.text.intl.Locale
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 
@@ -14,7 +15,7 @@ interface DictionaryImporter {
      * @param language target language
      * @return the loaded dictionary
      */
-    suspend fun importFromFile(file: FileRef, language: String): Dictionary
+    suspend fun importFromFile(file: FileRef, language: Locale): Dictionary
 
     /**
      * Downloads the dictionary.
@@ -29,7 +30,7 @@ interface DictionaryImporter {
      * @param language the target language (dictionary is translating to)
      * @return the downloaded and transformed dictionary
      */
-    suspend fun download(language: String): Dictionary
+    suspend fun download(language: Locale): Dictionary
 
     val dictionaryName: String
 }
