@@ -1,6 +1,7 @@
 package dev.buecherregale.ebook_reader
 
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.intl.Locale
 import app.cash.sqldelight.db.SqlDriver
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.ui.components.SelectedText
@@ -18,7 +19,7 @@ expect suspend fun pickImage(): PickedImage?
 
 expect fun createSqlDriver(fileService: FileService, appName: String): SqlDriver
 
-expect fun findWordInSelection(selection: SelectedText): TextRange?
+expect fun findWordInSelection(selection: SelectedText, locale: Locale): TextRange?
 
 data class PickedFile(
     val path: String

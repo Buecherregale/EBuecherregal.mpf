@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.window.Popup
@@ -23,8 +24,8 @@ class PopupState {
     var selectedRange by mutableStateOf<TextRange?>(null)
     var selectedBlockId by mutableStateOf<String?>(null)
 
-    fun show(selectedText: SelectedText, blockId: String) {
-        val word = findWordInSelection(selectedText) ?: return
+    fun show(selectedText: SelectedText, blockId: String, locale: Locale) {
+        val word = findWordInSelection(selectedText, locale) ?: return
         text = selectedText.text.substring(word.start, word.end)
         offset = selectedText.position
         selectedRange = TextRange(word.start, word.end)

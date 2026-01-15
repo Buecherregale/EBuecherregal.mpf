@@ -68,5 +68,3 @@ fun Books.toDomain(): Book =
             language = Locale(language)
         )
     )
-
-

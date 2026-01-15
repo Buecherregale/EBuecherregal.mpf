@@ -69,7 +69,7 @@ fun ReaderScreen(
                     selectedRange = popupState.selectedRange,
                     selectedBlockId = popupState.selectedBlockId,
                     onToggleMenu = onToggleMenu,
-                    onSelected = { selectedText, blockId -> popupState.show(selectedText, blockId) }
+                    onSelected = { selectedText, blockId -> popupState.show(selectedText, blockId, uiState.book.metadata.language) }
                 )
                 DictionaryPopup(state = popupState)
             }

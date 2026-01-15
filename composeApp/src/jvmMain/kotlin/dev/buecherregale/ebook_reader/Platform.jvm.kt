@@ -1,6 +1,7 @@
 package dev.buecherregale.ebook_reader
 
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.intl.Locale
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
@@ -17,6 +18,7 @@ import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.text.BreakIterator
+import java.text.BreakIterator.getWordInstance
 
 class JVMPlatform: Platform {
     override val name: String = "Java ${System.getProperty("java.version")}"
@@ -65,13 +67,13 @@ actual fun createSqlDriver(fileService: FileService, appName: String): SqlDriver
     )
 }
 
-actual fun findWordInSelection(selection: SelectedText): TextRange? {
+actual fun findWordInSelection(selection: SelectedText, locale: Locale): TextRange? {
     val text = selection.text
     val index = selection.index
 
     if (index !in text.indices) return null
 
-    val iterator = BreakIterator.getWordInstance()
+    val iterator = getWordInstance(java.util.Locale.forLanguageTag(locale.toLanguageTag()))
     iterator.setText(text)
 
     val start = iterator.preceding(index + 1)
