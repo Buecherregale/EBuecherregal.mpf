@@ -23,6 +23,7 @@ androidx-nav3 = "1.0.0"
 compose-multiplatform-adaptive = "1.3.0-alpha03"
 compose-multiplatform-lifecycle = "2.10.0-alpha07"
 sqlDelight = "2.2.1"
+icuJvm = "78.2"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -68,6 +69,9 @@ sql-driver-jvm = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "
 sql-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqlDelight" }
 sql-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqlDelight" }
 sql-dialect = { module = "app.cash.sqldelight:sqlite-3-38-dialect", version.ref = "sqlDelight" }
+
+icu-jvm = { module = "com.ibm.icu:icu4j", version.ref = "icuJvm" }
+icu-jvm-charset = { module = "com.ibm.icu:icu4j-charset", version.ref = "icuJvm" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

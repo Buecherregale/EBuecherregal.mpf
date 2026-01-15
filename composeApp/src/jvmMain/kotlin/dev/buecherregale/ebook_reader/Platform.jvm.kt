@@ -4,6 +4,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.intl.Locale
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import com.ibm.icu.text.BreakIterator
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
@@ -17,8 +18,6 @@ import org.koin.dsl.module
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.text.BreakIterator
-import java.text.BreakIterator.getWordInstance
 
 class JVMPlatform: Platform {
     override val name: String = "Java ${System.getProperty("java.version")}"
@@ -72,8 +71,7 @@ actual fun findWordInSelection(selection: SelectedText, locale: Locale): TextRan
     val index = selection.index
 
     if (index !in text.indices) return null
-
-    val iterator = getWordInstance(java.util.Locale.forLanguageTag(locale.toLanguageTag()))
+    val iterator = BreakIterator.getWordInstance(java.util.Locale.forLanguageTag(locale.toLanguageTag()))
     iterator.setText(text)
 
     val start = iterator.preceding(index + 1)

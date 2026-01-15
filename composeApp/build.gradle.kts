@@ -89,6 +89,8 @@ kotlin {
             implementation(libs.ktor.client.apache)
             implementation(libs.logging.backend.jvm)
             implementation(libs.sql.driver.jvm)
+            implementation(libs.icu.jvm)
+            implementation(libs.icu.jvm.charset)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
