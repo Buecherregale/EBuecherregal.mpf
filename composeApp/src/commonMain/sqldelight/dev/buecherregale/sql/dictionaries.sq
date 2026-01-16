@@ -1,7 +1,8 @@
 CREATE TABLE dictionaries (
     id TEXT NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
-    language TEXT NOT NULL
+    originalLanguage TEXT NOT NULL,
+    targetLanguage TEXT NOT NULL
 );
 
 CREATE INDEX dictionaries_name_idx ON dictionaries(name);
@@ -16,13 +17,15 @@ save:
 INSERT INTO dictionaries(
   id,
   name,
-  language
+  originalLanguage,
+  targetLanguage
 )
-VALUES (?, ?, ?)
+VALUES (?, ?, ?, ?)
 ON CONFLICT(id)
  DO UPDATE SET
     name = excluded.name,
-    language = excluded.language;
+    originalLanguage = excluded.originalLanguage,
+    targetLanguage = excluded.targetLanguage;
 
 deleteById:
 DELETE FROM books WHERE id = ?;

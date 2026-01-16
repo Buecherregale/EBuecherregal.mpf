@@ -27,8 +27,8 @@ class ReaderViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, progress = book.progress) }
             val dom = bookService.open(book.id)
-            val language = book.metadata.language.language
-            val dictionary = settingsManager.state?.activeDictionaries?.get(language)
+            val language = book.metadata.language
+            val dictionary = settingsManager.state.activeDictionaries[language]
             _uiState.update { it.copy(title = book.metadata.title, isLoading = false, dom = dom, dictionary = dictionary) }
         }
     }

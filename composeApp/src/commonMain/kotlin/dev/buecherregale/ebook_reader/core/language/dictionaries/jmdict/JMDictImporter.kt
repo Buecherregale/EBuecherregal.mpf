@@ -23,13 +23,14 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 class JMDictImporter(private val fileService: FileService) : DictionaryImporter {
 
-    override suspend fun importFromFile(file: FileRef, language: Locale): Dictionary {
-        val entries = parse(fileService.read(file), language.toLanguageTag())
+    override suspend fun importFromFile(file: FileRef, targetLanguage: Locale): Dictionary {
+        val entries = parse(fileService.read(file), mapLocale(targetLanguage))
 
         return Dictionary(
             id = Uuid.generateV4(),
             name = this.dictionaryName,
-            language = language,
+            originalLanguage = this.language,
+            targetLanguage = targetLanguage,
             entries = entries,
         )
     }
@@ -46,17 +47,29 @@ class JMDictImporter(private val fileService: FileService) : DictionaryImporter 
         var data: ByteArray =
             ImportUtil.download(Url(CURRENT_DOWNLOAD_URI))
         data = fileService.ungzip(data)
-        val entries = parse(data.decodeToString(), language.toLanguageTag())
+        val entries = parse(data.decodeToString(), mapLocale(language))
         return Dictionary(
             id = Uuid.generateV4(),
             name = this.dictionaryName,
-            language = language,
+            originalLanguage = this.language,
+            targetLanguage = language,
             entries = entries,
         )
     }
 
-    override val dictionaryName: String
-        get() = "JmDict"
+    override val dictionaryName: String = "JmDict"
+    override val language: Locale = Locale("ja")
+
+    private fun mapLocale(locale: Locale) : String {
+        val l = locale.language
+        return when(l) {
+            "ja" -> "jap"
+            "en" -> "eng"
+            "de" -> "ger"
+            "nl" -> "dut"
+            else -> ""
+        }
+    }
 
     // dict parsing from xml
     private fun parse(xml: String, glossLang: String): Map<String, DictionaryEntry> {

@@ -20,9 +20,9 @@ class SettingsManager(
     private val dictionaryService: DictionaryService
 ) {
 
-    private var settings: ApplicationSettings? = null
-    private var _state: ApplicationState? = null
-    val state: ApplicationState?
+    private var settings: ApplicationSettings = ApplicationSettings()
+    private var _state: ApplicationState = ApplicationState()
+    val state: ApplicationState
         get() = _state
 
     /**
@@ -39,13 +39,13 @@ class SettingsManager(
     /**
      * Checks if the config file exists. If not creates BUT DOES NOT SAVE a blank config and state.
      */
-    @OptIn(ExperimentalUuidApi::class)
     suspend fun loadOrCreate() {
         if (!fileService.exists(configFile())) {
-            Logger.i("no existing settings found, creating blank...")
-            settings = ApplicationSettings()
-            _state = ApplicationState()
-        } else load()
+            Logger.i("no existing settings found, using blank...")
+        } else {
+            Logger.i { "loading existing settings..." }
+            load()
+        }
     }
 
     /**
@@ -63,7 +63,7 @@ class SettingsManager(
      */
     suspend fun save() {
         Logger.d("saving settings at: ${configFile()}")
-        val json: String = jsonUtil.serialize(settings!!)
+        val json: String = jsonUtil.serialize(settings)
         fileService.write(configFile(), json)
     }
 
@@ -73,28 +73,30 @@ class SettingsManager(
      *
      * @return the initial state
      */
-    suspend fun buildState(): ApplicationState {
-        val state = ApplicationState()
-        for ((lang, dictId) in settings!!.activeDictionaryIds) {
-            dictionaryService.open(dictId).let {
-                state.activeDictionaries[lang] = it
+    private suspend fun buildState(): ApplicationState {
+        val newState = ApplicationState()
+        for ((lang, dictId) in settings.activeDictionaryIds) {
+            try {
+                dictionaryService.open(dictId).let {
+                    newState.activeDictionaries[lang] = it
+                }
+            } catch (e: Exception) {
+                Logger.w("Failed to load dictionary $dictId for language $lang", e)
             }
         }
 
-        return state
+        return newState
     }
 
     /**
-     * Set the active dictionary for a given language, updating the state as well.
+     * Set the active dictionary for its [dev.buecherregale.ebook_reader.core.domain.Dictionary#originalLanguage], updating the state as well.
      *
-     * @param language the language for which to set the dictionary
      * @param dictionaryId the id of the new dictionary
      */
-    suspend fun setActiveDictionary(language: String, dictionaryId: Uuid) {
-        settings?.activeDictionaryIds?.set(language, dictionaryId)
-        dictionaryService.open(dictionaryId)?.let {
-            _state?.activeDictionaries?.set(language, it)
-        }
+    suspend fun setActiveDictionary(dictionaryId: Uuid) {
+        val dictionary = dictionaryService.open(dictionaryId)
+        _state.activeDictionaries[dictionary.originalLanguage] = dictionary
+        settings.activeDictionaryIds[dictionary.originalLanguage] = dictionaryId
     }
 
     companion object {

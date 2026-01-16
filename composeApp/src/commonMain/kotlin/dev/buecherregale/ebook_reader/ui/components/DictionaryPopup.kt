@@ -3,20 +3,23 @@ package dev.buecherregale.ebook_reader.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import co.touchlab.kermit.Logger
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
+import dev.buecherregale.ebook_reader.core.service.DictionaryService
 import dev.buecherregale.ebook_reader.findWordInSelection
+import org.koin.compose.koinInject
 
 
 @Stable
@@ -27,7 +30,6 @@ class PopupState {
     var selectedBlockId by mutableStateOf<String?>(null)
 
     fun show(selectedText: SelectedText, blockId: String, locale: Locale) {
-        Logger.d { "showing popup for ${selectedText.text} at ${selectedText.index}" }
         val word = findWordInSelection(selectedText, locale) ?: return
         text = selectedText.text.substring(word.start, word.end)
         offset = selectedText.position
@@ -52,11 +54,10 @@ fun rememberPopupState(): PopupState =
 @Composable
 fun DictionaryPopup(
     state: PopupState,
-    dictionary: Dictionary
+    dictionary: Dictionary,
+    dictionaryService: DictionaryService = koinInject()
 ) {
     if (!state.isVisible) return
-
-    val entry = state.text!!.let { dictionary.entries[it] }
 
     Popup(
         offset = state.offset.round(),
@@ -66,15 +67,41 @@ fun DictionaryPopup(
             dismissOnClickOutside = true
         )
     ) {
-        Text(
-            text = entry?.meaning ?: "No definition found.",
-            modifier = Modifier
-                .background(
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .padding(12.dp),
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        val entry = dictionaryService.lookup(dictionary, state.text!!).firstOrNull()
+        if (entry == null) {
+            EntryText("No definition found.")
+        } else {
+            EntryText(
+                text = entry.reading,
+                style = MaterialTheme.typography.bodySmall
+            )
+            EntryText(
+                text = entry.meaning,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            EntryText(
+                text = entry.partsOfSpeech.joinToString(separator = " "),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
     }
+}
+
+@Composable
+fun EntryText(
+    text: String,
+    style: TextStyle = LocalTextStyle.current,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = text,
+        style = style,
+        modifier = modifier
+            .background(
+                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .padding(12.dp),
+        color = MaterialTheme.colorScheme.onSurface
+    )
 }

@@ -135,7 +135,8 @@ class DictionaryService(
             DictionaryMetadata(
                 id = id,
                 name = name,
-                language = language
+                originalLanguage = originalLanguage,
+                targetLanguage = targetLanguage
             )
     }
 

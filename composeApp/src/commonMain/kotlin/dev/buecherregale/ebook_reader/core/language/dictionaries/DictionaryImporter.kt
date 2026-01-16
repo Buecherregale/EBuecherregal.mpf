@@ -10,12 +10,14 @@ import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 interface DictionaryImporter {
     /**
      * Imports a dictionary from a file, loading it into memory and adjusting it to the internal app structure ([Dictionary]).
+     * If the dictionary is bilingual, say providing german translations to english words, `originalLanguage` would be `en`
+     * with `targetLanguage` being `de`.
      *
      * @param file     the ref to the file
-     * @param language target language
+     * @param targetLanguage target language
      * @return the loaded dictionary
      */
-    suspend fun importFromFile(file: FileRef, language: Locale): Dictionary
+    suspend fun importFromFile(file: FileRef, targetLanguage: Locale): Dictionary
 
     /**
      * Downloads the dictionary.
@@ -33,4 +35,5 @@ interface DictionaryImporter {
     suspend fun download(language: Locale): Dictionary
 
     val dictionaryName: String
+    val language: Locale
 }

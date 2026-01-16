@@ -11,6 +11,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -25,9 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.buecherregale.ebook_reader.ui.components.LibraryCard
 import dev.buecherregale.ebook_reader.ui.dialog.CreateLibraryDialog
+import dev.buecherregale.ebook_reader.ui.navigation.Navigator
+import dev.buecherregale.ebook_reader.ui.navigation.Screen
 import dev.buecherregale.ebook_reader.ui.viewmodel.LibraryViewModel
 import ebook_reader.composeapp.generated.resources.Res
 import ebook_reader.composeapp.generated.resources.add_24px
+import ebook_reader.composeapp.generated.resources.settings_24px
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -39,9 +43,19 @@ fun LibraryScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     var showCreateDialog by remember { mutableStateOf(false) }
+    val navigator = koinInject<Navigator>()
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("My Libraries") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("My Libraries") },
+                actions = {
+                    IconButton(onClick = { navigator.push(Screen.Settings) }) {
+                        Icon(painterResource(Res.drawable.settings_24px), contentDescription = "Settings")
+                    }
+                }
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = { showCreateDialog = true }) {
                 val painter = painterResource(Res.drawable.add_24px)

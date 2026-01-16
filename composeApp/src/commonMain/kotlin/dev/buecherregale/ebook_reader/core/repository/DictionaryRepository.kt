@@ -18,13 +18,14 @@ class DictionaryEntryRepository(
     delegate: FileRepository<Uuid>
 ): FileBasedRepository<Uuid> by delegate
 
-typealias DictionaryMetadataRepository = Repository<Uuid, DictionaryMetadata>
+interface DictionaryMetadataRepository : Repository<Uuid, DictionaryMetadata>
 
 fun Dictionaries.toDomain(): DictionaryMetadata =
     DictionaryMetadata(
         id = Uuid.parse(id),
         name = name,
-        language = Locale(language)
+        originalLanguage = Locale(originalLanguage),
+        targetLanguage = Locale(targetLanguage)
     )
 
 class DictionarySqlRepository(
@@ -48,7 +49,8 @@ class DictionarySqlRepository(
         queries.save(
             id = key.toString(),
             name = value.name,
-            language = value.language.toLanguageTag()
+            originalLanguage = value.originalLanguage.toLanguageTag(),
+            targetLanguage = value.targetLanguage.toLanguageTag()
         )
         return value
     }

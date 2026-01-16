@@ -12,6 +12,8 @@ data class Dictionary(
     val id: Uuid,
     val name: String,
     @Serializable(with = LocaleSerializer::class)
-    val language: Locale,
+    val originalLanguage: Locale,
+    @Serializable(with = LocaleSerializer::class)
+    val targetLanguage: Locale,
     val entries: Map<String, DictionaryEntry>
 )

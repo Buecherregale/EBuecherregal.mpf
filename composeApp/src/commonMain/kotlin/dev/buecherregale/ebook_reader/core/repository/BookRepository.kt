@@ -19,7 +19,7 @@ class BookCoverRepository(
     delegate: FileRepository<Uuid>
 ): FileBasedRepository<Uuid> by delegate
 
-typealias BookRepository = Repository<Uuid, Book>
+interface BookRepository : Repository<Uuid, Book>
 
 class BookSqlRepository(
     private val queries: BooksQueries

@@ -12,5 +12,7 @@ data class DictionaryMetadata(
     val id: Uuid,
     val name: String,
     @Serializable(with = LocaleSerializer::class)
-    val language: Locale,
+    val originalLanguage: Locale,
+    @Serializable(with = LocaleSerializer::class)
+    val targetLanguage: Locale,
 )
