@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import co.touchlab.kermit.Logger
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.findWordInSelection
 
@@ -26,6 +27,7 @@ class PopupState {
     var selectedBlockId by mutableStateOf<String?>(null)
 
     fun show(selectedText: SelectedText, blockId: String, locale: Locale) {
+        Logger.d { "showing popup for ${selectedText.text} at ${selectedText.index}" }
         val word = findWordInSelection(selectedText, locale) ?: return
         text = selectedText.text.substring(word.start, word.end)
         offset = selectedText.position
@@ -54,7 +56,7 @@ fun DictionaryPopup(
 ) {
     if (!state.isVisible) return
 
-    val entry = state.text?.let { dictionary.entries[it] }
+    val entry = state.text!!.let { dictionary.entries[it] }
 
     Popup(
         offset = state.offset.round(),

@@ -76,7 +76,7 @@ class SettingsManager(
     suspend fun buildState(): ApplicationState {
         val state = ApplicationState()
         for ((lang, dictId) in settings!!.activeDictionaryIds) {
-            dictionaryService.open(dictId)?.let {
+            dictionaryService.open(dictId).let {
                 state.activeDictionaries[lang] = it
             }
         }
