@@ -67,6 +67,11 @@ fun ReaderScreen(
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
                 val popupState = rememberPopupState()
+                
+                LaunchedEffect(uiState.chapterIdx) {
+                    popupState.dismiss()
+                }
+
                 ChapterView(
                     bookId = uiState.book.id,
                     chapter = uiState.dom!!.chapter[uiState.chapterIdx],

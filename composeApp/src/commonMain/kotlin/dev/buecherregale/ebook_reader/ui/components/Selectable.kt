@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -38,6 +39,9 @@ fun SelectableText(
 ) {
     var layoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
     var layoutCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    val currentText by rememberUpdatedState(text)
+    val currentOnSelected by rememberUpdatedState(onSelected)
+
     val color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
     val displayText = remember(text, selectedRange) {
         if (selectedRange != null && selectedRange.start >= 0 && selectedRange.end <= text.length) {
@@ -68,14 +72,14 @@ fun SelectableText(
 
                     val index = result.getOffsetForPosition(tapOffset)
 
-                    if (index in text.indices) {
+                    if (index in currentText.indices) {
                         val charBounds = result.getBoundingBox(index)
 
                         val screenBounds = charBounds.translate(coords.localToWindow(Offset.Zero))
 
-                        onSelected(SelectedText(
+                        currentOnSelected(SelectedText(
                             index,
-                            text.text,
+                            currentText.text,
                             screenBounds
                         ))
                     }

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dev.buecherregale.ebook_reader.core.config.SettingsManager
 import dev.buecherregale.ebook_reader.core.dom.DomDocument
 import dev.buecherregale.ebook_reader.core.domain.Book
+import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.service.BookService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,7 +41,8 @@ class ReaderViewModel(
                 chapterIdx = cIdx,
                 isLoading = false,
                 dom = dom,
-                dictionary = dictionary) }
+                dictionary = dictionary
+            ) }
         }
     }
 
@@ -89,5 +91,5 @@ data class ReaderUiState(
     val book: Book,
     var dom: DomDocument? = null,
     var chapterIdx: Int = 0,
-    val dictionary: dev.buecherregale.ebook_reader.core.domain.Dictionary? = null
+    val dictionary: Dictionary? = null
 )
