@@ -4,14 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
@@ -71,42 +69,36 @@ fun DictionaryPopup(
         Column(
             modifier = Modifier
                 .background(
-                    color = MaterialTheme.colorScheme.surface,
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = RoundedCornerShape(8.dp)
                 )
                 .padding(12.dp)
         ) {
             val entry = dictionaryService.lookup(dictionary, state.text!!).firstOrNull()
             if (entry == null) {
-                EntryText("No definition found.")
+                Text(
+                    text = "No definition found.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
             } else {
-                EntryText(
+                Text(
                     text = entry.reading,
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                EntryText(
+                Text(
                     text = entry.meaning,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                EntryText(
-                    text = entry.partsOfSpeech.joinToString(separator = " "),
-                    style = MaterialTheme.typography.bodySmall
-                )
+                if (entry.partsOfSpeech.isNotEmpty()) {
+                    Text(
+                        text = entry.partsOfSpeech.joinToString(separator = " "),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }
-}
-
-@Composable
-fun EntryText(
-    text: String,
-    style: TextStyle = LocalTextStyle.current,
-    modifier: Modifier = Modifier
-) {
-    Text(
-        text = text,
-        style = style,
-        modifier = modifier,
-        color = MaterialTheme.colorScheme.onSurface
-    )
 }

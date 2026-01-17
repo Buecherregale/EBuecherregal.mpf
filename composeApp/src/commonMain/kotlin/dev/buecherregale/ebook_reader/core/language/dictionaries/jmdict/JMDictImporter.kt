@@ -98,6 +98,7 @@ class JMDictImporter(private val fileService: FileService) : DictionaryImporter 
 
         val partsOfSpeech = senses
             .flatMap { it.partsOfSpeech }
+            .filter { it.isNotBlank() }
             .distinct()
 
         val common = (kanjiElements.any { it.isCommon() }
