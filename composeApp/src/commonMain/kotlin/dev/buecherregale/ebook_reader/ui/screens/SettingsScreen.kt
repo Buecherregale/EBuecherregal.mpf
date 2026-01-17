@@ -18,8 +18,8 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.uuid.ExperimentalUuidApi
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalUuidApi::class)
 @Composable
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalUuidApi::class)
 fun SettingsScreen(
     viewModel: SettingsViewModel = koinViewModel()
 ) {
@@ -29,15 +29,21 @@ fun SettingsScreen(
 
     LaunchedEffect(state.error) {
         state.error?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.clearError()
+            try {
+                snackbarHostState.showSnackbar(it)
+            } finally {
+                viewModel.clearError()
+            }
         }
     }
 
     LaunchedEffect(state.message) {
         state.message?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.clearMessage()
+            try {
+                snackbarHostState.showSnackbar(it)
+            } finally {
+                viewModel.clearMessage()
+            }
         }
     }
 
