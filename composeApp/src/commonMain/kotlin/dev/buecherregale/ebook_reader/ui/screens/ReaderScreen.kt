@@ -20,6 +20,7 @@ import dev.buecherregale.ebook_reader.ui.components.ReaderBottomControls
 import dev.buecherregale.ebook_reader.ui.components.ReaderTopBar
 import dev.buecherregale.ebook_reader.ui.components.rememberPopupState
 import dev.buecherregale.ebook_reader.ui.navigation.Navigator
+import dev.buecherregale.ebook_reader.ui.navigation.Screen
 import dev.buecherregale.ebook_reader.ui.viewmodel.ReaderViewModel
 import org.koin.compose.koinInject
 import kotlin.uuid.ExperimentalUuidApi
@@ -41,7 +42,11 @@ fun ReaderScreen(
                 enter = slideInVertically(initialOffsetY = { -it }),
                 exit = slideOutVertically(targetOffsetY = { -it })
             ) {
-                ReaderTopBar(viewModel.uiState.value.title) { navigator.pop() }
+                ReaderTopBar(
+                    title = viewModel.uiState.value.title,
+                    onBackClick = { navigator.pop() },
+                    onSettingsClick = { navigator.push(Screen.Settings) }
+                )
             }
         },
         bottomBar = {
@@ -52,7 +57,6 @@ fun ReaderScreen(
             ) {
                 ReaderBottomControls(
                     currentProgress = { uiState.progress },
-                    onPageChange = { /* No-op for now */ },
                     onNextChapter = { viewModel.nextChapter() },
                     onPreviousChapter = { viewModel.previousChapter() }
                 )

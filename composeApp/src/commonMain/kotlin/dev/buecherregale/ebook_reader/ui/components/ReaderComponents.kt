@@ -22,16 +22,22 @@ import androidx.compose.ui.unit.dp
 import ebook_reader.composeapp.generated.resources.Res
 import ebook_reader.composeapp.generated.resources.arrow_back_24px
 import ebook_reader.composeapp.generated.resources.arrow_forward_24px
+import ebook_reader.composeapp.generated.resources.settings_24px
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun ReaderTopBar(title: String, onBackClick: () -> Unit) {
+fun ReaderTopBar(title: String, onBackClick: () -> Unit, onSettingsClick: () -> Unit) {
     TopAppBar(
         title = { Text(title, style = MaterialTheme.typography.titleMedium) },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
                 Icon(painterResource(Res.drawable.arrow_back_24px), contentDescription = "Back")
+            }
+        },
+        actions = {
+            IconButton(onClick = onSettingsClick) {
+                Icon(painterResource(Res.drawable.settings_24px), contentDescription = "Settings")
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
@@ -43,7 +49,6 @@ fun ReaderTopBar(title: String, onBackClick: () -> Unit) {
 @Composable
 fun ReaderBottomControls(
     currentProgress: () -> Double,
-    onPageChange: (Int) -> Unit,
     onNextChapter: () -> Unit = {},
     onPreviousChapter: () -> Unit = {}
 ) {
