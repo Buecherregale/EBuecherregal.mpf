@@ -1,10 +1,6 @@
-@file:OptIn(ExperimentalUuidApi::class)
-
 package dev.buecherregale.ebook_reader.core.dom
 
 import kotlinx.serialization.Serializable
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 const val DOM_SCHEMA_VERSION = 1
 
@@ -17,7 +13,7 @@ data class DomDocument(
 
 @Serializable
 data class Chapter(
-    val id: Uuid,
+    val id: String,
     val title: String?,
     val blocks: List<BlockNode>
 )
@@ -30,52 +26,52 @@ interface DomMigration {
 
 @Serializable
 sealed interface BlockNode {
-    val id: Uuid
+    val id: String
 }
 
 @Serializable
 data class Paragraph(
-    override val id: Uuid,
+    override val id: String,
     val inlines: List<InlineNode>
 ) : BlockNode
 
 @Serializable
 data class Heading(
-    override val id: Uuid,
+    override val id: String,
     val level: Int,
     val inlines: List<InlineNode>
 ) : BlockNode
 
 @Serializable
 data class ImageBlock(
-    override val id: Uuid,
+    override val id: String,
     val imageRef: ImageRef,
     val caption: List<InlineNode>? = null
 ) : BlockNode
 
 @Serializable
 data class ImageRef(
-    val id: Uuid,
+    val id: String,
     val mimeType: String,
-    val resourceFileId: Uuid,
+    val resourceFileId: String,
 )
 
 @Serializable
 data class BlockQuote(
-    override val id: Uuid,
+    override val id: String,
     val blocks: List<BlockNode>
 ) : BlockNode
 
 @Serializable
 data class ListBlock(
-    override val id: Uuid,
+    override val id: String,
     val ordered: Boolean,
     val items: List<ListItem>
 ) : BlockNode
 
 @Serializable
 data class ListItem(
-    val id: Uuid,
+    val id: String,
     val blocks: List<BlockNode>
 )
 

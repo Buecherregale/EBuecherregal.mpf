@@ -104,5 +104,5 @@ interface DocumentParser {
 
 @OptIn(ExperimentalUuidApi::class)
 class ResourceRepository(
-    delegate: FileRepository<Uuid>
-) : FileBasedRepository<Uuid> by delegate
+    delegate: FileRepository<String>
+) : FileBasedRepository<String> by delegate

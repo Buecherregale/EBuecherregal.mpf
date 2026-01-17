@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalUuidApi::class)
-
 package dev.buecherregale.ebook_reader.core.dom.epub
 
 import dev.buecherregale.ebook_reader.core.dom.Emphasis
@@ -7,7 +5,6 @@ import dev.buecherregale.ebook_reader.core.dom.Emphasized
 import dev.buecherregale.ebook_reader.core.dom.Heading
 import dev.buecherregale.ebook_reader.core.dom.ImageBlock
 import dev.buecherregale.ebook_reader.core.dom.Paragraph
-import kotlin.uuid.ExperimentalUuidApi
 
 internal interface TagHandler {
     suspend fun onStart(ctx: ParseContext, attrs: Map<String, String>)
@@ -29,7 +26,8 @@ internal class TagHandlerRegistry {
 internal class ParagraphHandler : TagHandler {
 
     override suspend fun onStart(ctx: ParseContext, attrs: Map<String, String>) {
-        ctx.currentBlock = CurrentBlock.Paragraph(generateNodeId())
+        val id = attrs["id"] ?: generateNodeId()
+        ctx.currentBlock = CurrentBlock.Paragraph(id)
         ctx.inlineStack.push()
     }
 
@@ -50,7 +48,8 @@ internal class ParagraphHandler : TagHandler {
 internal class HeadingHandler(private val level: Int) : TagHandler {
 
     override suspend fun onStart(ctx: ParseContext, attrs: Map<String, String>) {
-        ctx.currentBlock = CurrentBlock.Heading(generateNodeId(), level)
+        val id = attrs["id"] ?: generateNodeId()
+        ctx.currentBlock = CurrentBlock.Heading(id, level)
         ctx.inlineStack.push()
     }
 
@@ -96,10 +95,11 @@ internal class ImageHandler : TagHandler {
             ?: return
         val ref = ctx.resources.resolvePath(ctx.parsingItem.href, src)
         val image = ctx.resources.extractImage(ref)
+        val id = attrs["id"] ?: generateNodeId()
 
         ctx.blocks.add(
             ImageBlock(
-                id = generateNodeId(),
+                id = id,
                 imageRef = image
             )
         )

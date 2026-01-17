@@ -1,12 +1,13 @@
-package dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict
+package dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict
 
+import androidx.compose.ui.text.intl.Locale
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.domain.DictionaryEntry
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporter
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.xml.JMDict
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.xml.JMEntry
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.xml.KanjiElement
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.xml.ReadingElement
+import dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter
+import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.xml.JMDict
+import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.xml.JMEntry
+import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.xml.KanjiElement
+import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.xml.ReadingElement
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.util.ImportUtil
@@ -22,13 +23,14 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 class JMDictImporter(private val fileService: FileService) : DictionaryImporter {
 
-    override suspend fun importFromFile(file: FileRef, language: String): Dictionary {
-        val entries = parse(fileService.read(file), language)
+    override suspend fun importFromFile(file: FileRef, targetLanguage: Locale): Dictionary {
+        val entries = parse(fileService.read(file), mapLocale(targetLanguage))
 
         return Dictionary(
             id = Uuid.generateV4(),
             name = this.dictionaryName,
-            language = language,
+            originalLanguage = this.language,
+            targetLanguage = targetLanguage,
             entries = entries,
         )
     }
@@ -41,29 +43,41 @@ class JMDictImporter(private val fileService: FileService) : DictionaryImporter 
         return data
     }
 
-    override suspend fun download(language: String): Dictionary {
+    override suspend fun download(language: Locale): Dictionary {
         var data: ByteArray =
             ImportUtil.download(Url(CURRENT_DOWNLOAD_URI))
         data = fileService.ungzip(data)
-        val entries = parse(data.decodeToString(), language)
+        val entries = parse(data.decodeToString(), mapLocale(language))
         return Dictionary(
             id = Uuid.generateV4(),
             name = this.dictionaryName,
-            language = language,
+            originalLanguage = this.language,
+            targetLanguage = language,
             entries = entries,
         )
     }
 
-    override val dictionaryName: String
-        get() = "JmDict"
+    override val dictionaryName: String = "JmDict"
+    override val language: Locale = Locale("ja")
+
+    private fun mapLocale(locale: Locale) : String {
+        val l = locale.language
+        return when(l) {
+            "ja" -> "jap"
+            "en" -> "eng"
+            "de" -> "ger"
+            "nl" -> "dut"
+            else -> ""
+        }
+    }
 
     // dict parsing from xml
     private fun parse(xml: String, glossLang: String): Map<String, DictionaryEntry> {
         val jmdict = xmlParser.decodeFromString<JMDict>(xml)
         val map = HashMap<String, DictionaryEntry>()
         jmdict.entries
-            .map {jMEntry -> jMEntry.toDictionaryEntry(glossLang) }
-            .forEach { entry ->  map[entry!!.word] = entry }
+            .mapNotNull { jMEntry -> jMEntry.toDictionaryEntry(glossLang) }
+            .forEach { entry ->  map[entry.word] = entry }
         return map
     }
 
@@ -76,14 +90,22 @@ class JMDictImporter(private val fileService: FileService) : DictionaryImporter 
 
         val glosses = senses
             .flatMap { it.glosses }
+            .map {
+                if (it.lang == null)
+                    return@map it.copy(lang = "eng")
+                else
+                    return@map it
+            }
             .filter { it.lang == null || it.lang == glossLang }
             .map { it.text }
             .distinct()
+            .take(GLOSS_COUNT_LIMIT)
 
         if (glosses.isEmpty()) return null
 
         val partsOfSpeech = senses
             .flatMap { it.partsOfSpeech }
+            .filter { it.isNotBlank() }
             .distinct()
 
         val common = (kanjiElements.any { it.isCommon() }
@@ -100,6 +122,7 @@ class JMDictImporter(private val fileService: FileService) : DictionaryImporter 
 
     companion object {
         private const val CURRENT_DOWNLOAD_URI = "http://ftp.edrdg.org/pub/Nihongo//JMdict.gz"
+        private const val GLOSS_COUNT_LIMIT = 5
 
         @OptIn(ExperimentalXmlUtilApi::class)
         private val xmlParser = XML1_0.recommended {

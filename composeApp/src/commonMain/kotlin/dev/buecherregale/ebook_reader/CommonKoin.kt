@@ -1,13 +1,13 @@
 package dev.buecherregale.ebook_reader
 
 import dev.buecherregale.ebook_reader.core.config.SettingsManager
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporterFactory
+import dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporterFactory
 import dev.buecherregale.ebook_reader.core.repository.BookCoverRepository
 import dev.buecherregale.ebook_reader.core.repository.BookFileRepository
 import dev.buecherregale.ebook_reader.core.repository.BookRepository
 import dev.buecherregale.ebook_reader.core.repository.BookSqlRepository
 import dev.buecherregale.ebook_reader.core.repository.DictionaryEntryRepository
-import dev.buecherregale.ebook_reader.core.repository.DictionaryRepository
+import dev.buecherregale.ebook_reader.core.repository.DictionaryMetadataRepository
 import dev.buecherregale.ebook_reader.core.repository.DictionarySqlRepository
 import dev.buecherregale.ebook_reader.core.repository.FileRepository
 import dev.buecherregale.ebook_reader.core.repository.LibraryImageRepository
@@ -72,7 +72,7 @@ val commonModule: Module = module {
             )
         )
     }
-    singleOf(::DictionarySqlRepository) binds arrayOf(DictionaryRepository::class)
+    singleOf(::DictionarySqlRepository) binds arrayOf(DictionaryMetadataRepository::class)
     single {
         DictionaryEntryRepository(
             delegate = FileRepository(

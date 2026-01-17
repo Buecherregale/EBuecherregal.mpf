@@ -1,6 +1,8 @@
 package dev.buecherregale.ebook_reader.core.config
 
+import androidx.compose.ui.text.intl.Locale
 import co.touchlab.kermit.Logger
+import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.service.DictionaryService
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
@@ -20,8 +22,10 @@ class SettingsManager(
     private val dictionaryService: DictionaryService
 ) {
 
-    private var settings: ApplicationSettings? = null
-    private var state: ApplicationState? = null
+    private var settings: ApplicationSettings = ApplicationSettings()
+    private var _state: ApplicationState = ApplicationState()
+    val state: ApplicationState
+        get() = _state
 
     /**
      * Loads the config file at [.configFile]. Will fail if the config file is not present. <br></br>
@@ -30,20 +34,20 @@ class SettingsManager(
     suspend fun load() {
         val json = fileService.read(configFile())
         settings = jsonUtil.deserialize(json)
-        state = buildState()
+        _state = buildState()
         Logger.i("loaded application settings: $settings")
     }
 
     /**
      * Checks if the config file exists. If not creates BUT DOES NOT SAVE a blank config and state.
      */
-    @OptIn(ExperimentalUuidApi::class)
     suspend fun loadOrCreate() {
         if (!fileService.exists(configFile())) {
-            Logger.i("no existing settings found, creating blank...")
-            settings = ApplicationSettings()
-            state = ApplicationState()
-        } else load()
+            Logger.i("no existing settings found, using blank...")
+        } else {
+            Logger.i { "loading existing settings..." }
+            load()
+        }
     }
 
     /**
@@ -61,7 +65,7 @@ class SettingsManager(
      */
     suspend fun save() {
         Logger.d("saving settings at: ${configFile()}")
-        val json: String = jsonUtil.serialize(settings!!)
+        val json: String = jsonUtil.serialize(settings)
         fileService.write(configFile(), json)
     }
 
@@ -71,21 +75,42 @@ class SettingsManager(
      *
      * @return the initial state
      */
-    suspend fun buildState(): ApplicationState {
-        val state = ApplicationState()
-        if (settings!!.activeDictionaryId != null) state.activeDictionary = dictionaryService.open(settings!!.activeDictionaryId!!)
+    private suspend fun buildState(): ApplicationState {
+        val newState = ApplicationState()
+        for ((lang, dictId) in settings.activeDictionaryIds) {
+            try {
+                dictionaryService.open(dictId).let {
+                    newState.activeDictionaries[lang] = it
+                }
+            } catch (e: Exception) {
+                Logger.w("Failed to load dictionary $dictId for language $lang", e)
+            }
+        }
 
-        return state
+        return newState
     }
 
     /**
-     * Set the active dictionary, updating the state as well.
+     * Set the active dictionary for its [dev.buecherregale.ebook_reader.core.domain.Dictionary#originalLanguage], updating the state as well.
      *
-     * @param dictionaryId the name of the new dictionary
+     * @param dictionaryId the id of the new dictionary
      */
-    suspend fun activeDictionaryId(dictionaryId: Uuid) {
-        settings?.activeDictionaryId = dictionaryId
-        state?.activeDictionary = dictionaryService.open(settings!!.activeDictionaryId!!)
+    suspend fun activateDictionary(dictionaryId: Uuid) {
+        val dictionary = dictionaryService.open(dictionaryId)
+        _state.activeDictionaries[dictionary.originalLanguage] = dictionary
+        settings.activeDictionaryIds[dictionary.originalLanguage] = dictionaryId
+    }
+
+    /**
+     * Deactivates the active dictionary for the given language by removing it from the state and settings.
+     * This is needed when the last dictionary for a language is deactivated.
+     * Replacing an active dictionary can just be done by calling [activateDictionary].
+     *
+     * @param language the language for which to deactivate the dictionary
+     */
+    fun deactivateDictionary(language: Locale) {
+        _state.activeDictionaries.remove(language)
+        settings.activeDictionaryIds.remove(language)
     }
 
     companion object {

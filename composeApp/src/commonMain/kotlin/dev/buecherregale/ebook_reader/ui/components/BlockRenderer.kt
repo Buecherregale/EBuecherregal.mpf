@@ -1,32 +1,21 @@
 @file:OptIn(ExperimentalUuidApi::class)
 
-package dev.buecherregale.ebook_reader.ui.components.blocks
+package dev.buecherregale.ebook_reader.ui.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
-import dev.buecherregale.ebook_reader.core.dom.BlockNode
-import dev.buecherregale.ebook_reader.core.dom.BlockQuote
-import dev.buecherregale.ebook_reader.core.dom.Heading
-import dev.buecherregale.ebook_reader.core.dom.ImageBlock
-import dev.buecherregale.ebook_reader.core.dom.ListBlock
-import dev.buecherregale.ebook_reader.core.dom.ListItem
-import dev.buecherregale.ebook_reader.core.dom.Paragraph
+import dev.buecherregale.ebook_reader.core.dom.*
 import dev.buecherregale.ebook_reader.core.dom.epub.generateNodeId
 import dev.buecherregale.ebook_reader.core.service.BookService
 import dev.buecherregale.ebook_reader.ui.AnnotatedTextBuilder
-import dev.buecherregale.ebook_reader.ui.components.rememberImageBitmap
 import org.koin.compose.koinInject
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -34,31 +23,46 @@ import kotlin.uuid.Uuid
 @Composable
 fun BlockRenderer(
     bookId: Uuid,
-    block: BlockNode
+    block: BlockNode,
+    selectedRange: TextRange? = null,
+    selectedBlockId: String? = null,
+    onSelected: (SelectedText, String) -> Unit = { _, _ -> },
 ) {
+    val range = if (block.id == selectedBlockId) selectedRange else null
+    
     when (block) {
-        is Paragraph -> ParagraphView(block)
-        is Heading -> HeadingView(block)
-        is ImageBlock -> ImageBlockView(bookId, block)
-        is BlockQuote -> BlockQuoteView(bookId, block)
-        is ListBlock -> ListBlockView(bookId, block)
+        is Paragraph -> ParagraphView(block, range, onSelected)
+        is Heading -> HeadingView(block, range, onSelected)
+        is ImageBlock -> ImageBlockView(bookId, block, range, onSelected = onSelected)
+        is BlockQuote -> BlockQuoteView(bookId, block, selectedRange, selectedBlockId, onSelected)
+        is ListBlock -> ListBlockView(bookId, block, selectedRange, selectedBlockId, onSelected)
     }
 }
 
 @Composable
-fun ParagraphView(block: Paragraph) {
+fun ParagraphView(
+    block: Paragraph,
+    selectedRange: TextRange? = null,
+    onSelected: (SelectedText, String) -> Unit = { _, _ -> },
+) {
     val annotatedString = remember(block) {
         AnnotatedTextBuilder().build(block.inlines, block.id)
     }
-    Text(
+    SelectableText(
         text = annotatedString,
         style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.padding(bottom = 8.dp)
+        modifier = Modifier.padding(bottom = 8.dp),
+        selectedRange = selectedRange,
+        onSelected = { onSelected(it, block.id) }
     )
 }
 
 @Composable
-fun HeadingView(block: Heading) {
+fun HeadingView(
+    block: Heading,
+    selectedRange: TextRange? = null,
+    onSelected: (SelectedText, String) -> Unit = { _, _ -> }
+) {
     val annotatedString = remember(block) {
         AnnotatedTextBuilder().build(block.inlines, block.id)
     }
@@ -70,10 +74,12 @@ fun HeadingView(block: Heading) {
         5 -> MaterialTheme.typography.titleMedium
         else -> MaterialTheme.typography.titleSmall
     }
-    Text(
+    SelectableText(
         text = annotatedString,
         style = style,
-        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+        selectedRange = selectedRange,
+        onSelected = { onSelected(it, block.id) }
     )
 }
 
@@ -81,7 +87,9 @@ fun HeadingView(block: Heading) {
 fun ImageBlockView(
     bookId: Uuid,
     block: ImageBlock,
-    bookService: BookService = koinInject()
+    selectedRange: TextRange? = null,
+    bookService: BookService = koinInject(),
+    onSelected: (SelectedText, String) -> Unit = { _, _ -> }
 ) {
     val imageBitmap by rememberImageBitmap(block.imageRef) {
         bookService.bookResourceRepository(bookId).load(block.imageRef.resourceFileId)
@@ -105,10 +113,12 @@ fun ImageBlockView(
             val annotatedString = remember(caption) {
                 AnnotatedTextBuilder().build(caption, generateNodeId())
             }
-            Text(
+            SelectableText(
                 text = annotatedString,
                 style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.padding(top = 4.dp)
+                modifier = Modifier.padding(top = 4.dp),
+                selectedRange = selectedRange,
+                onSelected = { onSelected(it, block.id) }
             )
         }
     }
@@ -117,14 +127,17 @@ fun ImageBlockView(
 @Composable
 fun BlockQuoteView(
     bookId: Uuid,
-    block: BlockQuote
+    block: BlockQuote,
+    selectedRange: TextRange? = null,
+    selectedBlockId: String? = null,
+    onSelected: (SelectedText, String) -> Unit = { _, _ -> },
 ) {
     Column(
         modifier = Modifier
             .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
     ) {
         block.blocks.forEach { childBlock ->
-            BlockRenderer(bookId, childBlock)
+            BlockRenderer(bookId, childBlock, selectedRange, selectedBlockId, onSelected)
         }
     }
 }
@@ -132,13 +145,16 @@ fun BlockQuoteView(
 @Composable
 fun ListBlockView(
     bookId: Uuid,
-    block: ListBlock
+    block: ListBlock,
+    selectedRange: TextRange? = null,
+    selectedBlockId: String? = null,
+    onSelected: (SelectedText, String) -> Unit = { _, _ -> },
 ) {
     Column(
         modifier = Modifier.padding(vertical = 8.dp)
     ) {
         block.items.forEachIndexed { index, item ->
-            ListItemView(bookId, item, block.ordered, index + 1)
+            ListItemView(bookId, item, block.ordered, index + 1, selectedRange, selectedBlockId, onSelected)
         }
     }
 }
@@ -148,19 +164,23 @@ fun ListItemView(
     bookId: Uuid,
     item: ListItem,
     ordered: Boolean,
-    index: Int
+    index: Int,
+    selectedRange: TextRange? = null,
+    selectedBlockId: String? = null,
+    onSelected: (SelectedText, String) -> Unit = { _, _ -> },
 ) {
     Row(
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
+        SelectableText(
             text = if (ordered) "$index." else "•",
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.width(24.dp)
+            modifier = Modifier.width(24.dp),
+            onSelected = { /* Bullet/number selection not supported yet */ }
         )
         Column {
             item.blocks.forEach { childBlock ->
-                BlockRenderer(bookId, childBlock)
+                BlockRenderer(bookId, childBlock, selectedRange, selectedBlockId, onSelected)
             }
         }
     }

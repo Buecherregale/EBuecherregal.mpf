@@ -1,10 +1,11 @@
 package dev.buecherregale.ebook_reader.core.service
 
+import androidx.compose.ui.text.intl.Locale
 import co.touchlab.kermit.Logger
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.domain.DictionaryEntry
 import dev.buecherregale.ebook_reader.core.domain.DictionaryMetadata
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporterFactory
+import dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporterFactory
 import dev.buecherregale.ebook_reader.core.repository.DictionaryEntryRepository
 import dev.buecherregale.ebook_reader.core.repository.DictionaryMetadataRepository
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
@@ -17,7 +18,7 @@ import kotlin.uuid.Uuid
  * Service to download and manage downloaded dictionaries. When downloading a dictionary via [.download],
  * the dictionary is transformed into a standard format, the [Dictionary] dto and saved like that.
  * <br></br>
- * Supported dictionaries need to have a [dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporter] implemented and registered
+ * Supported dictionaries need to have a [dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter] implemented and registered
  * in the [DictionaryImporterFactory]. <br></br>
  * Generally this class will write and read dictionaries from [.dictionaryDir], deleting or modifying files therein may result in errors.
  */
@@ -31,14 +32,14 @@ class DictionaryService(
     /**
      * Downloads the dictionary, transforming it into the [dev.buecherregale.ebook_reader.core.domain.Dictionary] form and saving it to [.getDictionaryFile].
      * <br></br>
-     * This happens by calling [dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporter.download]. <br></br>
+     * This happens by calling [dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter.download]. <br></br>
      * Then its serialized as a json file to [.getDictionaryFile].
      *
      * @param dictionaryName the dictionary name
      * @param language the target language
      * @return the downloaded dictionary
      */
-    suspend fun download(dictionaryName: String, language: String): Dictionary {
+    suspend fun download(dictionaryName: String, language: Locale): Dictionary {
         Logger.i("downloading dictionary '$dictionaryName' in '$language'")
         val downloaded: Dictionary = importerFactory
             .forName(dictionaryName)
@@ -72,7 +73,7 @@ class DictionaryService(
     suspend fun importFromFile(
         dictionaryName: String,
         location: FileRef,
-        language: String
+        language: Locale
     ): Dictionary {
         Logger.i("importing dictionary '$dictionaryName' in '$language' from '$location'")
         val imported: Dictionary = importerFactory
@@ -85,8 +86,21 @@ class DictionaryService(
     }
 
     /**
+     * Deletes the given dictionary.
+     *
+     * @param id the id of the dictionary to delete
+     */
+    suspend fun delete(
+        id: Uuid
+    ) {
+        Logger.i { "deleting dictionary $id" }
+        metadataRepository.delete(id)
+        entryRepository.delete(id)
+    }
+
+    /**
      * Lists the names of all supported dictionaries. <br></br>
-     * Supported means that a [dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporter] with the given [dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporter.getDictionaryName] has been registered
+     * Supported means that a [dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter] with the given [dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter.getDictionaryName] has been registered
      * in [DictionaryImporterFactory].
      *
      * @return a list of all names of supported dictionaries
@@ -134,7 +148,8 @@ class DictionaryService(
             DictionaryMetadata(
                 id = id,
                 name = name,
-                language = language
+                originalLanguage = originalLanguage,
+                targetLanguage = targetLanguage
             )
     }
 

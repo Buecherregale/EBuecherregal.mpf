@@ -1,9 +1,11 @@
 package dev.buecherregale.ebook_reader
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation3.ui.NavDisplay
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.DictionaryImporterFactory
-import dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.JMDictImporter
+import dev.buecherregale.ebook_reader.core.config.SettingsManager
+import dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporterFactory
+import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.JMDictImporter
 import dev.buecherregale.ebook_reader.ui.navigation.Navigator
 import dev.buecherregale.ebook_reader.ui.navigation.navigationModule
 import dev.buecherregale.ebook_reader.ui.theming.ShellTheme
@@ -22,6 +24,12 @@ fun App() {
         }
     ) {
         registerImplsInFactory()
+
+        val settingsManager = koinInject<SettingsManager>()
+        LaunchedEffect(Unit) {
+            settingsManager.loadOrCreate()
+        }
+
         ShellTheme {
             NavDisplay(
                 backStack = koinInject<Navigator>().backStack,

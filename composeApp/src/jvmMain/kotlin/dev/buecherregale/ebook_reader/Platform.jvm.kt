@@ -1,11 +1,15 @@
 package dev.buecherregale.ebook_reader
 
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.intl.Locale
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import com.ibm.icu.text.BreakIterator
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.filesystem.DesktopFileService
+import dev.buecherregale.ebook_reader.ui.components.SelectedText
 import dev.buecherregale.ebook_reader.ui.pickFile
 import dev.buecherregale.sql.Buecherregal
 import org.koin.core.module.Module
@@ -60,4 +64,20 @@ actual fun createSqlDriver(fileService: FileService, appName: String): SqlDriver
         url = "jdbc:sqlite:${dbFile.absolutePath}",
         schema = Buecherregal.Schema
     )
+}
+
+actual fun findWordInSelection(selection: SelectedText, locale: Locale): TextRange? {
+    val text = selection.text
+    val index = selection.index
+
+    if (index !in text.indices) return null
+    val iterator = BreakIterator.getWordInstance(java.util.Locale.forLanguageTag(locale.toLanguageTag()))
+    iterator.setText(text)
+
+    val start = iterator.preceding(index + 1)
+    val end = iterator.following(index)
+
+    if (start == BreakIterator.DONE || end == BreakIterator.DONE) return null
+
+    return TextRange(start, end)
 }

@@ -1,4 +1,4 @@
-package dev.buecherregale.ebook_reader.core.formats.dictionaries
+package dev.buecherregale.ebook_reader.core.language.dictionaries
 
 import co.touchlab.kermit.Logger
 import dev.buecherregale.ebook_reader.core.exception.DictionaryImportException

@@ -1,4 +1,4 @@
-package dev.buecherregale.ebook_reader.core.formats.dictionaries.jmdict.xml
+package dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.xml
 
 import kotlinx.serialization.Serializable
 import nl.adaptivity.xmlutil.serialization.XmlSerialName
@@ -10,6 +10,7 @@ data class Gloss(
     @XmlValue(true)
     val text: String,
 
-    //@XmlAttr("lang", "http://www.w3.org/XML/1998/namespace")
+    @XmlValue(false)
+    @XmlSerialName("lang", "http://www.w3.org/XML/1998/namespace", "xml")
     val lang: String? = null
 )
