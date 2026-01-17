@@ -33,6 +33,13 @@ fun SettingsScreen(
         }
     }
 
+    LaunchedEffect(state.message) {
+        state.message?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearMessage()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -43,8 +50,18 @@ fun SettingsScreen(
                     }
                 },
                 actions = {
-                    Button(onClick = { viewModel.saveSettings() }) {
-                        Text("Save")
+                    Button(
+                        onClick = { viewModel.saveSettings() },
+                        enabled = !state.isSaving
+                    ) {
+                        if (state.isSaving) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = LocalContentColor.current
+                            )
+                        } else {
+                            Text("Save")
+                        }
                     }
                 }
             )

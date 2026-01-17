@@ -77,12 +77,22 @@ class SettingsViewModel(
 
     fun saveSettings() {
         viewModelScope.launch {
-            settingsManager.save()
+            _uiState.update { it.copy(isSaving = true, error = null, message = null) }
+            try {
+                settingsManager.save()
+                _uiState.update { it.copy(isSaving = false, message = "Settings saved successfully") }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isSaving = false, error = e.message ?: "Failed to save settings") }
+            }
         }
     }
     
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun clearMessage() {
+        _uiState.update { it.copy(message = null) }
     }
 }
 
@@ -92,5 +102,7 @@ data class SettingsUiState(
     val downloadedDictionaries: List<DictionaryMetadata> = emptyList(),
     val activeDictionaryIds: Map<Locale, Uuid> = emptyMap(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val isSaving: Boolean = false,
+    val error: String? = null,
+    val message: String? = null
 )
