@@ -1,7 +1,6 @@
 package dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict
 
 import androidx.compose.ui.text.intl.Locale
-import co.touchlab.kermit.Logger
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.domain.DictionaryEntry
 import dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter
@@ -83,7 +82,6 @@ class JMDictImporter(private val fileService: FileService) : DictionaryImporter 
     }
 
     fun JMEntry.toDictionaryEntry(glossLang: String): DictionaryEntry? {
-        Logger.d { "entry: $this for lang: $glossLang" }
         val word = kanjiElements.firstOrNull()?.keb
             ?: readingElements.firstOrNull()?.reb
             ?: return null

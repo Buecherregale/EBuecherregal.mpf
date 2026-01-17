@@ -1,6 +1,7 @@
 package dev.buecherregale.ebook_reader.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalTextStyle
@@ -67,22 +68,31 @@ fun DictionaryPopup(
             dismissOnClickOutside = true
         )
     ) {
-        val entry = dictionaryService.lookup(dictionary, state.text!!).firstOrNull()
-        if (entry == null) {
-            EntryText("No definition found.")
-        } else {
-            EntryText(
-                text = entry.reading,
-                style = MaterialTheme.typography.bodySmall
-            )
-            EntryText(
-                text = entry.meaning,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            EntryText(
-                text = entry.partsOfSpeech.joinToString(separator = " "),
-                style = MaterialTheme.typography.bodySmall
-            )
+        Column(
+            modifier = Modifier
+                .background(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(8.dp)
+                )
+                .padding(12.dp)
+        ) {
+            val entry = dictionaryService.lookup(dictionary, state.text!!).firstOrNull()
+            if (entry == null) {
+                EntryText("No definition found.")
+            } else {
+                EntryText(
+                    text = entry.reading,
+                    style = MaterialTheme.typography.bodySmall
+                )
+                EntryText(
+                    text = entry.meaning,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                EntryText(
+                    text = entry.partsOfSpeech.joinToString(separator = " "),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
     }
 }
@@ -96,12 +106,7 @@ fun EntryText(
     Text(
         text = text,
         style = style,
-        modifier = modifier
-            .background(
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(8.dp)
-            )
-            .padding(12.dp),
+        modifier = modifier,
         color = MaterialTheme.colorScheme.onSurface
     )
 }
