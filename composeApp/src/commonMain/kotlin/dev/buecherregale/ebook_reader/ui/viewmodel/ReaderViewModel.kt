@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 import kotlin.uuid.ExperimentalUuidApi
 
 @OptIn(ExperimentalUuidApi::class)
@@ -27,9 +28,19 @@ class ReaderViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, progress = book.progress) }
             val dom = bookService.open(book.id)
+            val cIdx =
+                if (_uiState.value.chapterIdx == 0 && book.progress != 0.0)
+                    (book.progress * dom.chapter.lastIndex).roundToInt()
+                else _uiState.value.chapterIdx
+
             val language = book.metadata.language
             val dictionary = settingsManager.state.activeDictionaries[language]
-            _uiState.update { it.copy(title = book.metadata.title, isLoading = false, dom = dom, dictionary = dictionary) }
+            _uiState.update { it.copy(
+                title = book.metadata.title,
+                chapterIdx = cIdx,
+                isLoading = false,
+                dom = dom,
+                dictionary = dictionary) }
         }
     }
 
