@@ -99,6 +99,7 @@ class JMDictImporter(private val fileService: FileService) : DictionaryImporter 
             .filter { it.lang == null || it.lang == glossLang }
             .map { it.text }
             .distinct()
+            .take(GLOSS_COUNT_LIMIT)
 
         if (glosses.isEmpty()) return null
 
@@ -121,6 +122,7 @@ class JMDictImporter(private val fileService: FileService) : DictionaryImporter 
 
     companion object {
         private const val CURRENT_DOWNLOAD_URI = "http://ftp.edrdg.org/pub/Nihongo//JMdict.gz"
+        private const val GLOSS_COUNT_LIMIT = 5
 
         @OptIn(ExperimentalXmlUtilApi::class)
         private val xmlParser = XML1_0.recommended {
