@@ -10,6 +10,7 @@ data class Gloss(
     @XmlValue(true)
     val text: String,
 
-    //@XmlAttr("lang", "http://www.w3.org/XML/1998/namespace")
+    @XmlValue(false)
+    @XmlSerialName("lang", "http://www.w3.org/XML/1998/namespace", "xml")
     val lang: String? = null
 )
