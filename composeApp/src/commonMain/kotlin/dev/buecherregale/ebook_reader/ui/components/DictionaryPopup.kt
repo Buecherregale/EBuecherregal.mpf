@@ -8,12 +8,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.round
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.service.DictionaryService
@@ -24,20 +28,21 @@ import org.koin.compose.koinInject
 @Stable
 class PopupState {
     var text by mutableStateOf<String?>(null)
-    var offset by mutableStateOf(Offset.Zero)
+    var bounds by mutableStateOf<Rect?>(null)
     var selectedRange by mutableStateOf<TextRange?>(null)
     var selectedBlockId by mutableStateOf<String?>(null)
 
     fun show(selectedText: SelectedText, blockId: String, locale: Locale) {
         val word = findWordInSelection(selectedText, locale) ?: return
         text = selectedText.text.substring(word.start, word.end)
-        offset = selectedText.position
+        bounds = selectedText.bounds
         selectedRange = TextRange(word.start, word.end)
         selectedBlockId = blockId
     }
 
     fun dismiss() {
         text = null
+        bounds = null
         selectedRange = null
         selectedBlockId = null
     }
@@ -56,10 +61,38 @@ fun DictionaryPopup(
     dictionary: Dictionary,
     dictionaryService: DictionaryService = koinInject()
 ) {
-    if (!state.isVisible) return
+    if (!state.isVisible || state.bounds == null) return
+
+    val popupPositionProvider = remember(state.bounds) {
+        object : PopupPositionProvider {
+            override fun calculatePosition(
+                anchorBounds: IntRect,
+                windowSize: IntSize,
+                layoutDirection: LayoutDirection,
+                popupContentSize: IntSize
+            ): IntOffset {
+                val bounds = state.bounds!!
+                var x = bounds.left.toInt()
+                var y = (bounds.top - popupContentSize.height).toInt()
+
+                if (y < 0) {
+                    y = bounds.bottom.toInt()
+                }
+
+                if (x + popupContentSize.width > windowSize.width) {
+                    x = windowSize.width - popupContentSize.width
+                }
+                if (x < 0) {
+                    x = 0
+                }
+
+                return IntOffset(x, y)
+            }
+        }
+    }
 
     Popup(
-        offset = state.offset.round(),
+        popupPositionProvider = popupPositionProvider,
         onDismissRequest = { state.dismiss() },
         properties = PopupProperties(
             focusable = true,
