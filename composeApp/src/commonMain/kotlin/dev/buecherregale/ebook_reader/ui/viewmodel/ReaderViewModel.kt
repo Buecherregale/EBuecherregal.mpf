@@ -20,10 +20,10 @@ class ReaderViewModel(
     private val settingsManager: SettingsManager
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ReaderUiState(book =book))
+    private val _uiState = MutableStateFlow(ReaderUiState(book = book, isLoading = true))
     val uiState: StateFlow<ReaderUiState> = _uiState.asStateFlow()
 
-    init {
+    fun initState() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, progress = book.progress) }
             val dom = bookService.open(book.id)

@@ -63,7 +63,7 @@ class FileRepository<Key>(
     }
 
     override suspend fun delete(key: Key) {
-        TODO("cant delete files yet")
+        fileService.delete(storeInDir.resolve(keyToFilename(key)))
     }
 
     override fun getFile(key: Key): FileRef = storeInDir.resolve(keyToFilename(key))

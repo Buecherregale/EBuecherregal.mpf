@@ -28,4 +28,4 @@ ON CONFLICT(id)
     targetLanguage = excluded.targetLanguage;
 
 deleteById:
-DELETE FROM books WHERE id = ?;
+DELETE FROM dictionaries WHERE id = ?;

@@ -3,6 +3,7 @@ package dev.buecherregale.ebook_reader.ui.viewmodel
 import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.touchlab.kermit.Logger
 import dev.buecherregale.ebook_reader.core.config.SettingsManager
 import dev.buecherregale.ebook_reader.core.domain.DictionaryMetadata
 import dev.buecherregale.ebook_reader.core.service.DictionaryService
@@ -56,6 +57,7 @@ class SettingsViewModel(
                 val downloaded = dictionaryService.listDownloadedDictionaryMetadata()
                 _uiState.update { it.copy(downloadedDictionaries = downloaded, isLoading = false) }
             } catch (e: Exception) {
+                Logger.e(e) { "failed to download dictionary" }
                 _uiState.update { it.copy(error = e.message ?: "Unknown error", isLoading = false) }
             }
         }
@@ -65,12 +67,43 @@ class SettingsViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(error = null) }
             try {
-                settingsManager.setActiveDictionary(dictionaryId)
+                settingsManager.activateDictionary(dictionaryId)
                 val activeIds = _uiState.value.activeDictionaryIds.toMutableMap()
                 activeIds[originalLanguage] = dictionaryId
                 _uiState.update { it.copy(activeDictionaryIds = activeIds) }
             } catch (e: Exception) {
+                Logger.e(e) { "failed to activate dictionary" }
                 _uiState.update { it.copy(error = e.message ?: "Failed to set dictionary") }
+            }
+        }
+    }
+
+    fun deleteDictionary(dictionaryId: Uuid) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(error = null) }
+            try {
+                dictionaryService.delete(dictionaryId)
+                val downloaded = dictionaryService.listDownloadedDictionaryMetadata()
+                
+                val activeIds = _uiState.value.activeDictionaryIds.toMutableMap()
+                val entryToRemove = activeIds.entries.find { it.value == dictionaryId }
+                if (entryToRemove != null) {
+                    activeIds.remove(entryToRemove.key)
+                    settingsManager.deactivateDictionary(entryToRemove.key)
+                    // save the settings immediately (the active dictionary cannot be recovered anyway)
+                    settingsManager.save()
+                }
+
+                _uiState.update { 
+                    it.copy(
+                        downloadedDictionaries = downloaded, 
+                        activeDictionaryIds = activeIds,
+                        message = "Dictionary deleted"
+                    ) 
+                }
+            } catch (e: Exception) {
+                Logger.e(e) { "failed to delete dictionary" }
+                _uiState.update { it.copy(error = e.message ?: "Failed to delete dictionary") }
             }
         }
     }

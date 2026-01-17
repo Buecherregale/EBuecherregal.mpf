@@ -66,6 +66,13 @@ interface FileService {
     suspend fun write(file: FileRef, content: ByteArray)
 
     /**
+     * Deletes the file if it exists.
+     *
+     * @param file the ref
+     */
+    suspend fun delete(file: FileRef)
+
+    /**
      * Copies the values read from the input stream to the file, creating/overwriting it.
      *
      * @param input the input stream

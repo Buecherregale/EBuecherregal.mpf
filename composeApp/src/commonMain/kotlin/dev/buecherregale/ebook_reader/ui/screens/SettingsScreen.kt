@@ -12,6 +12,7 @@ import dev.buecherregale.ebook_reader.ui.navigation.Navigator
 import dev.buecherregale.ebook_reader.ui.viewmodel.SettingsViewModel
 import ebook_reader.composeapp.generated.resources.Res
 import ebook_reader.composeapp.generated.resources.arrow_back_24px
+import ebook_reader.composeapp.generated.resources.delete_24px
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -107,7 +108,16 @@ fun SettingsScreen(
                                         selected = state.activeDictionaryIds[lang] == dict.id,
                                         onClick = { viewModel.setActiveDictionary(lang, dict.id) }
                                     )
-                                    Text("${dict.name} (${dict.targetLanguage})")
+                                    Text(
+                                        text = "${dict.name} (${dict.targetLanguage})",
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    IconButton(onClick = { viewModel.deleteDictionary(dict.id) }) {
+                                        Icon(
+                                            painter = painterResource(Res.drawable.delete_24px),
+                                            contentDescription = "Delete Dictionary"
+                                        )
+                                    }
                                 }
                             }
                         }

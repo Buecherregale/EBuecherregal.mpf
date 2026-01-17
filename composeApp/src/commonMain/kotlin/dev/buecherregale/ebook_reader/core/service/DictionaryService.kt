@@ -86,6 +86,19 @@ class DictionaryService(
     }
 
     /**
+     * Deletes the given dictionary.
+     *
+     * @param id the id of the dictionary to delete
+     */
+    suspend fun delete(
+        id: Uuid
+    ) {
+        Logger.i { "deleting dictionary $id" }
+        metadataRepository.delete(id)
+        entryRepository.delete(id)
+    }
+
+    /**
      * Lists the names of all supported dictionaries. <br></br>
      * Supported means that a [dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter] with the given [dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter.getDictionaryName] has been registered
      * in [DictionaryImporterFactory].

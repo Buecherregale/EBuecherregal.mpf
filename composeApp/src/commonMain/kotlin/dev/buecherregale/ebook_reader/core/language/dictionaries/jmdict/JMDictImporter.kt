@@ -76,8 +76,8 @@ class JMDictImporter(private val fileService: FileService) : DictionaryImporter 
         val jmdict = xmlParser.decodeFromString<JMDict>(xml)
         val map = HashMap<String, DictionaryEntry>()
         jmdict.entries
-            .map {jMEntry -> jMEntry.toDictionaryEntry(glossLang) }
-            .forEach { entry ->  map[entry!!.word] = entry }
+            .mapNotNull { jMEntry -> jMEntry.toDictionaryEntry(glossLang) }
+            .forEach { entry ->  map[entry.word] = entry }
         return map
     }
 
@@ -90,6 +90,12 @@ class JMDictImporter(private val fileService: FileService) : DictionaryImporter 
 
         val glosses = senses
             .flatMap { it.glosses }
+            .map {
+                if (it.lang == null)
+                    return@map it.copy(lang = "eng")
+                else
+                    return@map it
+            }
             .filter { it.lang == null || it.lang == glossLang }
             .map { it.text }
             .distinct()

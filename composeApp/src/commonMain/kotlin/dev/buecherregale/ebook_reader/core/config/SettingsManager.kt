@@ -1,6 +1,8 @@
 package dev.buecherregale.ebook_reader.core.config
 
+import androidx.compose.ui.text.intl.Locale
 import co.touchlab.kermit.Logger
+import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.service.DictionaryService
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
@@ -93,10 +95,22 @@ class SettingsManager(
      *
      * @param dictionaryId the id of the new dictionary
      */
-    suspend fun setActiveDictionary(dictionaryId: Uuid) {
+    suspend fun activateDictionary(dictionaryId: Uuid) {
         val dictionary = dictionaryService.open(dictionaryId)
         _state.activeDictionaries[dictionary.originalLanguage] = dictionary
         settings.activeDictionaryIds[dictionary.originalLanguage] = dictionaryId
+    }
+
+    /**
+     * Deactivates the active dictionary for the given language by removing it from the state and settings.
+     * This is needed when the last dictionary for a language is deactivated.
+     * Replacing an active dictionary can just be done by calling [activateDictionary].
+     *
+     * @param language the language for which to deactivate the dictionary
+     */
+    fun deactivateDictionary(language: Locale) {
+        _state.activeDictionaries.remove(language)
+        settings.activeDictionaryIds.remove(language)
     }
 
     companion object {
