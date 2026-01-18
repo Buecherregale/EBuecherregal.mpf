@@ -5,6 +5,9 @@ import dev.buecherregale.ebook_reader.core.dom.Emphasized
 import dev.buecherregale.ebook_reader.core.dom.Heading
 import dev.buecherregale.ebook_reader.core.dom.ImageBlock
 import dev.buecherregale.ebook_reader.core.dom.Paragraph
+import dev.buecherregale.ebook_reader.core.dom.Ruby
+import dev.buecherregale.ebook_reader.core.dom.RubyAnnotation
+import dev.buecherregale.ebook_reader.core.dom.Text
 
 internal interface TagHandler {
     suspend fun onStart(ctx: ParseContext, attrs: Map<String, String>)
@@ -107,5 +110,57 @@ internal class ImageHandler : TagHandler {
 
     override fun onEnd(ctx: ParseContext) {
         // nothing
+    }
+}
+
+internal class RubyHandler : TagHandler {
+    override suspend fun onStart(ctx: ParseContext, attrs: Map<String, String>) {
+        ctx.inlineStack.push()
+    }
+
+    override fun onEnd(ctx: ParseContext) {
+        val children = ctx.inlineStack.pop()
+        val rubyText = children.filterIsInstance<RubyAnnotation>().joinToString("") { it.text }
+        val otherChildren = children.filter { it !is RubyAnnotation }
+
+        ctx.inlineStack.add(
+            Ruby(
+                children = otherChildren,
+                ruby = rubyText
+            )
+        )
+    }
+}
+
+internal class RubyTextHandler : TagHandler {
+    override suspend fun onStart(ctx: ParseContext, attrs: Map<String, String>) {
+        ctx.inlineStack.push()
+    }
+
+    override fun onEnd(ctx: ParseContext) {
+        val children = ctx.inlineStack.pop()
+        val text = children.filterIsInstance<Text>().joinToString("") { it.text }
+        ctx.inlineStack.add(RubyAnnotation(text))
+    }
+}
+
+internal class RubyBaseHandler : TagHandler {
+    override suspend fun onStart(ctx: ParseContext, attrs: Map<String, String>) {
+        ctx.inlineStack.push()
+    }
+
+    override fun onEnd(ctx: ParseContext) {
+        val children = ctx.inlineStack.pop()
+        children.forEach { ctx.inlineStack.add(it) }
+    }
+}
+
+internal class RubyParenthesesHandler : TagHandler {
+    override suspend fun onStart(ctx: ParseContext, attrs: Map<String, String>) {
+        ctx.inlineStack.push()
+    }
+
+    override fun onEnd(ctx: ParseContext) {
+        ctx.inlineStack.pop()
     }
 }

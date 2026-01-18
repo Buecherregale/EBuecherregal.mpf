@@ -12,6 +12,7 @@ import dev.buecherregale.ebook_reader.core.dom.Emphasized
 import dev.buecherregale.ebook_reader.core.dom.InlineNode
 import dev.buecherregale.ebook_reader.core.dom.Link
 import dev.buecherregale.ebook_reader.core.dom.LinkTarget
+import dev.buecherregale.ebook_reader.core.dom.Ruby
 import dev.buecherregale.ebook_reader.core.dom.Text
 import kotlinx.serialization.serializer
 
@@ -29,6 +30,7 @@ sealed interface TextAnnotation {
 
 const val TAG_LINK = "LINK"
 const val TAG_POS = "POS"
+const val TAG_RUBY = "RUBY"
 
 private fun TextAnnotation.toTag(): Pair<String, String> =
     when (this) {
@@ -105,6 +107,20 @@ class AnnotatedTextBuilder {
                         end
                     )
                 }
+
+                is Ruby -> {
+                    val start = globalOffset
+                    appendInlineNodes(node.children, baseNodeId)
+                    val end = builder.length
+
+                    builder.addStringAnnotation(
+                        tag = TAG_RUBY,
+                        annotation = node.ruby,
+                        start = start,
+                        end = end
+                    )
+                }
+                else -> {}
             }
         }
     }
