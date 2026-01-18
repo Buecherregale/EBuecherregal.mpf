@@ -83,6 +83,11 @@ class EPubParser : DocumentParser {
 
             register("image", ImageHandler())
             register("img", ImageHandler())
+
+            register("ruby", RubyHandler())
+            register("rt", RubyTextHandler())
+            register("rp", RubyParenthesesHandler())
+            register("rb", RubyBaseHandler())
         }
 
     /**

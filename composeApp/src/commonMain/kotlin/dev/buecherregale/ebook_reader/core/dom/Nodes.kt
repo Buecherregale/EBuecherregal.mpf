@@ -87,7 +87,6 @@ data class Text(
 enum class Emphasis {
     BOLD,
     ITALIC,
-    UNDERLINE
 }
 
 data class Emphasized(
@@ -108,4 +107,13 @@ sealed interface LinkTarget {
     data class Internal(val nodeId: String) : LinkTarget
 }
 
-// inline image
+@Serializable
+data class Ruby(
+    val children: List<InlineNode>,
+    val ruby: String
+) : InlineNode
+
+@Serializable
+internal data class RubyAnnotation(
+    val text: String
+) : InlineNode
