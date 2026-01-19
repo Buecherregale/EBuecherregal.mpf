@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.buecherregale.ebook_reader.core.config.SettingsManager
 import dev.buecherregale.ebook_reader.core.dom.DomDocument
+import dev.buecherregale.ebook_reader.core.dom.LinkTarget
 import dev.buecherregale.ebook_reader.core.domain.Book
 import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.service.BookService
@@ -80,6 +81,21 @@ class ReaderViewModel(
             } else state
         }
         updateProgress()
+    }
+
+    fun navigateToLink(target: LinkTarget) {
+        if (target is LinkTarget.Internal) {
+            val dom = uiState.value.dom ?: return
+            
+            if (target.chapterId != null) {
+                val chapterIndex = dom.chapter.indexOfFirst { it.id == target.chapterId }
+                if (chapterIndex != -1) {
+                    _uiState.update { it.copy(chapterIdx = chapterIndex) }
+                    updateProgress()
+                }
+            }
+            // TODO: scrolling to specific node within chapter
+        }
     }
 }
 

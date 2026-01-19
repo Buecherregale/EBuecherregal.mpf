@@ -10,12 +10,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import dev.buecherregale.ebook_reader.core.dom.*
 import dev.buecherregale.ebook_reader.core.dom.epub.generateNodeId
 import dev.buecherregale.ebook_reader.core.service.BookService
 import dev.buecherregale.ebook_reader.ui.AnnotatedTextBuilder
+import dev.buecherregale.ebook_reader.ui.TAG_LINK
+import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -27,16 +32,34 @@ fun BlockRenderer(
     selectedRange: TextRange? = null,
     selectedBlockId: String? = null,
     onSelected: (SelectedText, String) -> Unit = { _, _ -> },
+    onLinkClick: (LinkTarget) -> Unit = {}
 ) {
     val range = if (block.id == selectedBlockId) selectedRange else null
     
     when (block) {
-        is Paragraph -> ParagraphView(block, range, onSelected)
-        is Heading -> HeadingView(block, range, onSelected)
-        is ImageBlock -> ImageBlockView(bookId, block, range, onSelected = onSelected)
-        is BlockQuote -> BlockQuoteView(bookId, block, selectedRange, selectedBlockId, onSelected)
-        is ListBlock -> ListBlockView(bookId, block, selectedRange, selectedBlockId, onSelected)
+        is Paragraph -> ParagraphView(block, range, onSelected, onLinkClick)
+        is Heading -> HeadingView(block, range, onSelected, onLinkClick)
+        is ImageBlock -> ImageBlockView(bookId, block, range, onSelected = onSelected, onLinkClick = onLinkClick)
+        is BlockQuote -> BlockQuoteView(bookId, block, selectedRange, selectedBlockId, onSelected, onLinkClick)
+        is ListBlock -> ListBlockView(bookId, block, selectedRange, selectedBlockId, onSelected, onLinkClick)
     }
+}
+
+private fun handleLinkClick(
+    annotatedString: AnnotatedString,
+    offset: Int,
+    uriHandler: UriHandler,
+    onLinkClick: (LinkTarget) -> Unit
+) {
+    annotatedString.getStringAnnotations(TAG_LINK, offset, offset)
+        .firstOrNull()?.let { annotation ->
+            val target = Json.decodeFromString<LinkTarget>(annotation.item)
+            if (target is LinkTarget.External) {
+                uriHandler.openUri(target.url)
+            } else {
+                onLinkClick(target)
+            }
+        }
 }
 
 @Composable
@@ -44,16 +67,22 @@ fun ParagraphView(
     block: Paragraph,
     selectedRange: TextRange? = null,
     onSelected: (SelectedText, String) -> Unit = { _, _ -> },
+    onLinkClick: (LinkTarget) -> Unit = {}
 ) {
     val annotatedString = remember(block) {
         AnnotatedTextBuilder().build(block.inlines, block.id)
     }
+    val uriHandler = LocalUriHandler.current
+
     SelectableText(
         text = annotatedString,
         style = MaterialTheme.typography.bodyMedium,
         modifier = Modifier.padding(bottom = 8.dp),
         selectedRange = selectedRange,
-        onSelected = { onSelected(it, block.id) }
+        onSelected = { onSelected(it, block.id) },
+        onClick = { offset ->
+            handleLinkClick(annotatedString, offset, uriHandler, onLinkClick)
+        }
     )
 }
 
@@ -61,7 +90,8 @@ fun ParagraphView(
 fun HeadingView(
     block: Heading,
     selectedRange: TextRange? = null,
-    onSelected: (SelectedText, String) -> Unit = { _, _ -> }
+    onSelected: (SelectedText, String) -> Unit = { _, _ -> },
+    onLinkClick: (LinkTarget) -> Unit = {}
 ) {
     val annotatedString = remember(block) {
         AnnotatedTextBuilder().build(block.inlines, block.id)
@@ -74,12 +104,17 @@ fun HeadingView(
         5 -> MaterialTheme.typography.titleMedium
         else -> MaterialTheme.typography.titleSmall
     }
+    val uriHandler = LocalUriHandler.current
+
     SelectableText(
         text = annotatedString,
         style = style,
         modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
         selectedRange = selectedRange,
-        onSelected = { onSelected(it, block.id) }
+        onSelected = { onSelected(it, block.id) },
+        onClick = { offset ->
+            handleLinkClick(annotatedString, offset, uriHandler, onLinkClick)
+        }
     )
 }
 
@@ -89,11 +124,13 @@ fun ImageBlockView(
     block: ImageBlock,
     selectedRange: TextRange? = null,
     bookService: BookService = koinInject(),
-    onSelected: (SelectedText, String) -> Unit = { _, _ -> }
+    onSelected: (SelectedText, String) -> Unit = { _, _ -> },
+    onLinkClick: (LinkTarget) -> Unit = {}
 ) {
     val imageBitmap by rememberImageBitmap(block.imageRef) {
         bookService.bookResourceRepository(bookId).load(block.imageRef.resourceFileId)
     }
+    val uriHandler = LocalUriHandler.current
     
     Column(
         modifier = Modifier
@@ -118,7 +155,10 @@ fun ImageBlockView(
                 style = MaterialTheme.typography.labelMedium,
                 modifier = Modifier.padding(top = 4.dp),
                 selectedRange = selectedRange,
-                onSelected = { onSelected(it, block.id) }
+                onSelected = { onSelected(it, block.id) },
+                onClick = { offset ->
+                    handleLinkClick(annotatedString, offset, uriHandler, onLinkClick)
+                }
             )
         }
     }
@@ -131,13 +171,14 @@ fun BlockQuoteView(
     selectedRange: TextRange? = null,
     selectedBlockId: String? = null,
     onSelected: (SelectedText, String) -> Unit = { _, _ -> },
+    onLinkClick: (LinkTarget) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
             .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
     ) {
         block.blocks.forEach { childBlock ->
-            BlockRenderer(bookId, childBlock, selectedRange, selectedBlockId, onSelected)
+            BlockRenderer(bookId, childBlock, selectedRange, selectedBlockId, onSelected, onLinkClick)
         }
     }
 }
@@ -149,12 +190,13 @@ fun ListBlockView(
     selectedRange: TextRange? = null,
     selectedBlockId: String? = null,
     onSelected: (SelectedText, String) -> Unit = { _, _ -> },
+    onLinkClick: (LinkTarget) -> Unit = {}
 ) {
     Column(
         modifier = Modifier.padding(vertical = 8.dp)
     ) {
         block.items.forEachIndexed { index, item ->
-            ListItemView(bookId, item, block.ordered, index + 1, selectedRange, selectedBlockId, onSelected)
+            ListItemView(bookId, item, block.ordered, index + 1, selectedRange, selectedBlockId, onSelected, onLinkClick)
         }
     }
 }
@@ -168,6 +210,7 @@ fun ListItemView(
     selectedRange: TextRange? = null,
     selectedBlockId: String? = null,
     onSelected: (SelectedText, String) -> Unit = { _, _ -> },
+    onLinkClick: (LinkTarget) -> Unit = {}
 ) {
     Row(
         modifier = Modifier.fillMaxWidth()
@@ -180,7 +223,7 @@ fun ListItemView(
         )
         Column {
             item.blocks.forEach { childBlock ->
-                BlockRenderer(bookId, childBlock, selectedRange, selectedBlockId, onSelected)
+                BlockRenderer(bookId, childBlock, selectedRange, selectedBlockId, onSelected, onLinkClick)
             }
         }
     }

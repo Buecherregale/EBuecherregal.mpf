@@ -10,21 +10,26 @@ internal sealed interface CurrentBlock {
     data class Heading(val id: String, val level: Int) : CurrentBlock
 }
 
+internal class StackFrame(
+    val nodes: MutableList<InlineNode>,
+    val attributes: MutableMap<String, String> = mutableMapOf()
+)
+
 internal class InlineStack {
-    private val stack = ArrayDeque<MutableList<InlineNode>>()
+    private val stack = ArrayDeque<StackFrame>()
 
     init {
-        stack.addLast(mutableListOf())
+        stack.addLast(StackFrame(mutableListOf()))
     }
 
     fun push() {
-        stack.addLast(mutableListOf())
+        stack.addLast(StackFrame(mutableListOf()))
     }
 
-    fun pop(): List<InlineNode> = stack.removeLast()
+    fun pop(): StackFrame = stack.removeLast()
 
     fun add(node: InlineNode) {
-        stack.last().add(node)
+        stack.last().nodes.add(node)
     }
 
     fun addText(text: String) {
@@ -33,7 +38,9 @@ internal class InlineStack {
         }
     }
 
-    fun current(): List<InlineNode> = stack.last()
+    fun current(): List<InlineNode> = stack.last().nodes
+    
+    fun currentAttributes(): MutableMap<String, String> = stack.last().attributes
 }
 
 internal class ParseContext(
