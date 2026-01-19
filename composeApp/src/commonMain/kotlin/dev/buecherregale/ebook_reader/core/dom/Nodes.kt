@@ -89,11 +89,13 @@ enum class Emphasis {
     ITALIC,
 }
 
+@Serializable
 data class Emphasized(
     val emphasis: Set<Emphasis>,
     val children: List<InlineNode>
 ) : InlineNode
 
+@Serializable
 data class Link(
     val target: LinkTarget,
     val children: List<InlineNode>
