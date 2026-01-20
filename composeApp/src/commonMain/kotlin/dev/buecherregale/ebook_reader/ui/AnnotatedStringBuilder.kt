@@ -7,14 +7,8 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
-import dev.buecherregale.ebook_reader.core.dom.Emphasis
-import dev.buecherregale.ebook_reader.core.dom.Emphasized
-import dev.buecherregale.ebook_reader.core.dom.InlineNode
-import dev.buecherregale.ebook_reader.core.dom.Link
-import dev.buecherregale.ebook_reader.core.dom.LinkTarget
-import dev.buecherregale.ebook_reader.core.dom.Ruby
-import dev.buecherregale.ebook_reader.core.dom.Text
-import kotlinx.serialization.serializer
+import dev.buecherregale.ebook_reader.core.dom.*
+import kotlinx.serialization.json.Json
 
 sealed interface TextAnnotation {
 
@@ -35,7 +29,7 @@ const val TAG_RUBY = "RUBY"
 private fun TextAnnotation.toTag(): Pair<String, String> =
     when (this) {
         is TextAnnotation.Link ->
-            TAG_LINK to serializer<LinkTarget>().toString()
+            TAG_LINK to Json.encodeToString(target)
 
         is TextAnnotation.DomPosition ->
             TAG_POS to "$nodeId:$offsetInNode"

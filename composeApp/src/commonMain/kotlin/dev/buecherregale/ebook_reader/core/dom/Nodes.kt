@@ -89,11 +89,13 @@ enum class Emphasis {
     ITALIC,
 }
 
+@Serializable
 data class Emphasized(
     val emphasis: Set<Emphasis>,
     val children: List<InlineNode>
 ) : InlineNode
 
+@Serializable
 data class Link(
     val target: LinkTarget,
     val children: List<InlineNode>
@@ -104,7 +106,7 @@ sealed interface LinkTarget {
     @Serializable
     data class External(val url: String) : LinkTarget
     @Serializable
-    data class Internal(val nodeId: String) : LinkTarget
+    data class Internal(val nodeId: String, val chapterId: String? = null) : LinkTarget
 }
 
 @Serializable

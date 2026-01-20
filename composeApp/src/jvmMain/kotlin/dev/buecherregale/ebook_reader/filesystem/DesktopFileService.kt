@@ -126,7 +126,9 @@ class DesktopFileService(appName: String) : FileService {
     }
 
     override suspend fun delete(file: FileRef) {
-        Files.delete(file.toPath())
+        withContext(Dispatchers.IO) {
+            Files.delete(file.toPath())
+        }
     }
 
     override suspend fun copy(

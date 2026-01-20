@@ -82,7 +82,8 @@ fun ReaderScreen(
                     selectedRange = popupState.selectedRange,
                     selectedBlockId = popupState.selectedBlockId,
                     onToggleMenu = onToggleMenu,
-                    onSelected = { selectedText, blockId -> popupState.show(selectedText, blockId, uiState.book.metadata.language) }
+                    onSelected = { selectedText, blockId -> popupState.show(selectedText, blockId, uiState.book.metadata.language) },
+                    onLinkClick = { target -> viewModel.navigateToLink(target) }
                 )
                 uiState.dictionary?.let {
                     DictionaryPopup(state = popupState, dictionary = it)

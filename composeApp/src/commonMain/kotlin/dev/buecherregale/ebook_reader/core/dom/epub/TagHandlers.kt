@@ -4,6 +4,8 @@ import dev.buecherregale.ebook_reader.core.dom.Emphasis
 import dev.buecherregale.ebook_reader.core.dom.Emphasized
 import dev.buecherregale.ebook_reader.core.dom.Heading
 import dev.buecherregale.ebook_reader.core.dom.ImageBlock
+import dev.buecherregale.ebook_reader.core.dom.Link
+import dev.buecherregale.ebook_reader.core.dom.LinkTarget
 import dev.buecherregale.ebook_reader.core.dom.Paragraph
 import dev.buecherregale.ebook_reader.core.dom.Ruby
 import dev.buecherregale.ebook_reader.core.dom.RubyAnnotation
@@ -36,7 +38,7 @@ internal class ParagraphHandler : TagHandler {
 
     override fun onEnd(ctx: ParseContext) {
         val block = ctx.currentBlock as? CurrentBlock.Paragraph ?: return
-        val inlines = ctx.inlineStack.pop()
+        val inlines = ctx.inlineStack.pop().nodes
 
         ctx.blocks.add(
             Paragraph(
@@ -58,7 +60,7 @@ internal class HeadingHandler(private val level: Int) : TagHandler {
 
     override fun onEnd(ctx: ParseContext) {
         val block = ctx.currentBlock as? CurrentBlock.Heading ?: return
-        val inlines = ctx.inlineStack.pop()
+        val inlines = ctx.inlineStack.pop().nodes
 
         ctx.blocks.add(
             Heading(
@@ -80,7 +82,7 @@ internal class EmphasisHandler(
     }
 
     override fun onEnd(ctx: ParseContext) {
-        val children = ctx.inlineStack.pop()
+        val children = ctx.inlineStack.pop().nodes
         ctx.inlineStack.add(
             Emphasized(
                 emphasis = setOf(emphasis),
@@ -119,7 +121,7 @@ internal class RubyHandler : TagHandler {
     }
 
     override fun onEnd(ctx: ParseContext) {
-        val children = ctx.inlineStack.pop()
+        val children = ctx.inlineStack.pop().nodes
         val rubyText = children.filterIsInstance<RubyAnnotation>().joinToString("") { it.text }
         val otherChildren = children.filter { it !is RubyAnnotation }
 
@@ -138,7 +140,7 @@ internal class RubyTextHandler : TagHandler {
     }
 
     override fun onEnd(ctx: ParseContext) {
-        val children = ctx.inlineStack.pop()
+        val children = ctx.inlineStack.pop().nodes
         val text = children.filterIsInstance<Text>().joinToString("") { it.text }
         ctx.inlineStack.add(RubyAnnotation(text))
     }
@@ -150,7 +152,7 @@ internal class RubyBaseHandler : TagHandler {
     }
 
     override fun onEnd(ctx: ParseContext) {
-        val children = ctx.inlineStack.pop()
+        val children = ctx.inlineStack.pop().nodes
         children.forEach { ctx.inlineStack.add(it) }
     }
 }
@@ -162,5 +164,46 @@ internal class RubyParenthesesHandler : TagHandler {
 
     override fun onEnd(ctx: ParseContext) {
         ctx.inlineStack.pop()
+    }
+}
+
+internal class LinkHandler : TagHandler {
+    override suspend fun onStart(ctx: ParseContext, attrs: Map<String, String>) {
+        val href = attrs["href"]
+        ctx.inlineStack.push()
+        ctx.inlineStack.currentAttributes()["href"] = href ?: ""
+    }
+
+    override fun onEnd(ctx: ParseContext) {
+        val frame = ctx.inlineStack.pop()
+        val children = frame.nodes
+        val href = frame.attributes["href"] ?: ""
+        
+        val target = if (href.contains("://")) {
+            LinkTarget.External(href)
+        } else {
+            val parts = href.split("#")
+            val path = parts.getOrNull(0)
+            val fragment = parts.getOrNull(1)
+            
+            val chapterId = if (!path.isNullOrEmpty()) {
+                val resolvedPath = ctx.resources.resolvePath(ctx.parsingItem.href, path)
+                ctx.resources.resolveHref(resolvedPath)?.id
+            } else {
+                null
+            }
+            
+            LinkTarget.Internal(
+                nodeId = fragment ?: "",
+                chapterId = chapterId
+            )
+        }
+
+        ctx.inlineStack.add(
+            Link(
+                target = target,
+                children = children
+            )
+        )
     }
 }

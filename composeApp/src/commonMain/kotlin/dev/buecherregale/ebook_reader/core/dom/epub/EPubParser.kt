@@ -88,6 +88,8 @@ class EPubParser : DocumentParser {
             register("rt", RubyTextHandler())
             register("rp", RubyParenthesesHandler())
             register("rb", RubyBaseHandler())
+
+            register("a", LinkHandler())
         }
 
     /**

@@ -35,12 +35,14 @@ fun SelectableText(
     style: TextStyle,
     modifier: Modifier = Modifier,
     selectedRange: TextRange? = null,
-    onSelected: (SelectedText) -> Unit = { Logger.d { "selected: $it" } }
+    onSelected: (SelectedText) -> Unit = { Logger.d { "selected: $it" } },
+    onClick: (Int) -> Unit = {}
 ) {
     var layoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
     var layoutCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
     val currentText by rememberUpdatedState(text)
     val currentOnSelected by rememberUpdatedState(onSelected)
+    val currentOnClick by rememberUpdatedState(onClick)
 
     val color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
     val displayText = remember(text, selectedRange) {
@@ -66,24 +68,32 @@ fun SelectableText(
                 layoutCoordinates = coordinates
             }
             .pointerInput(Unit) {
-                detectTapGestures { tapOffset ->
-                    val result = layoutResult ?: return@detectTapGestures
-                    val coords = layoutCoordinates ?: return@detectTapGestures
+                detectTapGestures(
+                    onTap = { tapOffset ->
+                        layoutResult?.let {
+                            val offset = it.getOffsetForPosition(tapOffset)
+                            currentOnClick(offset)
+                        }
+                    },
+                    onLongPress = { tapOffset ->
+                        val result = layoutResult ?: return@detectTapGestures
+                        val coords = layoutCoordinates ?: return@detectTapGestures
 
-                    val index = result.getOffsetForPosition(tapOffset)
+                        val index = result.getOffsetForPosition(tapOffset)
 
-                    if (index in currentText.indices) {
-                        val charBounds = result.getBoundingBox(index)
+                        if (index in currentText.indices) {
+                            val charBounds = result.getBoundingBox(index)
 
-                        val screenBounds = charBounds.translate(coords.localToWindow(Offset.Zero))
+                            val screenBounds = charBounds.translate(coords.localToWindow(Offset.Zero))
 
-                        currentOnSelected(SelectedText(
-                            index,
-                            currentText.text,
-                            screenBounds
-                        ))
+                            currentOnSelected(SelectedText(
+                                index,
+                                currentText.text,
+                                screenBounds
+                            ))
+                        }
                     }
-                }
+                )
             },
         onTextLayout = { layoutResult = it }
     )
@@ -95,13 +105,15 @@ fun SelectableText(
     style: TextStyle,
     modifier: Modifier = Modifier,
     selectedRange: TextRange? = null,
-    onSelected: (SelectedText) -> Unit = {}
+    onSelected: (SelectedText) -> Unit = {},
+    onClick: (Int) -> Unit = {}
 ) {
     SelectableText(
         text = AnnotatedString(text),
         style = style,
         modifier = modifier,
         selectedRange = selectedRange,
-        onSelected = onSelected
+        onSelected = onSelected,
+        onClick = onClick
     )
 }
