@@ -29,7 +29,7 @@ object ParserFactory {
 
 enum class DocumentFormat {
     EPUB,
-    PDF
+    MARKDOWN
 }
 
 /**
