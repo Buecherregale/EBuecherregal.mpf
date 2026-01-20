@@ -10,6 +10,38 @@ import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
+internal class MarkdownFormatDetector: FormatDetector {
+
+    /**
+     * Detects only Markdown documents by checking if the given file has the `.md` extension or the directory contains
+     * one such file at the *top level*.
+     *
+     * @param file a single md file or a folder containing one
+     * @param fileService the platform file service to read [dev.buecherregale.ebook_reader.core.service.filesystem.FileMetadata]
+     *
+     * @return [DocumentFormat.MARKDOWN] or `null` if invalid
+     */
+    override suspend fun detect(
+        file: FileRef,
+        fileService: FileService
+    ): DocumentFormat? {
+        val meta = fileService.getMetadata(file)
+        return if (meta.isDirectory) {
+            if(fileService.listChildren(file)
+                    .any { detect(it, fileService) == DocumentFormat.MARKDOWN }) DocumentFormat.MARKDOWN else null
+        } else {
+            if (meta.extension == ".md") DocumentFormat.MARKDOWN else null
+        }
+    }
+
+}
+
+/**
+ * In this application, a valid `Markdown` document is either a single file with the `.md` extension
+ * *or* a directory containing one or more valid Markdown documents.
+ *
+ * This is validated via [MarkdownFormatDetector.detect].
+ */
 @OptIn(ExperimentalUuidApi::class)
 class MarkdownParser : DocumentParser {
     override val format: DocumentFormat = DocumentFormat.MARKDOWN
