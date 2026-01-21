@@ -6,7 +6,7 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 
-object ImportUtil {
+object HttpUtil {
 
     val httpClient = HttpClient {
         install(HttpTimeout) {

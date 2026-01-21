@@ -10,7 +10,7 @@ import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.xml.Kanj
 import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.xml.ReadingElement
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
-import dev.buecherregale.ebook_reader.core.util.ImportUtil
+import dev.buecherregale.ebook_reader.core.util.HttpUtil
 import io.ktor.http.Url
 import kotlinx.serialization.decodeFromString
 import nl.adaptivity.xmlutil.ExperimentalXmlUtilApi
@@ -37,7 +37,7 @@ class JMDictImporter(private val fileService: FileService) : DictionaryImporter 
 
     override suspend fun download(): ByteArray {
         var data: ByteArray =
-            ImportUtil.download(Url(CURRENT_DOWNLOAD_URI))
+            HttpUtil.download(Url(CURRENT_DOWNLOAD_URI))
         data = fileService.ungzip(data)
 
         return data
@@ -45,7 +45,7 @@ class JMDictImporter(private val fileService: FileService) : DictionaryImporter 
 
     override suspend fun download(language: Locale): Dictionary {
         var data: ByteArray =
-            ImportUtil.download(Url(CURRENT_DOWNLOAD_URI))
+            HttpUtil.download(Url(CURRENT_DOWNLOAD_URI))
         data = fileService.ungzip(data)
         val entries = parse(data.decodeToString(), mapLocale(language))
         return Dictionary(
