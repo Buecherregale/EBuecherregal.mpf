@@ -7,8 +7,13 @@ import dev.buecherregale.ebook_reader.core.domain.Book
 import dev.buecherregale.ebook_reader.core.domain.BookMetadata
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
+import dev.buecherregale.ebook_reader.core.util.HttpUtil
+import io.ktor.http.Url
+import io.ktor.http.decodeURLPart
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
+
+const val MARKDOWN_EXTENSION = ".md"
 
 internal class MarkdownFormatDetector: FormatDetector {
 
@@ -30,7 +35,7 @@ internal class MarkdownFormatDetector: FormatDetector {
             if(fileService.listChildren(file)
                     .any { detect(it, fileService) == DocumentFormat.MARKDOWN }) DocumentFormat.MARKDOWN else null
         } else {
-            if (meta.extension == ".md") DocumentFormat.MARKDOWN else null
+            if (meta.extension == MARKDOWN_EXTENSION) DocumentFormat.MARKDOWN else null
         }
     }
 
@@ -68,6 +73,7 @@ class MarkdownParser : DocumentParser {
                 chapter = listOf(parseMarkdownFile(file, file, fileService, resourceRepository))
             )
         val chapters = fileService.listChildren(file)
+            .filter { fileService.getMetadata(it).extension == MARKDOWN_EXTENSION }
             .map { parseMarkdownFile(it, file, fileService, resourceRepository) }
         return book to DomDocument(
             schemaVersion = DOM_SCHEMA_VERSION,
@@ -172,8 +178,13 @@ class MarkdownParser : DocumentParser {
                     // ![alt](url)
                     val match = Regex("""!\[(.*?)]\((.*?)\)""").find(line)
                     if (match != null) {
-                        val resourceUrl = match.groupValues[2]
-                        val resourceData = fileService.readBytes(baseFile.resolve(resourceUrl))
+                        val rawUrl = match.groupValues[2]
+                        val resourceUrl = rawUrl.trim().split(Regex("\\s+"), limit = 2)[0].decodeURLPart()
+                        val resourceData = if (resourceUrl.isNotEmpty() && !resourceUrl.startsWith("http://") && !resourceUrl.startsWith("https://")) {
+                            fileService.readBytes(baseFile.resolve(resourceUrl))
+                        } else {
+                            HttpUtil.download(Url(rawUrl))
+                        }
                         val resourceId = generateNodeId()
                         resourceRepository.save(resourceId, resourceData)
                         blocks += ImageBlock(
@@ -242,11 +253,16 @@ class MarkdownParser : DocumentParser {
                     val endUrl = text.indexOf(")", endText)
                     if (endText > 0 && endUrl > 0 && text[endText + 1] == '(') {
                         val label = text.substring(i + 1, endText)
-                        val url = text.substring(endText + 2, endUrl)
-                        nodes += Link(
-                            target = LinkTarget.External(url),
-                            children = parseInlines(label)
-                        )
+                        val rawUrl = text.substring(endText + 2, endUrl)
+                        val url = rawUrl.trim().split(Regex("\\s+"), limit = 2)[0].decodeURLPart()
+                        if (url.startsWith("http://") || url.startsWith("https://")) {
+                            nodes += parseInlines(label)
+                        } else {
+                            nodes += Link(
+                                target = LinkTarget.External(url),
+                                children = parseInlines(label)
+                            )
+                        }
                         i = endUrl + 1
                     } else {
                         nodes += Text(text[i++].toString())
