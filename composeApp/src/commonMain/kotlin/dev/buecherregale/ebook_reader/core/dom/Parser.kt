@@ -2,6 +2,8 @@ package dev.buecherregale.ebook_reader.core.dom
 
 import dev.buecherregale.ebook_reader.core.dom.epub.EPubFormatDetector
 import dev.buecherregale.ebook_reader.core.dom.epub.EPubParser
+import dev.buecherregale.ebook_reader.core.dom.md.MarkdownFormatDetector
+import dev.buecherregale.ebook_reader.core.dom.md.MarkdownParser
 import dev.buecherregale.ebook_reader.core.domain.Book
 import dev.buecherregale.ebook_reader.core.repository.FileBasedRepository
 import dev.buecherregale.ebook_reader.core.repository.FileRepository
@@ -11,9 +13,10 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 object ParserFactory {
-    private val detectors: List<FormatDetector> = listOf(EPubFormatDetector())
+    private val detectors: List<FormatDetector> = listOf(EPubFormatDetector(), MarkdownFormatDetector())
     private val parser: Map<DocumentFormat, DocumentParser> = mapOf(
-        DocumentFormat.EPUB to EPubParser()
+        DocumentFormat.EPUB to EPubParser(),
+        DocumentFormat.MARKDOWN to MarkdownParser()
     )
 
     suspend fun get(
@@ -29,7 +32,7 @@ object ParserFactory {
 
 enum class DocumentFormat {
     EPUB,
-    PDF
+    MARKDOWN
 }
 
 /**
