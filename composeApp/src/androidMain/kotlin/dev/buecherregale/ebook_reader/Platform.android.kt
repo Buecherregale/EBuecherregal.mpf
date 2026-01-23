@@ -5,8 +5,11 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.intl.Locale
 import app.cash.sqldelight.db.SqlDriver
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
+import dev.buecherregale.ebook_reader.filesystem.AndroidFileService
 import dev.buecherregale.ebook_reader.ui.components.SelectedText
 import org.koin.core.module.Module
+import org.koin.dsl.binds
+import org.koin.dsl.module
 
 class AndroidPlatform : Platform {
     override val name: String = "Android ${Build.VERSION.SDK_INT}"
@@ -14,7 +17,9 @@ class AndroidPlatform : Platform {
 
 actual fun getPlatform(): Platform = AndroidPlatform()
 actual fun platformModule(): Module {
-    TODO("Not yet implemented")
+    return module {
+        single { AndroidFileService(get()) } binds arrayOf(FileService::class)
+    }
 }
 
 actual suspend fun pickImage(): PickedImage? {
