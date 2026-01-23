@@ -1,5 +1,6 @@
 package dev.buecherregale.ebook_reader
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.intl.Locale
 import app.cash.sqldelight.db.SqlDriver
@@ -11,18 +12,18 @@ actual fun platformModule(): Module {
     TODO("Not yet implemented")
 }
 
-actual suspend fun pickImage(): PickedImage? {
-    TODO("Not yet implemented")
-}
-
-actual suspend fun pickBook(): PickedFile? {
-    TODO("Not yet implemented")
-}
-
 actual fun createSqlDriver(fileService: FileService, appName: String): SqlDriver {
     TODO("Not yet implemented")
 }
 
 actual fun findWordInSelection(selection: SelectedText, locale: Locale): TextRange? {
     TODO("Not yet implemented")
+}
+
+@Composable
+actual fun PickBook(onFilePicked: (PickedFile?) -> Unit) {
+}
+
+@Composable
+actual fun PickImage(onImagePicked: (PickedImage?) -> Unit) {
 }

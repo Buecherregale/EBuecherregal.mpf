@@ -1,5 +1,6 @@
 package dev.buecherregale.ebook_reader
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.intl.Locale
 import app.cash.sqldelight.db.SqlDriver
@@ -14,8 +15,11 @@ interface Platform {
 expect fun getPlatform(): Platform
 expect fun platformModule(): Module
 
-expect suspend fun pickBook(): PickedFile?
-expect suspend fun pickImage(): PickedImage?
+@Composable
+expect fun PickBook(onFilePicked: (PickedFile?) -> Unit)
+
+@Composable
+expect fun PickImage(onImagePicked: (PickedImage?) -> Unit)
 
 expect fun createSqlDriver(fileService: FileService, appName: String): SqlDriver
 

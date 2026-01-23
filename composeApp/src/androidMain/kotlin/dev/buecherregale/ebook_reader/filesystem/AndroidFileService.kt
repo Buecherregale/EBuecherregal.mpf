@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets
 import java.util.zip.GZIPInputStream
 import java.util.zip.ZipFile
 
-class AndroidFileService(private val context: Context) : FileService {
+class AndroidFileService(val context: Context) : FileService {
 
     private fun FileRef.toFile(): File = File(path)
 

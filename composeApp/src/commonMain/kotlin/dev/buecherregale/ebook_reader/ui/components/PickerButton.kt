@@ -33,3 +33,17 @@ fun <T> PickerButton(
         Text(text, textAlign = TextAlign.Center)
     }
 }
+
+@Composable
+fun PickerButton(
+    onClick: () -> Unit,
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        modifier = modifier,
+        onClick = onClick
+    ) {
+        Text(text, textAlign = TextAlign.Center)
+    }
+}
