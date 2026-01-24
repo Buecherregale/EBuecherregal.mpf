@@ -35,8 +35,8 @@ fun SelectableText(
     style: TextStyle,
     modifier: Modifier = Modifier,
     selectedRange: TextRange? = null,
-    onSelected: (SelectedText) -> Unit = { Logger.d { "selected: $it" } },
-    onClick: (Int) -> Unit = {}
+    onSelected: (SelectedText) -> Unit = {},
+    onClick: (Int) -> Boolean = { false }
 ) {
     var layoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
     var layoutCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
@@ -70,9 +70,21 @@ fun SelectableText(
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = { tapOffset ->
-                        layoutResult?.let {
-                            val offset = it.getOffsetForPosition(tapOffset)
-                            currentOnClick(offset)
+                        val result = layoutResult ?: return@detectTapGestures
+                        val coords = layoutCoordinates ?: return@detectTapGestures
+                        val offset = result.getOffsetForPosition(tapOffset)
+                        
+                        if (!currentOnClick(offset)) {
+                            if (offset in currentText.indices) {
+                                val charBounds = result.getBoundingBox(offset)
+                                val screenBounds = charBounds.translate(coords.localToWindow(Offset.Zero))
+
+                                currentOnSelected(SelectedText(
+                                    offset,
+                                    currentText.text,
+                                    screenBounds
+                                ))
+                            }
                         }
                     },
                     onLongPress = { tapOffset ->
@@ -106,7 +118,7 @@ fun SelectableText(
     modifier: Modifier = Modifier,
     selectedRange: TextRange? = null,
     onSelected: (SelectedText) -> Unit = {},
-    onClick: (Int) -> Unit = {}
+    onClick: (Int) -> Boolean = { false }
 ) {
     SelectableText(
         text = AnnotatedString(text),
