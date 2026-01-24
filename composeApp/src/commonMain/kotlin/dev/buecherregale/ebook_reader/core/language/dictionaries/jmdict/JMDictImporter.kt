@@ -8,10 +8,13 @@ import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.xml.JMDi
 import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.xml.JMEntry
 import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.xml.KanjiElement
 import dev.buecherregale.ebook_reader.core.language.dictionaries.jmdict.xml.ReadingElement
+import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.util.HttpUtil
 import io.ktor.http.Url
+import io.ktor.utils.io.ioDispatcher
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import nl.adaptivity.xmlutil.EventType
 import nl.adaptivity.xmlutil.ExperimentalXmlUtilApi
@@ -29,7 +32,7 @@ class JMDictImporter(
     override suspend fun importFromFile(
         file: FileRef,
         targetLanguage: Locale
-    ): Dictionary {
+    ): Dictionary = withContext(ioDispatcher()) {
         val xml = fileService.read(file)
         val jmdict = xmlParser.decodeFromString<JMDict>(xml)
         val map = HashMap<String, DictionaryEntry>()
@@ -37,39 +40,59 @@ class JMDictImporter(
             .mapNotNull { jMEntry -> jMEntry.toDictionaryEntry(localeToGlossLang(targetLanguage)) }
             .forEach { entry ->  map[entry.word] = entry }
 
-        return Dictionary(
+        Dictionary(
             id = Uuid.generateV4(),
-            name = this.dictionaryName,
-            originalLanguage = this.language,
+            name = this@JMDictImporter.dictionaryName,
+            originalLanguage = this@JMDictImporter.language,
             targetLanguage = targetLanguage,
             entries = map,
         )
     }
 
-    override suspend fun download(language: Locale): Dictionary {
+    override suspend fun download(language: Locale): Dictionary = withContext(ioDispatcher()) {
         val glossLang = localeToGlossLang(language)
         val entries = mutableMapOf<String, DictionaryEntry>()
-        HttpUtil.downloadStream(Url(CURRENT_DOWNLOAD_URI)) { gz ->
-            val xml = fileService.ungzip(gz)
-            val reader = fileService.streamXml(xml)
-            while (reader.hasNext()) {
-                when (reader.next()) {
-                    EventType.START_ELEMENT -> {
-                        if (reader.localName == "entry") {
-                            xmlParser.decodeFromReader<JMEntry>(reader)
-                                .toDictionaryEntry(glossLang)?.let {
-                                entries[it.word] = it
+        val tempFile = fileService.getAppDirectory(AppDirectory.DATA).resolve("jmdict_temp.gz")
+
+        try {
+            HttpUtil.downloadStream(Url(CURRENT_DOWNLOAD_URI)) { gz ->
+                fileService.copy(gz, tempFile)
+            }
+
+            val fileSource = fileService.open(tempFile)
+            try {
+                val xml = fileService.ungzip(fileSource)
+                val reader = fileService.streamXml(xml)
+                try {
+                    while (reader.hasNext()) {
+                        when (reader.next()) {
+                            EventType.START_ELEMENT -> {
+                                if (reader.localName == "entry") {
+                                    xmlParser.decodeFromReader<JMEntry>(reader)
+                                        .toDictionaryEntry(glossLang)?.let {
+                                            entries[it.word] = it
+                                        }
+                                }
                             }
+                            else -> {}
                         }
                     }
-                    else -> {}
+                } finally {
+                    reader.close()
                 }
+            } finally {
+                fileSource.close()
+            }
+        } finally {
+            if (fileService.exists(tempFile)) {
+                fileService.delete(tempFile)
             }
         }
-        return Dictionary(
+
+        Dictionary(
             id = Uuid.generateV4(),
-            name = this.dictionaryName,
-            originalLanguage = this.language,
+            name = this@JMDictImporter.dictionaryName,
+            originalLanguage = this@JMDictImporter.language,
             targetLanguage = language,
             entries = entries,
         )

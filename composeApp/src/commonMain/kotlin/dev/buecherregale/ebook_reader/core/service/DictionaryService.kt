@@ -100,7 +100,7 @@ class DictionaryService(
 
     /**
      * Lists the names of all supported dictionaries. <br></br>
-     * Supported means that a [dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter] with the given [dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter.getDictionaryName] has been registered
+     * Supported means that a [dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter] with the given name has been registered
      * in [DictionaryImporterFactory].
      *
      * @return a list of all names of supported dictionaries

@@ -164,7 +164,7 @@ class AndroidFileService(val context: Context) : FileService {
     }
 
     override fun ungzip(source: Source): Source {
-        return GZIPInputStream(source.asInputStream()).asSource().buffered()
+        return GZIPInputStream(source.asInputStream(), 8192).asSource().buffered()
     }
 
     override fun streamXml(xmlStream: Source) : XmlReader {
