@@ -6,6 +6,8 @@ import androidx.compose.ui.text.intl.Locale
 import app.cash.sqldelight.db.SqlDriver
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.ui.components.SelectedText
+import io.ktor.utils.io.ByteReadChannel
+import kotlinx.io.Source
 import org.koin.core.module.Module
 
 interface Platform {
@@ -24,6 +26,8 @@ expect fun PickImage(onImagePicked: (PickedImage?) -> Unit)
 expect fun createSqlDriver(fileService: FileService, appName: String): SqlDriver
 
 expect fun findWordInSelection(selection: SelectedText, locale: Locale): TextRange?
+
+expect fun ByteReadChannel.asSource(): Source
 
 data class PickedFile(
     val path: String

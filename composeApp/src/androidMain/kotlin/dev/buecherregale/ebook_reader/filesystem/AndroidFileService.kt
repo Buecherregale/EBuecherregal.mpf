@@ -6,10 +6,15 @@ import androidx.annotation.RequiresApi
 import dev.buecherregale.ebook_reader.core.service.filesystem.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.io.Sink
 import kotlinx.io.Source
 import kotlinx.io.asInputStream
+import kotlinx.io.asSink
 import kotlinx.io.asSource
 import kotlinx.io.buffered
+import nl.adaptivity.xmlutil.XmlReader
+import nl.adaptivity.xmlutil.newReader
+import nl.adaptivity.xmlutil.xmlStreaming
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -46,6 +51,12 @@ class AndroidFileService(val context: Context) : FileService {
 
     override fun open(file: FileRef): Source {
         return file.toFile().inputStream().asSource().buffered()
+    }
+
+    override fun openSink(file: FileRef): Sink {
+        val targetFile = file.toFile()
+        targetFile.parentFile?.mkdirs()
+        return targetFile.outputStream().asSink().buffered()
     }
 
     override suspend fun readZip(file: FileRef): ZipFileRef {
@@ -150,5 +161,13 @@ class AndroidFileService(val context: Context) : FileService {
             gzis.transferTo(out)
         }
         return out.toByteArray()
+    }
+
+    override fun ungzip(source: Source): Source {
+        return GZIPInputStream(source.asInputStream()).asSource().buffered()
+    }
+
+    override fun streamXml(xmlStream: Source) : XmlReader {
+        return xmlStreaming.newReader(xmlStream.asInputStream())
     }
 }

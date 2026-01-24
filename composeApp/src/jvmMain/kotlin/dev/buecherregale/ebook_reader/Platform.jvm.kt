@@ -13,6 +13,10 @@ import dev.buecherregale.ebook_reader.filesystem.DesktopFileService
 import dev.buecherregale.ebook_reader.ui.components.SelectedText
 import dev.buecherregale.ebook_reader.ui.pickFile
 import dev.buecherregale.sql.Buecherregal
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.asSource
+import kotlinx.io.Source
+import kotlinx.io.buffered
 import org.koin.core.module.Module
 import org.koin.dsl.binds
 import org.koin.dsl.module
@@ -88,4 +92,8 @@ actual fun findWordInSelection(selection: SelectedText, locale: Locale): TextRan
     if (start == BreakIterator.DONE || end == BreakIterator.DONE) return null
 
     return TextRange(start, end)
+}
+
+actual fun ByteReadChannel.asSource(): Source {
+    return this.asSource().buffered()
 }
