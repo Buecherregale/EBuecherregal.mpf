@@ -6,11 +6,11 @@ import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.domain.DictionaryEntry
 import dev.buecherregale.ebook_reader.core.domain.DictionaryMetadata
 import dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporterFactory
-import dev.buecherregale.ebook_reader.core.repository.DictionaryEntryRepository
 import dev.buecherregale.ebook_reader.core.repository.DictionaryMetadataRepository
+import dev.buecherregale.ebook_reader.core.repository.DictionaryRepository
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
-import dev.buecherregale.ebook_reader.core.util.JsonUtil
-import io.ktor.utils.io.core.toByteArray
+import io.ktor.utils.io.*
+import kotlinx.coroutines.withContext
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -24,10 +24,9 @@ import kotlin.uuid.Uuid
  */
 @OptIn(ExperimentalUuidApi::class)
 class DictionaryService(
-    private val jsonUtil: JsonUtil,
     private val importerFactory: DictionaryImporterFactory,
     private val metadataRepository: DictionaryMetadataRepository,
-    private val entryRepository: DictionaryEntryRepository,
+    private val dictionaryRepository: DictionaryRepository,
     ) {
     /**
      * Downloads the dictionary, transforming it into the [dev.buecherregale.ebook_reader.core.domain.Dictionary] form and saving it to [.getDictionaryFile].
@@ -46,7 +45,7 @@ class DictionaryService(
             .download(language)
         Logger.i("saving dictionary '${downloaded.name}'")
         metadataRepository.save(downloaded.id, downloaded.toMetadata())
-        entryRepository.save(downloaded.id, toBytes(downloaded))
+        dictionaryRepository.save(downloaded.id, downloaded)
         return downloaded
     }
 
@@ -57,8 +56,9 @@ class DictionaryService(
      * @param dictionaryId the id of the dictionary
      * @return the dictionary
      */
-    suspend fun open(dictionaryId: Uuid): Dictionary {
-        return fromBytes(entryRepository.load(dictionaryId) ?: throw IllegalArgumentException("dictionary $dictionaryId does not exist"))
+    suspend fun open(dictionaryId: Uuid): Dictionary = withContext(ioDispatcher()) {
+             dictionaryRepository.load(dictionaryId)
+                ?: throw IllegalArgumentException("dictionary $dictionaryId does not exist")
     }
 
     /**
@@ -81,7 +81,7 @@ class DictionaryService(
             .importFromFile(location, language)
         Logger.i("saving dictionary '${imported.name}'")
         metadataRepository.save(imported.id, imported.toMetadata())
-        entryRepository.save(imported.id, toBytes(imported))
+        dictionaryRepository.save(imported.id, imported)
         return imported
     }
 
@@ -95,7 +95,7 @@ class DictionaryService(
     ) {
         Logger.i { "deleting dictionary $id" }
         metadataRepository.delete(id)
-        entryRepository.delete(id)
+        dictionaryRepository.delete(id)
     }
 
     /**
@@ -151,12 +151,5 @@ class DictionaryService(
                 originalLanguage = originalLanguage,
                 targetLanguage = targetLanguage
             )
-    }
-
-    private fun toBytes(dictionary: Dictionary): ByteArray {
-        return jsonUtil.serialize(dictionary).toByteArray()
-    }
-    private fun fromBytes(bytes: ByteArray): Dictionary {
-        return jsonUtil.deserialize(bytes.decodeToString())
     }
 }
