@@ -15,22 +15,18 @@ import kotlin.uuid.ExperimentalUuidApi
 
 @OptIn(ExperimentalUuidApi::class)
 class LibraryDetailViewModel(
-    private val library: Library,
+    library: Library,
     private val libraryService: LibraryService,
     private val bookService: BookService
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(LibraryDetailUiState(library))
     val uiState = _uiState.asStateFlow()
 
-    init {
-        loadBooks()
-    }
-
-    private fun loadBooks() {
+     fun loadBooks() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            val books = library.bookIds.map { id ->
+            val books = _uiState.value.library.bookIds.map { id ->
                 bookService.readData(id)
             }
 
@@ -44,12 +40,13 @@ class LibraryDetailViewModel(
             _uiState.update { it.copy(isLoading = true) }
 
             val book = bookService.importBook(ref)
-            libraryService.addBook(library.id, book.id)
+            libraryService.addBook(_uiState.value.library.id, book.id)
 
-            val books = _uiState.value.books.toMutableList()
-            books.add(book)
-
-            _uiState.update { it.copy(books = books, isLoading = false) }
+            _uiState.update { it.copy(
+                books = _uiState.value.books.plus(book),
+                library = _uiState.value.library.copy(bookIds = _uiState.value.library.bookIds.plus(book.id)),
+                isLoading = false
+            ) }
         }
     }
 }

@@ -24,6 +24,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import dev.buecherregale.ebook_reader.ui.components.LibraryCard
 import dev.buecherregale.ebook_reader.ui.dialog.CreateLibraryDialog
 import dev.buecherregale.ebook_reader.ui.navigation.Navigator
@@ -44,6 +46,10 @@ fun LibraryScreen(
     val state by viewModel.uiState.collectAsState()
     var showCreateDialog by remember { mutableStateOf(false) }
     val navigator = koinInject<Navigator>()
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.loadLibraries()
+    }
 
     Scaffold(
         topBar = {

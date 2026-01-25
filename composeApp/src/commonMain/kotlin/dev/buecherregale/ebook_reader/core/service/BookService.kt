@@ -102,7 +102,6 @@ class BookService(
 
     /**
      * Reads the data file for a book (created by [.saveBookData]).
-     * Obtains the file path via [.getBookDataFile]
      *
      * @param bookId the id of the book
      * @return the book instance
