@@ -60,7 +60,7 @@ class SettingsManager(
     }
 
     /**
-     * Saves the config as json to the file at [.configFile].
+     * Saves the config as JSON to the file at [.configFile].
      */
     suspend fun save() {
         Logger.d("saving settings at: ${configFile()}")

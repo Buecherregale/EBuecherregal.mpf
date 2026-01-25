@@ -9,7 +9,7 @@ import kotlinx.serialization.json.io.decodeFromSource
 import kotlinx.serialization.json.io.encodeToSink
 
 /**
- * Utility class for simple generic Json handling with jackson.
+ * Utility class for simple generic JSON handling with jackson.
  * Not static, as it relies on [FileService] to serialize and deserialize [dev.buecherregale.ebook_reader.core.service.filesystem.FileRef].
  */
 class JsonUtil {
@@ -23,7 +23,7 @@ class JsonUtil {
      * Uses the mapper configured in [.JsonUtil].
      *
      * @param o the object to serialize
-     * @return the json string
+     * @return the JSON string
      */
     inline fun <reified T> serialize(o: T): String {
         return json.encodeToString(o)
@@ -45,7 +45,7 @@ class JsonUtil {
      * Deserialize the given string to an instance of the class provided.<br></br>
      * Uses the mapper configured in [.JsonUtil].
      *
-     * @param jsonString the json string
+     * @param jsonString the JSON string
      * @return instance of clazz
      * @param <T> the type to deserialize as
     </T> */

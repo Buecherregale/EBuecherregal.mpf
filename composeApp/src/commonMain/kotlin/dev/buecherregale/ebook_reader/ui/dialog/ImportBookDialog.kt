@@ -19,7 +19,7 @@ import dev.buecherregale.ebook_reader.PickBook
 import dev.buecherregale.ebook_reader.PickedFile
 import dev.buecherregale.ebook_reader.ui.components.PickerButton
 
-fun shortenPath(path: String,): String {
+fun shortenPath(path: String): String {
     return path.takeLastWhile { it != '/' }
 }
 

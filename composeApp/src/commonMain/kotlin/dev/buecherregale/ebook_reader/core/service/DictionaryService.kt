@@ -32,7 +32,7 @@ class DictionaryService(
      * Downloads the dictionary, transforming it into the [dev.buecherregale.ebook_reader.core.domain.Dictionary] form and saving it to [.getDictionaryFile].
      * <br></br>
      * This happens by calling [dev.buecherregale.ebook_reader.core.language.dictionaries.DictionaryImporter.download]. <br></br>
-     * Then its serialized as a json file to [.getDictionaryFile].
+     * Then its serialized as a JSON file to [.getDictionaryFile].
      *
      * @param dictionaryName the dictionary name
      * @param language the target language
@@ -111,7 +111,7 @@ class DictionaryService(
 
     /**
      * Lists the metadata of all downloaded dictionaries.<br></br>
-     * The downloads are obtained by looking at [.dictionaryDir] and its children, parsing the metadata fields from the json.<br></br>
+     * The downloads are obtained by looking at [.dictionaryDir] and its children, parsing the metadata fields from the JSON.<br></br>
      * Therefore, manipulating/adding files in the directory may result in downloaded dictionaries that are not supported
      * or missing, once downloaded, dictionaries.<br></br>
      *

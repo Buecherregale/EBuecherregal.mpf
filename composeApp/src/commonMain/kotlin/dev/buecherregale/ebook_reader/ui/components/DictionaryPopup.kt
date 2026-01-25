@@ -72,12 +72,11 @@ fun DictionaryPopup(
                 layoutDirection: LayoutDirection,
                 popupContentSize: IntSize
             ): IntOffset {
-                val bounds = widgetBounds
-                var x = bounds.left.toInt()
-                var y = (bounds.top - popupContentSize.height).toInt()
+                var x = widgetBounds.left.toInt()
+                var y = (widgetBounds.top - popupContentSize.height).toInt()
 
                 if (y < 0) {
-                    y = bounds.bottom.toInt()
+                    y = widgetBounds.bottom.toInt()
                 }
 
                 if (x + popupContentSize.width > windowSize.width) {

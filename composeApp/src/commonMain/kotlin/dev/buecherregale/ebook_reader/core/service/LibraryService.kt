@@ -2,7 +2,6 @@ package dev.buecherregale.ebook_reader.core.service
 
 import co.touchlab.kermit.Logger
 import dev.buecherregale.ebook_reader.core.domain.Library
-import dev.buecherregale.ebook_reader.core.repository.FileRepository
 import dev.buecherregale.ebook_reader.core.repository.LibraryImageRepository
 import dev.buecherregale.ebook_reader.core.repository.LibraryRepository
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
@@ -16,7 +15,7 @@ import kotlin.uuid.Uuid
  */
 @OptIn(ExperimentalUuidApi::class)
 class LibraryService(
-    private val fileService: FileService,
+    fileService: FileService,
     private val repository: LibraryRepository,
     private val imageRepository: LibraryImageRepository) {
     private val libDir: FileRef = fileService.getAppDirectory(AppDirectory.STATE).resolve("libraries")
@@ -37,24 +36,6 @@ class LibraryService(
      * Create a library based on the name and saves it to disk.
      *
      * @param name the desired name
-     * @param image nullable, cover image for the library
-     * @return the created library
-     */
-    suspend fun createLibrary(name: String, image: FileRef?): Library {
-        Logger.i("creating library '$name'")
-        val l = Library(Uuid.random(), name)
-        if (image != null) {
-            val bytes = fileService.readBytes(image)
-            imageRepository.save(l.id, bytes)
-        }
-        repository.save(l.id, l)
-        return l
-    }
-
-    /**
-     * Create a library based on the name and saves it to disk.
-     *
-     * @param name the desired name
      * @param imageBytes the bytes for the cover image
      * @return the created library
      */
@@ -66,16 +47,6 @@ class LibraryService(
         }
         repository.save(l.id, l)
         return l
-    }
-
-    /**
-     * Loads a library from the repository by its name.
-     *
-     * @param name the name of the library
-     * @return the deserialized library instance.
-     */
-    suspend fun loadLibrary(name: String): Library {
-        return repository.loadByName(name) ?: throw IllegalArgumentException("library $name does not exist")
     }
 
     /**

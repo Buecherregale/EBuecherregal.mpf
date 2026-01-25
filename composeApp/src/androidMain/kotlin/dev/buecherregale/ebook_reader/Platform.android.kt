@@ -106,15 +106,13 @@ private fun getFileName(context: Context, uri: Uri): String? {
     var result: String? = null
     if (uri.scheme == "content") {
         val cursor = context.contentResolver.query(uri, null, null, null, null)
-        try {
+        cursor.use { cursor ->
             if (cursor != null && cursor.moveToFirst()) {
                 val index = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
                 if (index >= 0) {
                     result = cursor.getString(index)
                 }
             }
-        } finally {
-            cursor?.close()
         }
     }
     if (result == null) {
