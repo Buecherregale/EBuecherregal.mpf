@@ -31,10 +31,10 @@ import dev.buecherregale.ebook_reader.ui.dialog.ImportBookDialog
 import dev.buecherregale.ebook_reader.ui.navigation.Navigator
 import dev.buecherregale.ebook_reader.ui.navigation.Screen
 import dev.buecherregale.ebook_reader.ui.viewmodel.LibraryDetailViewModel
-import ebook_reader.composeapp.generated.resources.Res
-import ebook_reader.composeapp.generated.resources.add_24px
-import ebook_reader.composeapp.generated.resources.arrow_back_24px
-import ebook_reader.composeapp.generated.resources.settings_24px
+import ebuecherregal.composeapp.generated.resources.Res
+import ebuecherregal.composeapp.generated.resources.add_24px
+import ebuecherregal.composeapp.generated.resources.arrow_back_24px
+import ebuecherregal.composeapp.generated.resources.settings_24px
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.currentKoinScope
 import org.koin.compose.koinInject

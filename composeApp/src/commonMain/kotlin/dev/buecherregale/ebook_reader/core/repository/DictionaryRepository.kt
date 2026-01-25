@@ -9,8 +9,8 @@ import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.util.JsonUtil
-import dev.buecherregale.sql.Dictionaries
-import dev.buecherregale.sql.DictionariesQueries
+import dev.buecherregale.ebookreader.sql.Dictionaries
+import dev.buecherregale.ebookreader.sql.DictionariesQueries
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 

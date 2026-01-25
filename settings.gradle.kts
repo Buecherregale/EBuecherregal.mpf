@@ -1,4 +1,4 @@
-rootProject.name = "ebook_reader"
+rootProject.name = "EBuecherregal"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

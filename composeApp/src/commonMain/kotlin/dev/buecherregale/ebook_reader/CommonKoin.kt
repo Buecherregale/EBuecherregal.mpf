@@ -33,7 +33,7 @@ val commonModule: Module = module {
         Buecherregal(
             createSqlDriver(
                 get<FileService>(),
-                appName = "ebook-reader"
+                appName = APP_NAME
             )
         )
     }
@@ -42,7 +42,6 @@ val commonModule: Module = module {
     single { get<Buecherregal>().dictionariesQueries }
 
     singleOf(::JsonUtil)
-
     singleOf(::LibrarySqlRepository) binds arrayOf(LibraryRepository::class)
     single {
         LibraryImageRepository(

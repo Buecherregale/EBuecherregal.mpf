@@ -25,8 +25,8 @@ import dev.buecherregale.ebook_reader.core.domain.Library
 import dev.buecherregale.ebook_reader.core.service.LibraryService
 import dev.buecherregale.ebook_reader.ui.navigation.Navigator
 import dev.buecherregale.ebook_reader.ui.navigation.Screen
-import ebook_reader.composeapp.generated.resources.Res
-import ebook_reader.composeapp.generated.resources.broken_image_48px
+import ebuecherregal.composeapp.generated.resources.Res
+import ebuecherregal.composeapp.generated.resources.broken_image_48px
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import kotlin.uuid.ExperimentalUuidApi

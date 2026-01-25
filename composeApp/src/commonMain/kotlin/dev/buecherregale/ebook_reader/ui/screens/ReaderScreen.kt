@@ -37,10 +37,10 @@ import dev.buecherregale.ebook_reader.ui.components.rememberPopupState
 import dev.buecherregale.ebook_reader.ui.navigation.Navigator
 import dev.buecherregale.ebook_reader.ui.navigation.Screen
 import dev.buecherregale.ebook_reader.ui.viewmodel.ReaderViewModel
-import ebook_reader.composeapp.generated.resources.Res
-import ebook_reader.composeapp.generated.resources.arrow_back_24px
-import ebook_reader.composeapp.generated.resources.arrow_forward_24px
-import ebook_reader.composeapp.generated.resources.settings_24px
+import ebuecherregal.composeapp.generated.resources.Res
+import ebuecherregal.composeapp.generated.resources.arrow_back_24px
+import ebuecherregal.composeapp.generated.resources.arrow_forward_24px
+import ebuecherregal.composeapp.generated.resources.settings_24px
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import kotlin.uuid.ExperimentalUuidApi

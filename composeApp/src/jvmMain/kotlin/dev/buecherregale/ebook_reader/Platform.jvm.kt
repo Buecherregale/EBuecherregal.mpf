@@ -32,7 +32,7 @@ actual fun getPlatform(): Platform = JVMPlatform()
 
 actual fun platformModule(): Module {
     return module {
-        single { DesktopFileService("ebook-reader") } binds arrayOf(FileService::class)
+        single { DesktopFileService(APP_NAME) } binds arrayOf(FileService::class)
     }
 }
 fun FileRef.toPath(): Path {

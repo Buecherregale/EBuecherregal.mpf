@@ -2,7 +2,6 @@ package dev.buecherregale.ebook_reader.core.config
 
 import androidx.compose.ui.text.intl.Locale
 import co.touchlab.kermit.Logger
-import dev.buecherregale.ebook_reader.core.domain.Dictionary
 import dev.buecherregale.ebook_reader.core.service.DictionaryService
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
@@ -91,7 +90,7 @@ class SettingsManager(
     }
 
     /**
-     * Set the active dictionary for its [dev.buecherregale.ebook_reader.core.domain.Dictionary#originalLanguage], updating the state as well.
+     * Set the active dictionary for its [dev.buecherregale.ebook_reader.core.domain.Dictionary.originalLanguage], updating the state as well.
      *
      * @param dictionaryId the id of the new dictionary
      */
