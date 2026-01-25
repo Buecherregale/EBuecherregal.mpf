@@ -1,5 +1,6 @@
 package dev.buecherregale.ebook_reader
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.intl.Locale
 import app.cash.sqldelight.db.SqlDriver
@@ -12,6 +13,10 @@ import dev.buecherregale.ebook_reader.filesystem.DesktopFileService
 import dev.buecherregale.ebook_reader.ui.components.SelectedText
 import dev.buecherregale.ebook_reader.ui.pickFile
 import dev.buecherregale.sql.Buecherregal
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.asSource
+import kotlinx.io.Source
+import kotlinx.io.buffered
 import org.koin.core.module.Module
 import org.koin.dsl.binds
 import org.koin.dsl.module
@@ -34,24 +39,31 @@ fun FileRef.toPath(): Path {
     return Paths.get(path)
 }
 
-actual suspend fun pickImage(): PickedImage? = pickFile(
-    "Images",
-    listOf("png", "jpg", "jpeg", "gif", "bmp", "webp")
-) { file: File? ->
-    if (file == null) return@pickFile null
-    PickedImage(
-        name = file.name,
-        bytes = file.readBytes(),
-        mimeType = file.toURI().toURL().openConnection().contentType
-    )
+@Composable
+actual fun PickImage(onImagePicked: (PickedImage?) -> Unit) {
+    onImagePicked(
+        pickFile(
+            "Images",
+            listOf("png", "jpg", "jpeg", "gif", "bmp", "webp")
+        ) { file: File? ->
+            if (file == null) return@pickFile null
+            PickedImage(
+                name = file.name,
+                bytes = file.readBytes(),
+                mimeType = file.toURI().toURL().openConnection().contentType
+            )
+        })
 }
 
-actual suspend fun pickBook(): PickedFile? = pickFile(
-    "Books",
-    listOf("pdf", "epub", "txt", "md")
-) { file: File? ->
-    if (file == null) return@pickFile null
-    PickedFile(file.path)
+@Composable
+actual fun PickBook(onFilePicked: (PickedFile?) -> Unit) {
+    onFilePicked(pickFile(
+        "Books",
+        listOf("pdf", "epub", "txt", "md")
+    ) { file: File? ->
+        if (file == null) return@pickFile null
+        PickedFile(file.path)
+    })
 }
 
 actual fun createSqlDriver(fileService: FileService, appName: String): SqlDriver {
@@ -80,4 +92,8 @@ actual fun findWordInSelection(selection: SelectedText, locale: Locale): TextRan
     if (start == BreakIterator.DONE || end == BreakIterator.DONE) return null
 
     return TextRange(start, end)
+}
+
+actual fun ByteReadChannel.asSource(): Source {
+    return this.asSource().buffered()
 }

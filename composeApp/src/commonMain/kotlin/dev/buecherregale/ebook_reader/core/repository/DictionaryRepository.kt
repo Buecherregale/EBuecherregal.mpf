@@ -14,10 +14,6 @@ import dev.buecherregale.sql.DictionariesQueries
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-class DictionaryEntryRepository(
-    delegate: FileRepository<Uuid>
-): FileBasedRepository<Uuid> by delegate
-
 interface DictionaryMetadataRepository : Repository<Uuid, DictionaryMetadata>
 
 fun Dictionaries.toDomain(): DictionaryMetadata =
@@ -68,29 +64,46 @@ class DictionaryRepository(
 
     override suspend fun loadAll(): List<Dictionary> {
         return fileService.listChildren(dictionaryDir)
-            .map { file ->
-                return@map fileService.read(file)
+            .mapNotNull { file ->
+                if (!fileService.exists(file)) return@mapNotNull null
+                val source = fileService.open(file)
+                try {
+                    jsonUtil.deserialize<Dictionary>(source)
+                } catch (_: Exception) {
+                    null
+                } finally {
+                    source.close()
+                }
             }
-            .map { json ->
-                return@map jsonUtil.deserialize<Dictionary>(json)
-            }.toList()
     }
 
     override suspend fun load(key: Uuid): Dictionary? {
-        val json = fileService.read(dictionaryFile(key))
-        return jsonUtil.deserialize(json)
+        val file = dictionaryFile(key)
+        if (!fileService.exists(file)) return null
+        val source = fileService.open(file)
+        try {
+            return jsonUtil.deserialize(source)
+        } finally {
+            source.close()
+        }
     }
 
     override suspend fun save(
         key: Uuid,
         value: Dictionary
     ): Dictionary {
-        fileService.write(dictionaryFile(key), jsonUtil.serialize(value))
+        val file = dictionaryFile(key)
+        val sink = fileService.openSink(file)
+        try {
+            jsonUtil.serialize(value, sink)
+        } finally {
+            sink.close()
+        }
         return value
     }
 
     override suspend fun delete(key: Uuid) {
-        TODO("Not yet implemented")
+        fileService.delete(dictionaryFile(key))
     }
 
     private val dictionaryDir: FileRef = fileService.getAppDirectory(AppDirectory.DATA).resolve("dictionaries")

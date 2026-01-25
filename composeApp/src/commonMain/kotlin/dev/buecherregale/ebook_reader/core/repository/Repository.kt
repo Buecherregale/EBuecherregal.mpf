@@ -2,7 +2,7 @@ package dev.buecherregale.ebook_reader.core.repository
 
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
-import dev.buecherregale.ebook_reader.core.util.JsonUtil
+import kotlinx.io.Source
 
 /**
  * A generic repository aimed at persisting data.
@@ -32,8 +32,9 @@ interface Repository<Key, T> {
     suspend fun delete(key: Key)
 }
 
-interface FileBasedRepository<Key>: Repository<Key, ByteArray> {
+interface FileBasedRepository<Key> : Repository<Key, ByteArray> {
     fun getFile(key: Key): FileRef
+    suspend fun loadSource(key: Key): Source?
 }
 
 
@@ -67,4 +68,10 @@ class FileRepository<Key>(
     }
 
     override fun getFile(key: Key): FileRef = storeInDir.resolve(keyToFilename(key))
+
+    override suspend fun loadSource(key: Key): Source? {
+        val file = getFile(key)
+        if (!fileService.exists(file)) return null
+        return fileService.open(file)
+    }
 }

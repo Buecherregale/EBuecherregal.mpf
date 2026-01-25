@@ -64,6 +64,7 @@ fun DictionaryPopup(
     if (!state.isVisible || state.bounds == null) return
 
     val popupPositionProvider = remember(state.bounds) {
+        val widgetBounds = state.bounds!!
         object : PopupPositionProvider {
             override fun calculatePosition(
                 anchorBounds: IntRect,
@@ -71,7 +72,7 @@ fun DictionaryPopup(
                 layoutDirection: LayoutDirection,
                 popupContentSize: IntSize
             ): IntOffset {
-                val bounds = state.bounds!!
+                val bounds = widgetBounds
                 var x = bounds.left.toInt()
                 var y = (bounds.top - popupContentSize.height).toInt()
 

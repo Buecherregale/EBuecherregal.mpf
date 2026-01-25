@@ -1,6 +1,8 @@
 package dev.buecherregale.ebook_reader.core.service.filesystem
 
+import kotlinx.io.Sink
 import kotlinx.io.Source
+import nl.adaptivity.xmlutil.XmlReader
 
 /**
  * A generic interface with different methods for handling files. <br></br>
@@ -40,6 +42,14 @@ interface FileService {
      * @return an open input stream
      */
     fun open(file: FileRef): Source
+
+    /**
+     * Opens an output stream to the file denoted by the ref.
+     *
+     * @param file the ref
+     * @return an open output stream
+     */
+    fun openSink(file: FileRef): Sink
 
     /**
      * Opens the file as a zip.
@@ -120,4 +130,20 @@ interface FileService {
      * @return the decompressed bytes
      */
     fun ungzip(bytes: ByteArray): ByteArray
+
+    /**
+     * Removes gz compression on the given source.
+     *
+     * @param source of a gz-compressed file
+     * @return the decompressed source
+     */
+    fun ungzip(source: Source): Source
+
+    /**
+     * Stream the given `Source` as xml.
+     *
+     * @param xmlStream the source to stream containing xml
+     * @return the xml reader
+     */
+    fun streamXml(xmlStream: Source) : XmlReader
 }

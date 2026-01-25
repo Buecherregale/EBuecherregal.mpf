@@ -50,16 +50,21 @@ private fun handleLinkClick(
     offset: Int,
     uriHandler: UriHandler,
     onLinkClick: (LinkTarget) -> Unit
-) {
-    annotatedString.getStringAnnotations(TAG_LINK, offset, offset)
-        .firstOrNull()?.let { annotation ->
-            val target = Json.decodeFromString<LinkTarget>(annotation.item)
-            if (target is LinkTarget.External) {
-                uriHandler.openUri(target.url)
-            } else {
-                onLinkClick(target)
-            }
+): Boolean {
+    val annotation = annotatedString.getStringAnnotations(TAG_LINK, offset, offset)
+        .firstOrNull()
+    
+    return if (annotation != null) {
+        val target = Json.decodeFromString<LinkTarget>(annotation.item)
+        if (target is LinkTarget.External) {
+            uriHandler.openUri(target.url)
+        } else {
+            onLinkClick(target)
         }
+        true
+    } else {
+        false
+    }
 }
 
 @Composable

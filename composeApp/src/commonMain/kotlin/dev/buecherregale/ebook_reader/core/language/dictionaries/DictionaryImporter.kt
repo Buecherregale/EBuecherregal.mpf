@@ -20,13 +20,6 @@ interface DictionaryImporter {
     suspend fun importFromFile(file: FileRef, targetLanguage: Locale): Dictionary
 
     /**
-     * Downloads the dictionary.
-     *
-     * @return the downloaded bytes
-     */
-    suspend fun download(): ByteArray
-
-    /**
      * Downloads the dictionary, transforming it to the app format.
      *
      * @param language the target language (dictionary is translating to)

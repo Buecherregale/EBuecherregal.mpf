@@ -65,6 +65,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
             implementation(libs.kotlinx.io.core)
+            implementation(libs.kotlinx.json.io)
             implementation(libs.kotlinx.json)
 
             implementation(libs.kermit)
