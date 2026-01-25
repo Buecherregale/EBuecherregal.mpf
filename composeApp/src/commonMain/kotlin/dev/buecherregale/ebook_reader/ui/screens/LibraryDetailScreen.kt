@@ -16,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,6 +50,11 @@ fun LibraryDetailScreen(
     val state by viewModel.uiState.collectAsState()
     var showImportBookDialog by remember { mutableStateOf(false) }
     val navigator: Navigator = koinInject()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadBooks()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

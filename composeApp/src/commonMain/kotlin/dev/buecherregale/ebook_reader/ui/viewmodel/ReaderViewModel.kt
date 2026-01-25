@@ -27,8 +27,12 @@ class ReaderViewModel(
     val uiState: StateFlow<ReaderUiState> = _uiState.asStateFlow()
 
     fun initState() {
+        _uiState.update { it.copy(
+            title = book.metadata.title,
+            progress = if(it.progress < 0) book.progress else it.progress,
+        ) }
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, progress = book.progress) }
+            _uiState.update { it.copy(isLoading = true) }
             val dom = bookService.open(book.id)
             val cIdx =
                 if (_uiState.value.chapterIdx == 0 && book.progress != 0.0)
@@ -38,7 +42,6 @@ class ReaderViewModel(
             val language = book.metadata.language
             val dictionary = settingsManager.state.activeDictionaries[language]
             _uiState.update { it.copy(
-                title = book.metadata.title,
                 chapterIdx = cIdx,
                 isLoading = false,
                 dom = dom,
@@ -101,7 +104,7 @@ class ReaderViewModel(
 
 data class ReaderUiState(
     val title: String = "",
-    val progress: Double = 0.0,
+    val progress: Double = -1.0, // do not use the book progress as book is immutable and the instance is not updated when progress changes
     val isMenuVisible: Boolean = true,
     val isLoading: Boolean = false,
     val book: Book,
