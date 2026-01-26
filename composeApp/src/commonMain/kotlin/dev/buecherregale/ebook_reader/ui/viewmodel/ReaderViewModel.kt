@@ -50,6 +50,14 @@ class ReaderViewModel(
         }
     }
 
+    fun showMenu() {
+        _uiState.update { it.copy(isMenuVisible = true) }
+    }
+
+    fun hideMenu() {
+        _uiState.update { it.copy(isMenuVisible = false) }
+    }
+
     fun toggleMenu() {
         _uiState.update { it.copy(isMenuVisible = !it.isMenuVisible) }
     }
