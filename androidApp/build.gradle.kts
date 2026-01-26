@@ -13,9 +13,13 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
+
     dependencies {
-        implementation(libs.compose.ui.tooling.preview)
+        implementation(projects.composeApp)
+
         implementation(libs.androidx.activity.compose)
+        implementation(libs.compose.ui.tooling.preview)
+
         implementation(libs.ktor.client.okhttp)
         implementation(libs.sql.driver.android)
     }
