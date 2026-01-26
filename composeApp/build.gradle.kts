@@ -1,4 +1,3 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -113,18 +112,6 @@ kotlin {
 
 dependencies {
     "androidRuntimeClasspath"(libs.compose.ui.tooling)
-}
-
-compose.desktop {
-    application {
-        mainClass = "dev.buecherregale.ebook_reader.MainKt"
-
-        nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "dev.buecherregale.ebook_reader"
-            packageVersion = "1.0.0"
-        }
-    }
 }
 
 sqldelight {
