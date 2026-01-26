@@ -4,23 +4,23 @@ package dev.buecherregale.ebook_reader.core.dom.epub
 
 import dev.buecherregale.ebook_reader.core.dom.ImageRef
 import dev.buecherregale.ebook_reader.core.dom.ResourceRepository
+import dev.buecherregale.ebook_reader.core.dom.epub.xml.Container
 import dev.buecherregale.ebook_reader.core.dom.epub.xml.Item
 import dev.buecherregale.ebook_reader.core.dom.epub.xml.Package
 import dev.buecherregale.ebook_reader.core.exception.EPubParseException
 import dev.buecherregale.ebook_reader.core.exception.EPubSyntaxException
-import dev.buecherregale.ebook_reader.core.dom.epub.xml.Container
 import dev.buecherregale.ebook_reader.core.service.filesystem.ZipFileRef
 import kotlinx.io.readByteArray
 import kotlinx.serialization.decodeFromString
 import nl.adaptivity.xmlutil.ExperimentalXmlUtilApi
 import nl.adaptivity.xmlutil.serialization.DefaultXmlSerializationPolicy
-import nl.adaptivity.xmlutil.serialization.XML1_0
+import nl.adaptivity.xmlutil.serialization.XML
 import nl.adaptivity.xmlutil.serialization.XmlConfig
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalXmlUtilApi::class)
-private val xmlParser = XML1_0.recommended {
+private val xmlParser = XML.v1.invoke {
     policy = DefaultXmlSerializationPolicy {
         unknownChildHandler = XmlConfig.IGNORING_UNKNOWN_CHILD_HANDLER
     }
