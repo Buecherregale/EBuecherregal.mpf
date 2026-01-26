@@ -4,6 +4,7 @@ import android.content.Context
 import android.icu.text.BreakIterator
 import android.net.Uri
 import android.os.Build
+import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -17,6 +18,7 @@ import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.filesystem.AndroidFileService
 import dev.buecherregale.ebook_reader.ui.components.SelectedText
 import dev.buecherregale.sql.Buecherregal
+import io.ktor.util.Platform
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.asSource
 import kotlinx.io.Source
@@ -108,7 +110,7 @@ private fun getFileName(context: Context, uri: Uri): String? {
         val cursor = context.contentResolver.query(uri, null, null, null, null)
         cursor.use { cursor ->
             if (cursor != null && cursor.moveToFirst()) {
-                val index = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
                 if (index >= 0) {
                     result = cursor.getString(index)
                 }
