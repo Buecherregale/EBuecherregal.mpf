@@ -132,7 +132,7 @@ class BookService(
     }
 
     /**
-     * Saves the book data to a json file. <br></br>
+     * Saves the book data to a JSON file. <br></br>
      * This will not only save the [Book.metadata] but the whole book itself, e.g. the progress.
      * The file name will be [.getBookDataFile].
      * <br></br>

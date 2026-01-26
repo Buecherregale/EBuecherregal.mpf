@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		3CC3C844EBDE37FFE8E23C2B /* ebook_reader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ebook_reader.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3CC3C844EBDE37FFE8E23C2B /* EBuecherregal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EBuecherregal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -59,7 +59,7 @@
 		A750C205ABF620800021EBE8 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				3CC3C844EBDE37FFE8E23C2B /* ebook_reader.app */,
+				3CC3C844EBDE37FFE8E23C2B /* EBuecherregal.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -87,7 +87,7 @@
 			packageProductDependencies = (
 			);
 			productName = iosApp;
-			productReference = 3CC3C844EBDE37FFE8E23C2B /* ebook_reader.app */;
+			productReference = 3CC3C844EBDE37FFE8E23C2B /* EBuecherregal.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

@@ -9,7 +9,7 @@ import kotlin.uuid.ExperimentalUuidApi
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
-        title = "ebook_reader",
+        title = APP_NAME,
     ) {
         App()
     }

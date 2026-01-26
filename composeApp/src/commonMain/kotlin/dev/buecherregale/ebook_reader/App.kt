@@ -15,6 +15,8 @@ import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.koinConfiguration
 
+const val APP_NAME = "EBuecherregal"
+
 @Composable
 @OptIn(KoinExperimentalAPI::class)
 fun App() {

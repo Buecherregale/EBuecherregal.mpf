@@ -19,7 +19,7 @@ import kotlinx.serialization.decodeFromString
 import nl.adaptivity.xmlutil.EventType
 import nl.adaptivity.xmlutil.ExperimentalXmlUtilApi
 import nl.adaptivity.xmlutil.serialization.DefaultXmlSerializationPolicy
-import nl.adaptivity.xmlutil.serialization.XML1_0
+import nl.adaptivity.xmlutil.serialization.XML
 import nl.adaptivity.xmlutil.serialization.XmlConfig
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -149,7 +149,7 @@ class JMDictImporter(
         const val GLOSS_COUNT_LIMIT = 5
 
         @OptIn(ExperimentalXmlUtilApi::class)
-        val xmlParser = XML1_0.recommended {
+        val xmlParser = XML.v1.invoke {
             policy = DefaultXmlSerializationPolicy {
                 unknownChildHandler = XmlConfig.IGNORING_UNKNOWN_CHILD_HANDLER
             }

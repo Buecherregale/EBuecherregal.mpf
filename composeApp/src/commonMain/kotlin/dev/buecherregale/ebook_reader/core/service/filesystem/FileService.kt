@@ -140,10 +140,10 @@ interface FileService {
     fun ungzip(source: Source): Source
 
     /**
-     * Stream the given `Source` as xml.
+     * Stream the given `Source` as XML.
      *
-     * @param xmlStream the source to stream containing xml
-     * @return the xml reader
+     * @param xmlStream the source to stream containing XML
+     * @return the XML reader
      */
     fun streamXml(xmlStream: Source) : XmlReader
 }

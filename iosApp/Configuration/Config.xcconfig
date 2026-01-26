@@ -1,7 +1,7 @@
 TEAM_ID=
 
-PRODUCT_NAME=ebook_reader
-PRODUCT_BUNDLE_IDENTIFIER=dev.buecherregale.ebook_reader.ebook_reader$(TEAM_ID)
+PRODUCT_NAME=EBuecherregal
+PRODUCT_BUNDLE_IDENTIFIER=dev.buecherregale.ebook_reader.EBuecherregal$(TEAM_ID)
 
 CURRENT_PROJECT_VERSION=1
 MARKETING_VERSION=1.0

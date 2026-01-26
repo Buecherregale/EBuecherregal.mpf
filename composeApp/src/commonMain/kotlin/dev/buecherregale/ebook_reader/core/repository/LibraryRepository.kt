@@ -3,8 +3,8 @@
 package dev.buecherregale.ebook_reader.core.repository
 
 import dev.buecherregale.ebook_reader.core.domain.Library
-import dev.buecherregale.sql.Libraries
-import dev.buecherregale.sql.LibrariesQueries
+import dev.buecherregale.ebookreader.sql.Libraries
+import dev.buecherregale.ebookreader.sql.LibrariesQueries
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 

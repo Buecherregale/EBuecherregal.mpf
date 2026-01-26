@@ -38,8 +38,6 @@ internal class InlineStack {
         }
     }
 
-    fun current(): List<InlineNode> = stack.last().nodes
-    
     fun currentAttributes(): MutableMap<String, String> = stack.last().attributes
 }
 

@@ -9,8 +9,8 @@ import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileRef
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.util.JsonUtil
-import dev.buecherregale.sql.Dictionaries
-import dev.buecherregale.sql.DictionariesQueries
+import dev.buecherregale.ebookreader.sql.Dictionaries
+import dev.buecherregale.ebookreader.sql.DictionariesQueries
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -109,7 +109,7 @@ class DictionaryRepository(
     private val dictionaryDir: FileRef = fileService.getAppDirectory(AppDirectory.DATA).resolve("dictionaries")
 
     /**
-     * A file ref to the file containing the dictionary as json. <br></br>
+     * A file ref to the file containing the dictionary as JSON. <br></br>
      * <bold>DOES NOT CHECK IF THE FILE EXISTS!</bold> <br></br>
      * If no dictionary with the given id has been downloaded, the file won't exist, but this method <bold>WILL</bold> return
      * the theoretical ref. <br></br>
