@@ -19,7 +19,7 @@ import dev.buecherregale.ebook_reader.core.service.LibraryService
 import dev.buecherregale.ebook_reader.core.service.filesystem.AppDirectory
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.core.util.JsonUtil
-import dev.buecherregale.sql.Buecherregal
+import dev.buecherregale.ebook_reader.sql.EBuecherregal
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -30,16 +30,16 @@ import kotlin.uuid.ExperimentalUuidApi
 @OptIn(KoinExperimentalAPI::class, ExperimentalUuidApi::class)
 val commonModule: Module = module {
     single {
-        Buecherregal(
+        EBuecherregal(
             createSqlDriver(
                 get<FileService>(),
                 appName = APP_NAME
             )
         )
     }
-    single { get<Buecherregal>().librariesQueries }
-    single { get<Buecherregal>().booksQueries }
-    single { get<Buecherregal>().dictionariesQueries }
+    single { get<EBuecherregal>().librariesQueries }
+    single { get<EBuecherregal>().booksQueries }
+    single { get<EBuecherregal>().dictionariesQueries }
 
     singleOf(::JsonUtil)
     singleOf(::LibrarySqlRepository) binds arrayOf(LibraryRepository::class)

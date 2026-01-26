@@ -120,8 +120,8 @@ compose.desktop {
 
 sqldelight {
     databases {
-        create("Buecherregal") {
-            packageName.set("dev.buecherregale.sql")
+        create("EBuecherregal") {
+            packageName.set("dev.buecherregale.ebook_reader.sql")
             dialect(libs.sql.dialect)
         }
     }
