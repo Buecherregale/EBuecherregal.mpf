@@ -18,6 +18,7 @@ import nl.adaptivity.xmlutil.xmlStreaming
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.zip.GZIPInputStream
@@ -109,7 +110,7 @@ class AndroidFileService(val context: Context) : FileService {
     override suspend fun getMetadata(file: FileRef): FileMetadata {
         val targetFile = file.toFile()
         if (!targetFile.exists()) {
-            throw java.io.FileNotFoundException("file $file does not exist")
+            throw FileNotFoundException("file $file does not exist")
         }
         val fileName = targetFile.name
         val firstDot = fileName.indexOf('.')

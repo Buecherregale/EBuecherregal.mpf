@@ -15,6 +15,7 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.filesystem.AndroidFileService
+import dev.buecherregale.ebook_reader.sql.EBuecherregal
 import dev.buecherregale.ebook_reader.ui.components.SelectedText
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.asSource
@@ -127,7 +128,7 @@ private fun getFileName(context: Context, uri: Uri): String? {
 
 actual fun createSqlDriver(fileService: FileService, appName: String): SqlDriver {
     if (fileService is AndroidFileService) {
-        return AndroidSqliteDriver(Buecherregal.Schema, fileService.context, "$appName.db")
+        return AndroidSqliteDriver(EBuecherregal.Schema, fileService.context, "$appName.db")
     }
     throw IllegalArgumentException("FileService must be AndroidFileService on Android")
 }
@@ -135,7 +136,7 @@ actual fun createSqlDriver(fileService: FileService, appName: String): SqlDriver
 actual fun findWordInSelection(selection: SelectedText, locale: Locale): TextRange? {
     val text = selection.text
     val index = selection.index
-    
+
     if (index < 0 || index >= text.length) return null
 
     val iterator = BreakIterator.getWordInstance(java.util.Locale.forLanguageTag(locale.toLanguageTag()))

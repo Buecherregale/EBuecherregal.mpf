@@ -19,10 +19,6 @@ kotlin {
 
         implementation(libs.androidx.activity.compose)
         implementation(libs.compose.ui.tooling.preview)
-
-        implementation(libs.ktor.client.okhttp)
-        implementation(libs.koin.compose)
-        implementation(libs.sql.driver.android)
     }
 }
 

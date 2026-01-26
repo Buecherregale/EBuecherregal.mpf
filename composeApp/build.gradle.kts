@@ -14,7 +14,7 @@ plugins {
 
 kotlin {
     android {
-        namespace = "dev.buecherregale.ebook_reader"
+        namespace = "dev.buecherregale.ebook_reader.common"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
         minSdk = libs.versions.android.minSdk.get().toInt()
 
@@ -51,6 +51,15 @@ kotlin {
     }
     
     sourceSets {
+        androidMain.dependencies {
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.compose.ui.tooling.preview)
+
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.koin.compose)
+            implementation(libs.sql.driver.android)
+        }
+
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
