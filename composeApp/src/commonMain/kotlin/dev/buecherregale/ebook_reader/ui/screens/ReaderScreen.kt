@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -31,7 +32,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import co.touchlab.kermit.Logger
 import dev.buecherregale.ebook_reader.ui.components.DictionaryPopup
 import dev.buecherregale.ebook_reader.ui.components.rememberPopupState
 import dev.buecherregale.ebook_reader.ui.navigation.Navigator
@@ -53,9 +53,12 @@ fun ReaderScreen(
 ) {
     val navigator = koinInject<Navigator>()
     val uiState by viewModel.uiState.collectAsState()
+    val scrollState = rememberScrollState()
+
     LaunchedEffect(Unit) {
         viewModel.initState()
     }
+
     Scaffold(
         topBar = {
             AnimatedVisibility(
@@ -99,7 +102,6 @@ fun ReaderScreen(
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Logger.d { "${uiState.progress}" }
                         Text(
                             text = "${(uiState.progress * 100).toInt()}%",
                             style = MaterialTheme.typography.bodySmall
@@ -145,16 +147,22 @@ fun ReaderScreen(
                 
                 LaunchedEffect(uiState.chapterIdx) {
                     popupState.dismiss()
+                    scrollState.scrollTo(0)
                 }
 
                 ChapterView(
                     bookId = uiState.book.id,
                     chapter = uiState.dom!!.chapter[uiState.chapterIdx],
+                    scrollState = scrollState,
                     selectedRange = popupState.selectedRange,
                     selectedBlockId = popupState.selectedBlockId,
                     onToggleMenu = onToggleMenu,
                     onSelected = { selectedText, blockId -> popupState.show(selectedText, blockId, uiState.book.metadata.language) },
-                    onLinkClick = { target -> viewModel.navigateToLink(target) }
+                    onLinkClick = { target -> viewModel.navigateToLink(target) },
+                    onSwipeLeft = { viewModel.nextChapter() },
+                    onSwipeRight = { viewModel.previousChapter() },
+                    onShowMenu = { viewModel.showMenu() },
+                    onHideMenu = { viewModel.hideMenu() }
                 )
                 uiState.dictionary?.let {
                     DictionaryPopup(state = popupState, dictionary = it)

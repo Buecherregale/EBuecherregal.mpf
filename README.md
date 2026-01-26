@@ -1,4 +1,4 @@
-![Logo](resources/logos/icon_colored_round.svg)
+![Logo](resources/icons/icon_colored_round.svg)
 #  EBuecherregal
 A multiplatform E-Book reader application built with Kotlin and Compose Multiplatform.
 
