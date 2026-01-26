@@ -5,6 +5,14 @@ android-minSdk = "24"
 android-targetSdk = "36"
 androidx-activity = "1.12.2"
 androidx-lifecycle = "2.9.6"
+androidx-nav3 = "1.0.0"
+compose-componentsResources = "1.10.0"
+compose-foundation = "1.10.0"
+compose-material3 = "1.9.0"
+compose-runtime = "1.10.0"
+compose-uiTooling = "1.10.0"
+compose-multiplatform-adaptive = "1.3.0-alpha03"
+compose-multiplatform-lifecycle = "2.10.0-alpha07"
 composeHotReload = "1.0.0"
 composeMultiplatform = "1.10.0"
 kotlin = "2.3.0"
@@ -14,9 +22,6 @@ kotlinx-json = "1.10.0"
 xmlutil = "1.0.0-rc2"
 ktor = "3.4.0"
 koin = "4.2.0-beta4"
-androidx-nav3 = "1.0.0"
-compose-multiplatform-adaptive = "1.3.0-alpha03"
-compose-multiplatform-lifecycle = "2.10.0-alpha07"
 sqlDelight = "2.2.1"
 icuJvm = "78.2"
 
@@ -31,6 +36,14 @@ androidx-nav3-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle
 
 androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+
+compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-componentsResources" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-foundation" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-runtime" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-uiTooling" }
+compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-uiTooling" }
+compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-uiTooling" }
 
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io" }
