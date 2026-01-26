@@ -17,7 +17,7 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "dev.buecherregale.ebook_reader.MainKt"
+        mainClass = "dev.buecherregale.ebook_reader.EBuecherregalKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
