@@ -4,7 +4,6 @@ import android.content.Context
 import android.icu.text.BreakIterator
 import android.net.Uri
 import android.os.Build
-import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -16,9 +15,8 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.filesystem.AndroidFileService
+import dev.buecherregale.ebook_reader.sql.EBuecherregal
 import dev.buecherregale.ebook_reader.ui.components.SelectedText
-import dev.buecherregale.sql.Buecherregal
-import io.ktor.util.Platform
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.asSource
 import kotlinx.io.Source
@@ -110,7 +108,7 @@ private fun getFileName(context: Context, uri: Uri): String? {
         val cursor = context.contentResolver.query(uri, null, null, null, null)
         cursor.use { cursor ->
             if (cursor != null && cursor.moveToFirst()) {
-                val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                val index = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
                 if (index >= 0) {
                     result = cursor.getString(index)
                 }
@@ -130,7 +128,7 @@ private fun getFileName(context: Context, uri: Uri): String? {
 
 actual fun createSqlDriver(fileService: FileService, appName: String): SqlDriver {
     if (fileService is AndroidFileService) {
-        return AndroidSqliteDriver(Buecherregal.Schema, fileService.context, "$appName.db")
+        return AndroidSqliteDriver(EBuecherregal.Schema, fileService.context, "$appName.db")
     }
     throw IllegalArgumentException("FileService must be AndroidFileService on Android")
 }
@@ -138,7 +136,7 @@ actual fun createSqlDriver(fileService: FileService, appName: String): SqlDriver
 actual fun findWordInSelection(selection: SelectedText, locale: Locale): TextRange? {
     val text = selection.text
     val index = selection.index
-    
+
     if (index < 0 || index >= text.length) return null
 
     val iterator = BreakIterator.getWordInstance(java.util.Locale.forLanguageTag(locale.toLanguageTag()))

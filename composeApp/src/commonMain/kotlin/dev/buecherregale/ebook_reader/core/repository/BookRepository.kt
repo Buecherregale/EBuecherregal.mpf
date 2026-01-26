@@ -5,8 +5,8 @@ package dev.buecherregale.ebook_reader.core.repository
 import androidx.compose.ui.text.intl.Locale
 import dev.buecherregale.ebook_reader.core.domain.Book
 import dev.buecherregale.ebook_reader.core.domain.BookMetadata
-import dev.buecherregale.ebookreader.sql.Books
 import dev.buecherregale.ebookreader.sql.BooksQueries
+import dev.buecherregale.ebookreader.sql.Books
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 

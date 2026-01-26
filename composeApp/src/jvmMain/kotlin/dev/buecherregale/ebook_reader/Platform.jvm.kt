@@ -12,7 +12,7 @@ import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.filesystem.DesktopFileService
 import dev.buecherregale.ebook_reader.ui.components.SelectedText
 import dev.buecherregale.ebook_reader.ui.pickFile
-import dev.buecherregale.sql.Buecherregal
+import dev.buecherregale.ebook_reader.sql.EBuecherregal
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.asSource
 import kotlinx.io.Source
@@ -74,7 +74,7 @@ actual fun createSqlDriver(fileService: FileService, appName: String): SqlDriver
 
     return JdbcSqliteDriver(
         url = "jdbc:sqlite:${dbFile.absolutePath}",
-        schema = Buecherregal.Schema
+        schema = EBuecherregal.Schema
     )
 }
 
