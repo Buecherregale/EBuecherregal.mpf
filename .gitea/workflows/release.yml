@@ -1,0 +1,123 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+env:
+  JAVA_VERSION: 21
+  
+  NEXUS_URL: https://nexus.buecherregale.dev
+  NEXUS_REPOSITORY: bin-releases
+  NEXUS_USERNAME: ${{ secrets.NEXUS_USER }}
+  NEXUS_PASSWORD: ${{ secrets.NEXUS_PASS }}
+
+jobs:
+  desktop:
+    name: Desktop (${{ matrix.platform }})
+    runs-on: ${{ matrix.runs-on }}
+    container:
+      image: ${{ matrix.image }}
+
+    strategy:
+      matrix:
+        include:
+          - platform: linux - debian
+            runs-on: ubuntu-latest
+            targets: ["Deb", "AppImage"]
+            image: docker-registry.buecherregale.dev/action-runner-java-${{ env.JAVA_VERSION }}:v0.6.1
+          # currently no windows & mac runner
+#          - platform: windows
+#            runs-on: windows-latest
+#            targets: ["Msi"]
+#            image: ""
+#          - platform: macos
+#            runs-on: macos-latest
+#            targets: ["Dmg"]
+#            image: ""
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Get Version
+        run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Build all targets
+        run: |
+          targets='${{ toJson(matrix.targets) }}'
+          echo "Building targets:"
+          echo "$targets"
+          for v in $(echo "$targets" | jq -r '.[]'); do
+            echo "Building target: $v"
+          ./gradlew :desktopApp:packageRelease$v --stacktrace
+          done
+
+      - name: Upload artifacts to Nexus 
+        shell: bash
+        run: |
+          for dir in desktopApp/build/compose/binaries/main-release/*; do
+            dirname=$(basename "$dir")
+
+            shopt -s nullglob
+            children=("$dir"/*)
+            shopt -u nullglob
+
+            count=${#children[@]}
+
+            if (( count == 1 )) && [[ -f "${children[0]}" ]]; then
+              target_path="${children[0]}"
+              target_name=$(basename "$target_path")
+
+              echo "Uploading single file artifact from $dirname: $target_name"
+              curl -v --fail \
+                -u "$NEXUS_USERNAME:$NEXUS_PASSWORD" \
+                --upload-file "$target_path" \
+                "$NEXUS_URL/repository/$NEXUS_REPOSITORY/dev/buecherregale/ebook_reader/EBuecherregal/$VERSION/ebuecherregal-$VERSION.${target_name##*.}"
+
+            else
+              echo "Uploading directory artifact from $dirname"
+              tar -czvf "$dirname.tar.gz" -C "$dir" .
+              curl -v --fail \
+                -u "$NEXUS_USERNAME:$NEXUS_PASSWORD" \
+                --upload-file "$dirname.tar.gz" \
+                "$NEXUS_URL/repository/$NEXUS_REPOSITORY/dev/buecherregale/ebook_reader/EBuecherregal/$VERSION/ebuecherregal-$VERSION.app.tar.gz"
+            fi
+          done
+
+
+  android:
+    name: Android Release
+    runs-on: ubuntu-latest
+    container:
+      image: docker-registry.buecherregale.dev/action-runner-android:v0.4.2
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Get Version 
+        run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+      
+      - name: Build AAB and APK
+        run: ./gradlew :androidApp:bundleRelease :androidApp:assembleRelease --stacktrace
+
+      - name: Upload APK to Nexus
+        run: |
+          for file in androidApp/build/outputs/apk/release/*.apk; do
+            filename=$(basename "$file")
+            curl -v --fail -u "$NEXUS_USERNAME:$NEXUS_PASSWORD" --upload-file "$file" "$NEXUS_URL/repository/$NEXUS_REPOSITORY/dev/buecherregale/ebook_reader/EBuecherregal/$VERSION/ebuecherregal-$VERSION.apk"
+          done
+
+      - name: Upload AAB to Nexus
+        run: |
+          for file in androidApp/build/outputs/bundle/release/*.aab; do
+            filename=$(basename "$file")
+            curl -v --fail -u "$NEXUS_USERNAME:$NEXUS_PASSWORD" --upload-file "$file" "$NEXUS_URL/repository/$NEXUS_REPOSITORY/dev/buecherregale/ebook_reader/EBuecherregal/$VERSION/ebuecherregal-$VERSION.aab"
+          done
+

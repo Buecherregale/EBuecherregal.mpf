@@ -20,9 +20,19 @@ compose.desktop {
         mainClass = "dev.buecherregale.ebook_reader.EBuecherregalKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.AppImage)
             packageName = "dev.buecherregale.ebook_reader"
             packageVersion = "1.0.0"
         }
+        buildTypes {
+            release {
+                proguard {
+                    configurationFiles.from(
+                        project.file("desktop-proguard-rules.pro")
+                    )
+                }
+            }
+        }
+
     }
 }
