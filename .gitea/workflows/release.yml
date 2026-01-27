@@ -76,7 +76,7 @@ jobs:
               curl -v --fail \
                 -u "$NEXUS_USERNAME:$NEXUS_PASSWORD" \
                 --upload-file "$target_path" \
-                "$NEXUS_URL/repository/$NEXUS_REPOSITORY/dev/buecherregale/ebook_reader/EBuecherregal/$VERSION/ebuecherregal-$VERSION.${target_name#*.}"
+                "$NEXUS_URL/repository/$NEXUS_REPOSITORY/dev/buecherregale/ebook_reader/EBuecherregal/$VERSION/ebuecherregal-$VERSION.${target_name##*.}"
 
             else
               echo "Uploading directory artifact from $dirname"
