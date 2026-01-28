@@ -30,8 +30,8 @@ android {
         applicationId = "dev.buecherregale.ebook_reader"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = libs.versions.projectVersionCode.get().toInt()
+        versionName = libs.versions.projectVersion.get()
     }
     packaging {
         resources {
