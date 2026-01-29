@@ -43,7 +43,7 @@ jobs:
         shell: bash
         run: |
           sed -i "s/^projectVersion = \".*\"/projectVersion = \"$VERSION\"/" "$VERSION_FILE"
-          sed -i "s/^projectVersionCode = .*/projectVersionCode = $VERSION_CODE/" "$VERSION_FILE"
+          sed -i "s/^projectVersionCode = \".*\"/projectVersionCode = \"$VERSION_CODE\"/" "$VERSION_FILE"
 
       - name: Commit Version 
         shell: bash 
