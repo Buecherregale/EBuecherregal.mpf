@@ -7,18 +7,59 @@ on:
 
 env:
   JAVA_VERSION: 21
-  
+
+  GIT_TOKEN: ${{ secrets.TOKEN }}
+
   NEXUS_URL: https://nexus.buecherregale.dev
   NEXUS_REPOSITORY: bin-releases
   NEXUS_USERNAME: ${{ secrets.NEXUS_USER }}
   NEXUS_PASSWORD: ${{ secrets.NEXUS_PASS }}
 
+  VERSION_FILE: gradle/libs.versions.toml
+
 jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+    
+      - name: Get new Version 
+        shell: bash
+        run: |
+          TAG_VER=${{ github.ref_name }}
+          
+          version="${TAG_VER#v}"
+          echo "VERSION=$version" >> $GITHUB_ENV
+
+          current_code=$(grep -E '^projectVersionCode =' "$VERSION_FILE" | sed -E 's/[^0-9]*//g')
+          version_code=$((current_code + 1))
+
+          echo "VERSION_CODE=$version_code" >> $GITHUB_ENV
+
+          echo "New Version: $version"
+          echo "New Code: $version_code"
+      
+      - name: Update Version 
+        shell: bash
+        run: |
+          sed -i "s/^projectVersion = \".*\"/projectVersion = \"$VERSION\"/" "$VERSION_FILE"
+          sed -i "s/^projectVersionCode = \".*\"/projectVersionCode = \"$VERSION_CODE\"/" "$VERSION_FILE"
+
+      - name: Commit Version 
+        shell: bash 
+        run: |
+          git config user.name "ci bot"
+          git config user.email "ci@local"
+          git add "$VERSION_FILE"
+          git commit -m "bump version to $VERSION"
+          git push http://x-access-token:${GITEA_TOKEN}@gitea:3000/${{ github.repository }}.git HEAD:main
+
   desktop:
     name: Desktop (${{ matrix.platform }})
     runs-on: ${{ matrix.runs-on }}
     container:
       image: ${{ matrix.image }}
+    needs: update-version
 
     strategy:
       matrix:
@@ -94,6 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: docker-registry.buecherregale.dev/action-runner-android:v0.4.2
+    needs: update-version
 
     steps:
       - uses: actions/checkout@v4
