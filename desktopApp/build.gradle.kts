@@ -27,17 +27,17 @@ compose.desktop {
                 TargetFormat.Deb,
                 TargetFormat.AppImage
             )
-            packageName = "dev.buecherregale.ebook_reader"
+            packageName = "ebuecherregal"
             packageVersion = libs.versions.projectVersion.get()
 
             macOS {
-                iconFile.set(project.file("resources/icons/icon_colored_256x256.icns"))
+                iconFile.set(project.file("../resources/icons/icon_colored_256x256.icns"))
             }
             windows {
-                iconFile.set(project.file("resources/icons/icon_colored_256x256.ico"))
+                iconFile.set(project.file("../resources/icons/icon_colored_256x256.ico"))
             }
             linux {
-                iconFile.set(project.file("resources/icons/icon_colored_256x256.png"))
+                iconFile.set(project.file("../resources/icons/icon_colored_256x256.png"))
             }
         }
         buildTypes {
