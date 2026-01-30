@@ -12,6 +12,7 @@ kotlin {
 
         implementation(compose.desktop.currentOs)
         implementation(libs.compose.ui.tooling.preview)
+        implementation(libs.compose.components.resources)
     }
 }
 
@@ -20,9 +21,24 @@ compose.desktop {
         mainClass = "dev.buecherregale.ebook_reader.EBuecherregalKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.AppImage)
-            packageName = "dev.buecherregale.ebook_reader"
+            targetFormats(
+                TargetFormat.Dmg,
+                TargetFormat.Msi,
+                TargetFormat.Deb,
+                TargetFormat.AppImage
+            )
+            packageName = "ebuecherregal"
             packageVersion = libs.versions.projectVersion.get()
+
+            macOS {
+                iconFile.set(project.file("../resources/icons/icon_colored_256x256.icns"))
+            }
+            windows {
+                iconFile.set(project.file("../resources/icons/icon_colored_256x256.ico"))
+            }
+            linux {
+                iconFile.set(project.file("../resources/icons/icon_colored_256x256.png"))
+            }
         }
         buildTypes {
             release {

@@ -6,12 +6,25 @@ import androidx.compose.ui.text.intl.Locale
 import app.cash.sqldelight.db.SqlDriver
 import dev.buecherregale.ebook_reader.core.service.filesystem.FileService
 import dev.buecherregale.ebook_reader.ui.components.SelectedText
+import ebuecherregal.composeapp.generated.resources.Res
+import ebuecherregal.composeapp.generated.resources.icon_colored
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.io.Source
+import org.jetbrains.compose.resources.DrawableResource
 import org.koin.core.module.Module
 
 interface Platform {
     val name: String
+}
+
+/**
+ * Workaround cause I got no clue how to access
+ * `Res.drawable` from the desktopApp
+ *
+ * @return the app icon
+ */
+fun icon(): DrawableResource {
+    return Res.drawable.icon_colored
 }
 
 expect fun getPlatform(): Platform
