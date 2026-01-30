@@ -20,9 +20,24 @@ compose.desktop {
         mainClass = "dev.buecherregale.ebook_reader.EBuecherregalKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.AppImage)
+            targetFormats(
+                TargetFormat.Dmg,
+                TargetFormat.Msi,
+                TargetFormat.Deb,
+                TargetFormat.AppImage
+            )
             packageName = "dev.buecherregale.ebook_reader"
             packageVersion = libs.versions.projectVersion.get()
+
+            macOS {
+                iconFile.set(project.file("resources/icons/icon_colored_256x256.icns"))
+            }
+            windows {
+                iconFile.set(project.file("resources/icons/icon_colored_256x256.ico"))
+            }
+            linux {
+                iconFile.set(project.file("resources/icons/icon_colored_256x256.png"))
+            }
         }
         buildTypes {
             release {
