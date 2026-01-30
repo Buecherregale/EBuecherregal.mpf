@@ -85,6 +85,7 @@ class SettingsManager(
                 Logger.w("Failed to load dictionary $dictId for language $lang", e)
             }
         }
+        newState.setFontSize(settings.fontSize)
 
         return newState
     }
@@ -110,6 +111,11 @@ class SettingsManager(
     fun deactivateDictionary(language: Locale) {
         _state.activeDictionaries.remove(language)
         settings.activeDictionaryIds.remove(language)
+    }
+    
+    fun setFontSize(size: Float) {
+        _state.setFontSize(size)
+        settings.fontSize = size
     }
 
     companion object {

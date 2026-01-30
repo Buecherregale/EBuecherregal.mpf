@@ -3,16 +3,20 @@ package dev.buecherregale.ebook_reader.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import dev.buecherregale.ebook_reader.ui.navigation.Navigator
 import dev.buecherregale.ebook_reader.ui.viewmodel.SettingsViewModel
 import ebuecherregal.composeapp.generated.resources.Res
+import ebuecherregal.composeapp.generated.resources.add_24px
 import ebuecherregal.composeapp.generated.resources.arrow_back_24px
 import ebuecherregal.composeapp.generated.resources.delete_24px
+import ebuecherregal.composeapp.generated.resources.remove_24px
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -84,6 +88,44 @@ fun SettingsScreen(
                 modifier = Modifier.padding(padding).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                item {
+                    Text("Appearance", style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.height(8.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Font Size")
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            IconButton(onClick = { viewModel.setFontSize(state.fontSize - 1) }) {
+                                Icon(painter = painterResource(Res.drawable.remove_24px), contentDescription = "Decrease Font Size")
+                            }
+                            
+                            OutlinedTextField(
+                                value = state.fontSize.toInt().toString(),
+                                onValueChange = { 
+                                    val newSize = it.toFloatOrNull()
+                                    if (newSize != null) {
+                                        viewModel.setFontSize(newSize)
+                                    }
+                                },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                modifier = Modifier.width(50.dp),
+                                singleLine = true
+                            )
+                            
+                            IconButton(onClick = { viewModel.setFontSize(state.fontSize + 1) }) {
+                                Icon(painter = painterResource(Res.drawable.add_24px), contentDescription = "Increase Font Size")
+                            }
+                        }
+                    }
+                }
+
                 item {
                     Text("Download Dictionary", style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(8.dp))

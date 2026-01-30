@@ -37,12 +37,15 @@ class SettingsViewModel(
             val activeIds = settingsManager.state.activeDictionaries.entries.associate { 
                 it.key to it.value.id 
             }
+            
+            val fontSize = settingsManager.state.fontSize.value
 
             _uiState.update {
                 it.copy(
                     supportedDictionaries = supported,
                     downloadedDictionaries = downloaded,
                     activeDictionaryIds = activeIds,
+                    fontSize = fontSize,
                     isLoading = false
                 )
             }
@@ -107,11 +110,16 @@ class SettingsViewModel(
             }
         }
     }
+    
+    fun setFontSize(size: Float) {
+        _uiState.update { it.copy(fontSize = size) }
+    }
 
     fun saveSettings() {
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, error = null, message = null) }
             try {
+                settingsManager.setFontSize(_uiState.value.fontSize)
                 settingsManager.save()
                 _uiState.update { it.copy(isSaving = false, message = "Settings saved successfully") }
             } catch (e: Exception) {
@@ -134,6 +142,7 @@ data class SettingsUiState(
     val supportedDictionaries: List<String> = emptyList(),
     val downloadedDictionaries: List<DictionaryMetadata> = emptyList(),
     val activeDictionaryIds: Map<Locale, Uuid> = emptyMap(),
+    val fontSize: Float = 20f,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val error: String? = null,
