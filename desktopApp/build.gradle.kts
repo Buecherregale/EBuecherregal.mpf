@@ -12,6 +12,7 @@ kotlin {
 
         implementation(compose.desktop.currentOs)
         implementation(libs.compose.ui.tooling.preview)
+        implementation(libs.compose.components.resources)
     }
 }
 
