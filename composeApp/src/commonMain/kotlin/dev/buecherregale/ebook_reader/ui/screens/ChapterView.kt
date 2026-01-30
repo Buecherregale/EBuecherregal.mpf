@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
+import dev.buecherregale.ebook_reader.core.config.SettingsManager
 import dev.buecherregale.ebook_reader.core.dom.Chapter
 import dev.buecherregale.ebook_reader.core.dom.LinkTarget
 import dev.buecherregale.ebook_reader.ui.components.BlockRenderer
@@ -30,6 +32,7 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.scan
+import org.koin.compose.koinInject
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -49,6 +52,8 @@ fun ChapterView(
     onHideMenu: () -> Unit,
 ) {
     var swipeDistance by remember { mutableStateOf(0f) }
+    val settingsManager = koinInject<SettingsManager>()
+    val fontSize by settingsManager.state.fontSize.collectAsState()
 
     LaunchedEffect(scrollState) {
         snapshotFlow { scrollState.value }
@@ -88,7 +93,7 @@ fun ChapterView(
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         chapter.blocks.forEach { block ->
-            BlockRenderer(bookId, block, selectedRange, selectedBlockId, onSelected, onLinkClick)
+            BlockRenderer(bookId, block, fontSize, selectedRange, selectedBlockId, onSelected, onLinkClick)
         }
     }
 }

@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import dev.buecherregale.ebook_reader.core.dom.*
 import dev.buecherregale.ebook_reader.core.dom.epub.generateNodeId
 import dev.buecherregale.ebook_reader.core.service.BookService
@@ -29,6 +30,7 @@ import kotlin.uuid.Uuid
 fun BlockRenderer(
     bookId: Uuid,
     block: BlockNode,
+    fontSize: Float,
     selectedRange: TextRange? = null,
     selectedBlockId: String? = null,
     onSelected: (SelectedText, String) -> Unit = { _, _ -> },
@@ -37,11 +39,11 @@ fun BlockRenderer(
     val range = if (block.id == selectedBlockId) selectedRange else null
     
     when (block) {
-        is Paragraph -> ParagraphView(block, range, onSelected, onLinkClick)
-        is Heading -> HeadingView(block, range, onSelected, onLinkClick)
-        is ImageBlock -> ImageBlockView(bookId, block, range, onSelected = onSelected, onLinkClick = onLinkClick)
-        is BlockQuote -> BlockQuoteView(bookId, block, selectedRange, selectedBlockId, onSelected, onLinkClick)
-        is ListBlock -> ListBlockView(bookId, block, selectedRange, selectedBlockId, onSelected, onLinkClick)
+        is Paragraph -> ParagraphView(block, fontSize, range, onSelected, onLinkClick)
+        is Heading -> HeadingView(block, fontSize, range, onSelected, onLinkClick)
+        is ImageBlock -> ImageBlockView(bookId, block, fontSize, range, onSelected = onSelected, onLinkClick = onLinkClick)
+        is BlockQuote -> BlockQuoteView(bookId, block, fontSize, selectedRange, selectedBlockId, onSelected, onLinkClick)
+        is ListBlock -> ListBlockView(bookId, block, fontSize, selectedRange, selectedBlockId, onSelected, onLinkClick)
     }
 }
 
@@ -70,6 +72,7 @@ private fun handleLinkClick(
 @Composable
 fun ParagraphView(
     block: Paragraph,
+    fontSize: Float,
     selectedRange: TextRange? = null,
     onSelected: (SelectedText, String) -> Unit = { _, _ -> },
     onLinkClick: (LinkTarget) -> Unit = {}
@@ -81,7 +84,7 @@ fun ParagraphView(
 
     SelectableText(
         text = annotatedString,
-        style = MaterialTheme.typography.bodyMedium,
+        style = MaterialTheme.typography.bodyMedium.copy(fontSize = fontSize.sp),
         modifier = Modifier.padding(bottom = 8.dp),
         selectedRange = selectedRange,
         onSelected = { onSelected(it, block.id) },
@@ -94,6 +97,7 @@ fun ParagraphView(
 @Composable
 fun HeadingView(
     block: Heading,
+    fontSize: Float,
     selectedRange: TextRange? = null,
     onSelected: (SelectedText, String) -> Unit = { _, _ -> },
     onLinkClick: (LinkTarget) -> Unit = {}
@@ -111,9 +115,14 @@ fun HeadingView(
     }
     val uriHandler = LocalUriHandler.current
 
+    // Scale heading font size relative to base font size, but keep hierarchy
+    // Assuming base font size is around 16sp in Material Theme
+    val scaleFactor = fontSize / 16f
+    val scaledStyle = style.copy(fontSize = style.fontSize * scaleFactor)
+
     SelectableText(
         text = annotatedString,
-        style = style,
+        style = scaledStyle,
         modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
         selectedRange = selectedRange,
         onSelected = { onSelected(it, block.id) },
@@ -127,6 +136,7 @@ fun HeadingView(
 fun ImageBlockView(
     bookId: Uuid,
     block: ImageBlock,
+    fontSize: Float,
     selectedRange: TextRange? = null,
     bookService: BookService = koinInject(),
     onSelected: (SelectedText, String) -> Unit = { _, _ -> },
@@ -157,7 +167,7 @@ fun ImageBlockView(
             }
             SelectableText(
                 text = annotatedString,
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelMedium.copy(fontSize = (fontSize * 0.75f).sp),
                 modifier = Modifier.padding(top = 4.dp),
                 selectedRange = selectedRange,
                 onSelected = { onSelected(it, block.id) },
@@ -173,6 +183,7 @@ fun ImageBlockView(
 fun BlockQuoteView(
     bookId: Uuid,
     block: BlockQuote,
+    fontSize: Float,
     selectedRange: TextRange? = null,
     selectedBlockId: String? = null,
     onSelected: (SelectedText, String) -> Unit = { _, _ -> },
@@ -183,7 +194,7 @@ fun BlockQuoteView(
             .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
     ) {
         block.blocks.forEach { childBlock ->
-            BlockRenderer(bookId, childBlock, selectedRange, selectedBlockId, onSelected, onLinkClick)
+            BlockRenderer(bookId, childBlock, fontSize, selectedRange, selectedBlockId, onSelected, onLinkClick)
         }
     }
 }
@@ -192,6 +203,7 @@ fun BlockQuoteView(
 fun ListBlockView(
     bookId: Uuid,
     block: ListBlock,
+    fontSize: Float,
     selectedRange: TextRange? = null,
     selectedBlockId: String? = null,
     onSelected: (SelectedText, String) -> Unit = { _, _ -> },
@@ -201,7 +213,7 @@ fun ListBlockView(
         modifier = Modifier.padding(vertical = 8.dp)
     ) {
         block.items.forEachIndexed { index, item ->
-            ListItemView(bookId, item, block.ordered, index + 1, selectedRange, selectedBlockId, onSelected, onLinkClick)
+            ListItemView(bookId, item, block.ordered, index + 1, fontSize, selectedRange, selectedBlockId, onSelected, onLinkClick)
         }
     }
 }
@@ -212,6 +224,7 @@ fun ListItemView(
     item: ListItem,
     ordered: Boolean,
     index: Int,
+    fontSize: Float,
     selectedRange: TextRange? = null,
     selectedBlockId: String? = null,
     onSelected: (SelectedText, String) -> Unit = { _, _ -> },
@@ -222,13 +235,13 @@ fun ListItemView(
     ) {
         SelectableText(
             text = if (ordered) "$index." else "•",
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = fontSize.sp),
             modifier = Modifier.width(24.dp),
             onSelected = { /* Bullet/number selection not supported yet */ }
         )
         Column {
             item.blocks.forEach { childBlock ->
-                BlockRenderer(bookId, childBlock, selectedRange, selectedBlockId, onSelected, onLinkClick)
+                BlockRenderer(bookId, childBlock, fontSize, selectedRange, selectedBlockId, onSelected, onLinkClick)
             }
         }
     }

@@ -13,4 +13,5 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 class ApplicationSettings {
     internal var activeDictionaryIds: MutableMap<@Serializable(with = LocaleSerializer::class) Locale, Uuid> = mutableMapOf()
+    var fontSize: Float = 20f
 }
