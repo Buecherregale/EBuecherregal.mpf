@@ -100,7 +100,7 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.apache)
-            implementation(libs.logging.backend.jvm)
+            implementation(libs.slf4j.backend)
             implementation(libs.sql.driver.jvm)
             implementation(libs.icu.jvm)
             implementation(libs.icu.jvm.charset)
