@@ -67,18 +67,20 @@ kotlin {
             implementation(libs.compose.components.resources)
             implementation(libs.compose.ui.tooling.preview)
 
-            implementation(libs.androidx.nav3.runtime)
-            implementation(libs.androidx.nav3.lifecycle.viewmodel)
-            implementation(libs.androidx.nav3.materialAdaptive)
+            implementation(libs.androidx.lifecycle.runtime)
+            implementation(libs.androidx.lifecycle.viewmodel)
+            implementation(libs.androidx.lifecycle.viewmodel.nav3)
 
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.androidx.nav3.ui)
+            implementation(libs.androidx.material3.adaptive)
+            implementation(libs.androidx.material3.adaptive.nav3)
 
             implementation(libs.kotlinx.io.core)
             implementation(libs.kotlinx.json.io)
             implementation(libs.kotlinx.json)
 
             implementation(libs.kermit)
+
             implementation(libs.xmlutil.core)
             implementation(libs.xmlutil.serialization)
 

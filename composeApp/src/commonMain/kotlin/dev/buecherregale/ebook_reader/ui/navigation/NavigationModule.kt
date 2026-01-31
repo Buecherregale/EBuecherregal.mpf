@@ -1,6 +1,7 @@
 package dev.buecherregale.ebook_reader.ui.navigation
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import dev.buecherregale.ebook_reader.ui.screens.LibraryDetailScreen
 import dev.buecherregale.ebook_reader.ui.screens.LibraryScreen
 import dev.buecherregale.ebook_reader.ui.screens.ReaderScreen
@@ -18,20 +19,17 @@ import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 import kotlin.uuid.ExperimentalUuidApi
 
-class Navigator(
-    start: Screen
-) {
-    private val _backStack = mutableStateListOf(start)
-    val backStack: List<Screen> get() = _backStack
-
-    fun push(screen: Screen) {
-        _backStack.add(screen)
+class Navigator(start: Screen) {
+    private val _backStack = mutableStateListOf<Screen>().apply {
+        add(start)
     }
 
+    val backStack: SnapshotStateList<Screen> get() = _backStack
+
+    fun push(screen: Screen) = _backStack.add(screen)
+
     fun pop() {
-        if (_backStack.size > 1) {
-            _backStack.removeLast()
-        }
+        if (_backStack.size > 1) _backStack.removeLast()
     }
 }
 
