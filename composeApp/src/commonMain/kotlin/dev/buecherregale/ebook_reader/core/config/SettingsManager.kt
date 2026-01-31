@@ -34,11 +34,16 @@ class SettingsManager(
         val json = fileService.read(configFile())
         settings = jsonUtil.deserialize(json)
         _state = buildState()
-        Logger.i("loaded application settings: $settings")
+        Logger.i("loaded application settings: $json")
     }
 
     /**
-     * Checks if the config file exists. If not creates BUT DOES NOT SAVE a blank config and state.
+     * Checks if the config file exists. If not cre{
+     *         val json = fileService.read(configFile())
+     *         settings = jsonUtil.deserialize(json)
+     *         _state = buildState()
+     *         Logger.i("loaded application settings: $settings")
+     *     }ates BUT DOES NOT SAVE a blank config and state.
      */
     suspend fun loadOrCreate() {
         if (!fileService.exists(configFile())) {

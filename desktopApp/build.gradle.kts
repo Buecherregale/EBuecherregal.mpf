@@ -16,7 +16,10 @@ kotlin {
         implementation(libs.compose.components.resources)
         
         implementation(libs.sql.driver.jvm)
-        implementation(libs.logging.backend.jvm)
+
+        implementation(libs.kermit)
+        implementation(libs.slf4j.api)
+        implementation(libs.slf4j.backend)
       }
 }
 

@@ -6,9 +6,8 @@
 
 -dontwarn com.ibm.icu.**
 
--dontwarn org.slf4j.**
+-keep class org.slf4j.**
 
-# SQLite JDBC Driver
 -keep class org.sqlite.** { *; }
 -keep interface java.sql.Driver
 
