@@ -4,7 +4,7 @@ package dev.buecherregale.ebook_reader.ui.screens
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -76,17 +76,20 @@ fun ChapterView(
                 interactionSource = remember { MutableInteractionSource() }
             ) { onToggleMenu() }
             .pointerInput(Unit) {
-                detectDragGestures(
-                    onDrag = { change, dragAmount ->
-                        change.consume()
-                        swipeDistance += dragAmount.x
-                    },
+                detectHorizontalDragGestures(
                     onDragEnd = {
                         when {
                             swipeDistance > 200 -> onSwipeRight()
                             swipeDistance < -200 -> onSwipeLeft()
                         }
                         swipeDistance = 0f
+                    },
+                    onDragCancel = {
+                        swipeDistance = 0f
+                    },
+                    onHorizontalDrag = { change, dragAmount ->
+                        change.consume()
+                        swipeDistance += dragAmount
                     }
                 )
             }
