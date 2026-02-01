@@ -1,12 +1,15 @@
 -dontwarn org.brotli.**
 -dontwarn org.conscrypt.**
 
--dontwarn io.ktor.**
 -dontwarn nl.adaptivity.xmlutil.**
 
 -dontwarn com.ibm.icu.**
 
 -keep class org.slf4j.**
+
+-keep class io.ktor.client.engine.apache5.** { *; }
+-keep class io.ktor.client.engine.** { *; }
+-keep class io.ktor.client.** { *; }
 
 -keep class org.sqlite.** { *; }
 -keep interface java.sql.Driver
