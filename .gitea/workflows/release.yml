@@ -146,7 +146,17 @@ jobs:
       - name: Get Version 
         run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
       
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE }}" | base64 --decode > keystore.jks 
+          chmod 600 keystore.jks 
+
       - name: Build AAB and APK
+        env: 
+          ANDROID_KEYSTORE_PATH: keystore.jks
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: ./gradlew :androidApp:bundleRelease :androidApp:assembleRelease --stacktrace
 
       - name: Upload APK to Nexus
@@ -162,4 +172,7 @@ jobs:
             filename=$(basename "$file")
             curl -v --fail -u "$NEXUS_USERNAME:$NEXUS_PASSWORD" --upload-file "$file" "$NEXUS_URL/repository/$NEXUS_REPOSITORY/dev/buecherregale/ebook_reader/EBuecherregal/$VERSION/ebuecherregal-$VERSION.aab"
           done
+
+      - name: Cleanup
+        run: rm -f keystore.jks
 
