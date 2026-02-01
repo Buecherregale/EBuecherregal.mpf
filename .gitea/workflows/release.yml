@@ -52,7 +52,7 @@ jobs:
           git config user.email "ci@local"
           git add "$VERSION_FILE"
           git commit -m "bump version to $VERSION"
-          git push http://x-access-token:${GITEA_TOKEN}@gitea:3000/${{ github.repository }}.git HEAD:main
+          # git push http://x-access-token:${GITEA_TOKEN}@gitea:3000/${{ github.repository }}.git HEAD:main
 
   desktop:
     name: Desktop (${{ matrix.platform }})
