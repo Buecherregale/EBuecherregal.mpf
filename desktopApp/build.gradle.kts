@@ -11,9 +11,16 @@ kotlin {
         implementation(projects.composeApp)
 
         implementation(compose.desktop.currentOs)
+        implementation(libs.compose.ui)
         implementation(libs.compose.ui.tooling.preview)
         implementation(libs.compose.components.resources)
-    }
+        
+        implementation(libs.sql.driver.jvm)
+
+        implementation(libs.kermit)
+        implementation(libs.slf4j.api)
+        implementation(libs.slf4j.backend)
+      }
 }
 
 compose.desktop {
@@ -29,6 +36,8 @@ compose.desktop {
             )
             packageName = "ebuecherregal"
             packageVersion = libs.versions.projectVersion.get()
+
+            modules("java.sql")
 
             macOS {
                 iconFile.set(project.file("../resources/icons/icon_colored_256x256.icns"))
