@@ -38,9 +38,18 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("android_keystore_path") ?: "keystore.jks")
+            storePassword = System.getenv("android_keystore_password")
+            keyAlias = System.getenv("android_key_alias")
+            keyPassword = System.getenv("android_key_password")
+        }
+    }
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
